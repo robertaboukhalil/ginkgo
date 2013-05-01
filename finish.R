@@ -111,7 +111,7 @@ for(k in 1:w){
 
 	  ###
 	  command=paste("java -cp ", main_dir, "/forester_1025.jar org.forester.application.phyloxml_converter -f=nn ", user_dir, "/hist.newick ", user_dir, "/hist.xml", sep="");
-	  #unlink( paste(user_dir, "/hist.xml", sep="") );
+	  unlink( paste(user_dir, "/hist.xml", sep="") );
 	  system(command);
 	  ###	  
 	}
