@@ -1,0 +1,30 @@
+#!/bin/bash
+
+total=`wc -l < ${1}/${2}`
+
+if [ $4 = 1 ]; then
+  cnt=0;
+  while read file; do
+    ./status ${1}/${3} 1 $file $cnt $total  
+    ./bin_unsorted /mnt/data/atwal/singlecell/bins_${7} `wc -l < /mnt/data/atwal/singlecell/bins_${7}` ${1}/${file} `echo ${file} | awk -F "." '{print $1}'` ${1}/${file}_mapped
+    cnt=$(($cnt+1));
+  done < ${1}/${2}
+
+  paste bins_${7} ${1}/*_mapped > ${1}/data
+  ./status ${1}/${3} 1 done $cnt $total
+
+fi
+
+if [ $5 = 1 ]; then
+  ./status ${1}/${3} 2 initializing 0 1
+  rm ${1}/*jpeg ${1}/hist.newick ${1}/SegFile -f
+  ./finish.R /mnt/data/atwal/singlecell ${1} ${3} data ${7} ${8} ${9} ${10}
+  #./finish.R /data/schatz2/tgarvin/website ${1} ${3} data ${7} ${8} ${9} ${10}
+fi
+
+if [ $6 = 1 ]; then
+  ./status ${1}/${3} 4 recomputing_histogram 0 1
+  ./fix.R /mnt/data/atwal/singlecell ${1} ${3} SegFile ${9} ${10}
+  #./fix.R /data/schatz2/tgarvin/website ${1} ${3} SegFile ${9} ${10}
+fi
+
