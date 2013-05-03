@@ -16,6 +16,7 @@ library(DNAcopy)
 
 setwd(main_dir)
 v=read.table(paste("GC_bins_", bm, sep=""), header=FALSE, sep="\t")
+b=read.table(paste("bounds_", bm, sep=""), header=FALSE, sep="\t")
 
 setwd(user_dir)
 T=read.table(dat, header=TRUE, sep="\t")
@@ -90,7 +91,8 @@ for(k in 1:w){
 	final[,k]=fixed[,k]/max(fixed[,k])
 
         jpeg(filename=paste(lab[k], ".jpeg", sep=""), width=2000, height=1400)
-        plot(final[,k], main=lab[k], ylab="bin")
+        plot(final[,k], main=paste("Normalized Reads/Bin\n", lab[k]), xlab="Bin #", ylab="Reads (Normalized and scaled from 0 to 1)")
+        abline(v=t(b[2]), col='red')
         dev.off()
 
 	if (k > 2 && ((k <= 10) || (k%%(w%/%10) == 0)))
