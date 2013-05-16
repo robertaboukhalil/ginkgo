@@ -466,7 +466,7 @@ svgCanvas {
 				new_clustering:		_ssa_options_new_clustering,
 				new_distance:		_ssa_options_new_distance
 			}, function(data){
-				alert(data);return;
+				//alert(data);return;
 				// Once all steps are done
 				$("#btn-start-analysis").removeClass("disabled");
 				$("#btn-upload-files").removeClass("disabled");	

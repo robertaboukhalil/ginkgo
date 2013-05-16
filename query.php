@@ -170,10 +170,10 @@ switch($query)
 		$cmd_old = "./analyze " . escapeshellarg(DIR_ROOT . "/data/$user_id") . " " . escapeshellarg("thumbnail/files_old") . " " . escapeshellarg("thumbnail/status_old.xml") . " " . $steps_old[1] . " " . $steps_old[2] . " " . $steps_old[3] . " " . $parameters;
 		$cmd_new = "./analyze " . escapeshellarg(DIR_ROOT . "/data/$user_id") . " " . escapeshellarg("thumbnail/files_new") . " " . escapeshellarg("thumbnail/status_new.xml") . " 1 1 1 " . $parameters;
 
-echo 'OLD:'. $cmd_old . "\n";
-echo 'NEW:' . $cmd_new . "\n";
-print_r($_GET);
-exit;
+#echo 'OLD:'. $cmd_old . "\n";
+#echo 'NEW:' . $cmd_new . "\n";
+#print_r($_GET);
+#exit;
 
 		/* Run analysis */
 		if(!empty($files_old))

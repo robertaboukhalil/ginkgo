@@ -11,7 +11,7 @@ doStep3=$6
 binMeth=$7
 segMeth=$8
 clustMeth=$9
-distMet=$10
+distMet=${10}
 
 total=`wc -l < ${dir}/${inFile}`
 
@@ -28,14 +28,19 @@ if (( doStep1 == 1 )); then
 
 fi
 
+echo "FINISH.R"
 if (( doStep2 == 1 )); then
   ./status ${dir}/${statFile} 2 initializing 0 1
   rm ${dir}/*jpeg ${dir}/hist.newick ${dir}/SegFile -f
-  ./finish.R $DIR_ROOT ${dir} ${statFile} data ${binMeth} ${segMeth} ${ClustMeth} ${DistMet}
+  #echo "./finish.R $DIR_ROOT ${dir} ${statFile} data ${binMeth} ${segMeth} ${clustMeth} ${distMet}"
+  #exit
+  ./finish.R $DIR_ROOT ${dir} ${statFile} data ${binMeth} ${segMeth} ${clustMeth} ${distMet}
 fi
 
+
+echo "FIX.R"
 if (( doStep3 == 1 )); then
   ./status ${dir}/${statFile} 4 recomputing_histogram 0 1
-  ./fix.R $DIR_ROOT ${dir} ${statFile} SegFile ${ClustMeth} ${DistMet}
+  ./fix.R $DIR_ROOT ${dir} ${statFile} ${dir}/SegFile ${clustMeth} ${distMet}
 fi
 

@@ -45,7 +45,7 @@ if (stat == 1){
   for(i in 1:w){
     #statusFile<-file(status)
     	statusFile<-file( paste(user_dir, "/", status, sep="") )
-    writeLines(c("<?xml version='1.0'?>", "<status>", "<step>2</step>", paste("<processingfile>", lab[i], "</processingfile>", sep=""), paste("<percentdone>", (i*100)%/%wt, "</percentdone>", sep=""), "<tree>0</tree>", "</status>"), statusFile)
+    writeLines(c("<?xml version='1.0'?>", "<status>", "<step>2</step>", paste("<processingfile>", lab[i], "</processingfile>", sep=""), paste("<percentdone>", (i*100)%/%w, "</percentdone>", sep=""), "<tree>0</tree>", "</status>"), statusFile)
     close(statusFile)
     p[i]=chisq.test(T[,(i+2)], v[,1])[[3]]
   }
