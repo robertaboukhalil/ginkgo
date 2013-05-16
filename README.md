@@ -1,4 +1,6 @@
-Ginko
+Ginkgo
 =====
 
-This is Ginko.
+This is Ginkgo.
+
+
