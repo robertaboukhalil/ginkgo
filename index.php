@@ -392,6 +392,12 @@ svgCanvas {
 		//, #param-bins-fixed-value
 		$("#loading-upload, #params, #dashboard-results").hide();
 		$("#dashboard-loading").show();
+
+		// Select all URL when click in textbox
+		$(document).ready(function() {
+			$("#permalink-url").focus(function() { $(this).select(); } );
+		});
+
 	}
 
 	// -----------------------------------------------------------------------------------
