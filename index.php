@@ -41,7 +41,7 @@ svgCanvas {
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </a>
-          <a class="brand" href="/ginkgo/">Ginkgo</a>
+          <a class="brand" href="/singlecell/">Single Cell Analyzer</a>
           <div class="nav-collapse collapse">
 
 			<ul class="nav pull-right">
@@ -137,8 +137,8 @@ svgCanvas {
 						<strong>Segmentation</strong><br />
 						<div style="font-size:11px;">
 							Use <select id="param-segmentation" class="input-medium" style="margin-top:8px; font-size:11px; padding-top:3px; padding-bottom:0; height:25px; ">
-								<option value="1">GC content per bin</option>
 								<option value="0">bin count variability</option>
+								<option value="1">GC content per bin</option>
 							</select> to segment.
 						</div>
 						<br />
@@ -177,7 +177,7 @@ svgCanvas {
         <div class="span9">
           <div class="hero-unit">
 			<div style="margin-top:-20px;border:0px solid red;">
-				<div style="float:left"><h2 style="margin-top:-3px;">Results</h2></div>
+				<div style="float:left"><h2 style="margin-top:-3px;">Results <small><br />Access your results from anywhere at <input style="margin-top:7px; color:#999; background:transparent;" type="text" class="input-xxlarge" id="permalink-url" value="#"></small></h2></div>
 
 				<div style="float:right; margin-left:70px;">
 					<div class="btn-group">
@@ -203,11 +203,11 @@ svgCanvas {
 						</ul>
 					</div> -->
 
-					<div class="btn-group">
+					<!-- <div class="btn-group">
 						<a id="btn-export-tree-img" class="btn-export btn btn-primary disabled" data-toggle="dropdown" href="#" onclick="alert('Permalink: ' + window.location)">
 						Save results for later
 						</a>
-					</div>
+					</div>-->
 				</div>
 
 				<div id="dashboard-status-text" style="clear:both;margin-left: 0">
@@ -229,7 +229,7 @@ svgCanvas {
 					
 				</div>-->
 
-				<div id="svgCanvas"><!-- class="span8" if dashboard=results is there below not above -->
+				<div id="svgCanvas" class="row-fluid"><!-- class="span8" if dashboard=results is there below not above -->
 				</div>
 
 				<!-- DASHBOARD: Done processing -->
@@ -273,7 +273,7 @@ svgCanvas {
     <script src="includes/bootstrap/js/bootstrap.js"></script>
 
     <script type="text/javascript" src="includes/jsphylosvg/raphael-min.js" ></script>
-    <script type="text/javascript" src="includes/jsphylosvg/jsphylosvg-min.js"></script>                 
+    <script type="text/javascript" src="includes/jsphylosvg/jsphylosvg.js"></script> <!-- -min -->
 
 	<script type="text/javascript">
 	//
@@ -313,6 +313,8 @@ svgCanvas {
 
 		_ssa_user_id = window.location.hash.replace("#!/", "");
 		$("#upload-iframe").attr("src", "./includes/fileupload/?user_id=" + _ssa_user_id);
+		//$("#permalink-url").attr("href", window.location);
+		$("#permalink-url").val(window.location.href.replace("http://", "") + _ssa_user_id); //window.location.replace("http://", "").replace("www.", "")
 		//alert(_ssa_user_id)
 
 		// -----------------------------------------------------------------------------------
@@ -397,7 +399,11 @@ svgCanvas {
 	// -----------------------------------------------------------------------------------
 	function startAnalysis()
 	{
+		// Go to top
+		$("html, body").animate({ scrollTop: 0 }, "slow");
+		
 		//$("#dashboard-results").hide();
+		$("#svgCanvas").html(""); _ssa_phylocanvas = "";
 		$("#dashboard-loading").show();
 		$(".btn-export").addClass("disabled");
 	
@@ -466,16 +472,17 @@ svgCanvas {
 				new_clustering:		_ssa_options_new_clustering,
 				new_distance:		_ssa_options_new_distance
 			}, function(data){
-				//alert(data);return;
+				//alert(data);
 				// Once all steps are done
 				$("#btn-start-analysis").removeClass("disabled");
 				$("#btn-upload-files").removeClass("disabled");	
+				//$("#svgCanvas").show();
 			}
 		);
 
 		/* 3: Start retrieving status */
 		$("#dashboard-status-text").text("Processing old files...");
-		_ssa_interval = setInterval( "getAnalysisStatus('old')", 500 );
+		_ssa_interval = setInterval( "getAnalysisStatus('old')", 1500 );
 	}
 
 	// -----------------------------------------------------------------------------------
@@ -503,20 +510,18 @@ svgCanvas {
 				desc = "Finalizing";
 
 			processingMsg = "(" + processing.replace("_", " ") + ")";
-			$("#dashboard-status-text").html("Step " + step + ": " + desc + "... " + processingMsg + "<br />" + percentdone + "%");
+			$("#dashboard-status-text").html("Step " + step + ": " + percentdone + "%" + " <small style='color:#999'>" + desc + "... " + processingMsg + "<small>");
 
 			if(percentdone > 100)
 				percentdone = 100;
 			$(".bar").width((100*(step-1+percentdone/100)/4) + "%");
 
-			// TODO: Get current tree: see showTrees()
-			//_ssa_interval = setInterval( "showTrees()", 1000 );
+			// Get current tree
 			if(tree != "0")
 				loadTree(tree);
-			//showTrees();
 
 			// When we're done with the analysis, stop getting progress continually
-			if(step == 4 && percentdone >= 100)
+			if((step == 4 && percentdone >= 100) || typeof step == 'undefined')
 			{
 				if(whichXML == "new")
 				{
@@ -583,50 +588,26 @@ svgCanvas {
 					.appendChild(xmlFile.createTextNode("javascript:showProfile('" + cellId + "')"));
 			});
 
-			//
-			if(!_ssa_is_done)
-			{
-				$("#svgCanvas").html("");
-				_ssa_phylocanvas = "";
+			$("#svgCanvas").html("");
+			_ssa_phylocanvas = "";
+			dataObject = "";
 
-				// Define tree and size (based on current window size!)
-				var dataObject = { xml: xmlFile, fileSource: true };
-				treeWidth = $("#svgCanvas").css("width").replace("px", "");
-				treeHeight= document.body.clientHeight - 100; //treeWidth * 1.6;
+			// Define tree and size (based on current window size!)
+			var dataObject = { xml: xmlFile, fileSource: true };
+			treeHeight = 500;
+			treeWidth  = 500;
+			// Show tree
+			if(dendrogram)
+				_ssa_phylocanvas = new Smits.PhyloCanvas(dataObject, 'svgCanvas', treeWidth, treeHeight);
+			else
+				_ssa_phylocanvas = new Smits.PhyloCanvas(dataObject, 'svgCanvas', treeWidth, treeHeight, 'circular');
 
-				if(dendrogram == true)
-				{
-					// Show tree
-					_ssa_phylocanvas = new Smits.PhyloCanvas(
-						dataObject,
-						'svgCanvas', 
-						treeWidth, treeHeight
-					);
-				}
-				else
-				{
-					// Show tree
-					_ssa_phylocanvas = new Smits.PhyloCanvas(
-						dataObject,
-						'svgCanvas', 
-						treeWidth, treeHeight, 'circular'
-					);				
-				}
-				// Init unitip (see unitip.css to change tip size)
-				init();
+			// Init unitip (see unitip.css to change tip size)
+			init();
 
-//				$("tspan").each(function() {
-//					cellId = $(this).text();
-//					//$(this).attr("onmouseover", "");
-//					//$(this).parent().parent().attr("onmouseover", "$('#dashboard-results').html('<img width=300 src=\\'./data/"+_ssa_user_id+"/"+cellId+".jpeg\\'>'); $('#dashboard-results').css('top', "+(0.2+$(this).parent().attr('y'))+"); $('#dashboard-results').css('left', "+$(this).parent().attr('x')+"); "); //parent().parent().
-//					//$('#cell-' + cellId).popover({ trigger: "hover", title:"Copy-number profile of cell " + cellId, html:true, content:"sdfsd" });
-//					//"<a href='./data/" + _ssa_user_id + "/" + cellId + ".jpeg' target='_blank'><img src='./data/" + _ssa_user_id + "/" + cellId + ".jpeg'></a>
-//				});
-
-				//
-				$("#dashboard-results").show();
-				_ssa_is_init = true;
-			}
+			// Show results
+			$("#dashboard-results").show();
+			_ssa_is_init = true;
 		});
 	}
 
@@ -636,19 +617,7 @@ svgCanvas {
 	function showProfile(cellId)
 	{
 		window.open('./data/' + _ssa_user_id + '/' + cellId + '.jpeg', 'Cell <' + cellId + '> Copy-number profile');
-		//$('#dashboard-results').attr("top", $(this).attr('y'));
-		//$('#dashboard-results').attr("left", $(this).attr('x'));
-		//$('#svgCanvas').popover({ title:"Copy-number profile of cell " + cellId, html:true, content:"<a href='./data/" + _ssa_user_id + "/" + cellId + ".jpeg' target='_blank'><img src='./data/" + _ssa_user_id + "/" + cellId + ".jpeg'></a>" });
-		//alert("<img src='data/" + _ssa_user_id + "/" + cellId + ".jpeg'>");
 	}
-
-
-
-
-
-
-
-
 
 	// -----------------------------------------------------------------------------------
 	// Show final tree and export options
@@ -666,29 +635,6 @@ svgCanvas {
 		$(".btn-export").removeClass("disabled");
 		$("#dashboard-results").show();
 		$("#dashboard-loading").hide();
-	}
-
-	// -----------------------------------------------------------------------------------
-	// Update tree display every once in a while
-	// -----------------------------------------------------------------------------------
-	function showTrees()
-	{
-		// If the analysis is done, show final tree
-		if(_ssa_is_done)
-		{
-//$(".bar").css("width", "100%");
-			//alert("done updating tree");
-			clearInterval(_ssa_interval);
-			showFinalTree();
-			return;
-		}
-
-		// Which 
-
-//$(".bar").css("width", "50%");
-		loadTree('hist.xml');
-
-//	_ssa_is_done = true;
 	}
 
 	</script>
