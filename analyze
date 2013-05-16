@@ -1,5 +1,7 @@
 #!/bin/bash
 
+DIR_ROOT="/var/www/html/ginkgo"
+
 dir=$1
 inFile=$2
 statFile=$3 
@@ -13,11 +15,11 @@ distMet=$10
 
 total=`wc -l < ${dir}/${inFile}`
 
-if [ doStep1 = 1 ]; then
+if (( doStep1 == 1 )); then
   cnt=0;
   while read file; do
-    ./status ${dir}/${statFile}/ 1 $file $cnt $total  
-    ./bin_unsorted /mnt/data/atwal/singlecell/bins_${binMeth} `wc -l < /mnt/data/atwal/singlecell/bins_${binMeth}` ${dir}/${file} `echo ${file} | awk -F "." '{print $1}'` ${dir}/${file}_mapped
+    ./status ${dir}/${statFile} 1 $file $cnt $total  
+    ./bin_unsorted $DIR_ROOT/bins_${binMeth} `wc -l < $DIR_ROOT/bins_${binMeth}` ${dir}/${file} `echo ${file} | awk -F "." '{print $1}'` ${dir}/${file}_mapped
     cnt=$(($cnt+1));
   done < ${dir}/${inFile}
 
@@ -26,16 +28,14 @@ if [ doStep1 = 1 ]; then
 
 fi
 
-if [ doStep2 = 1 ]; then
+if (( doStep2 == 1 )); then
   ./status ${dir}/${statFile} 2 initializing 0 1
   rm ${dir}/*jpeg ${dir}/hist.newick ${dir}/SegFile -f
-  ./finish.R /mnt/data/atwal/singlecell ${dir} ${statFile} data ${binMeth} ${segMeth} ${ClustMeth} ${DistMet}
-  #./finish.R /data/schatz2/tgarvin/website ${dir} ${statFile} data ${binMeth} ${segMeth} ${ClustMeth} ${DistMet}
+  ./finish.R $DIR_ROOT ${dir} ${statFile} data ${binMeth} ${segMeth} ${ClustMeth} ${DistMet}
 fi
 
-if [ doStep3 = 1 ]; then
+if (( doStep3 == 1 )); then
   ./status ${dir}/${statFile} 4 recomputing_histogram 0 1
-  ./fix.R /mnt/data/atwal/singlecell ${dir} ${statFile} SegFile ${ClustMeth} ${DistMet}
-  #./fix.R /data/schatz2/tgarvin/website ${dir} ${statFile} SegFile ${ClustMeth} ${DistMet}
+  ./fix.R $DIR_ROOT ${dir} ${statFile} SegFile ${ClustMeth} ${DistMet}
 fi
 

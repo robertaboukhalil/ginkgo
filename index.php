@@ -41,7 +41,7 @@ svgCanvas {
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </a>
-          <a class="brand" href="/singlecell/">Single Cell Analyzer</a>
+          <a class="brand" href="/ginkgo/">Ginkgo</a>
           <div class="nav-collapse collapse">
 
 			<ul class="nav pull-right">
@@ -466,7 +466,7 @@ svgCanvas {
 				new_clustering:		_ssa_options_new_clustering,
 				new_distance:		_ssa_options_new_distance
 			}, function(data){
-				//alert(data);
+				alert(data);return;
 				// Once all steps are done
 				$("#btn-start-analysis").removeClass("disabled");
 				$("#btn-upload-files").removeClass("disabled");	
