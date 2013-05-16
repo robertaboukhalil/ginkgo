@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <title>Single Cell Analysis</title>
+    <title>Ginkgo: Single Cell CNV Analysis</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="">
     <meta name="author" content="">
@@ -41,7 +41,7 @@ svgCanvas {
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </a>
-          <a class="brand" href="/singlecell/">Single Cell Analyzer</a>
+          <a class="brand" href="/ginkgo/">Ginkgo</a>
           <div class="nav-collapse collapse">
 
 			<ul class="nav pull-right">
