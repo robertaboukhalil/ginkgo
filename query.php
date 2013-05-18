@@ -1,5 +1,6 @@
 <?php
 
+define(DIR_ROOT, "/var/www/html/ginkgo");
 error_reporting(E_ALL);
 set_time_limit(0);
 #set_memory_limit(-1);
@@ -172,12 +173,13 @@ switch($query)
 		
 		/* Prepare analysis */
 		$parameters = ($param_bins_size + $param_bins_type) . " " . $param_segmentation . " " . $param_clustering . " " . $param_distance;
-		$cmd_old = "./analyze " . escapeshellarg("/mnt/data/atwal/singlecell/data/$user_id") . " " . escapeshellarg("thumbnail/files_old") . " " . escapeshellarg("thumbnail/status_old.xml") . " " . $steps_old[1] . " " . $steps_old[2] . " " . $steps_old[3] . " " . $parameters;
-		$cmd_new = "./analyze " . escapeshellarg("/mnt/data/atwal/singlecell/data/$user_id") . " " . escapeshellarg("thumbnail/files_new") . " " . escapeshellarg("thumbnail/status_new.xml") . " 1 1 1 " . $parameters;
+		$cmd_old = "./analyze " . escapeshellarg(DIR_ROOT . "/data/$user_id") . " " . escapeshellarg("thumbnail/files_old") . " " . escapeshellarg("thumbnail/status_old.xml") . " " . $steps_old[1] . " " . $steps_old[2] . " " . $steps_old[3] . " " . $parameters;
+		$cmd_new = "./analyze " . escapeshellarg(DIR_ROOT . "/data/$user_id") . " " . escapeshellarg("thumbnail/files_new") . " " . escapeshellarg("thumbnail/status_new.xml") . " 1 1 1 " . $parameters;
 
-#if(!empty($files_old)) echo 'OLD:'. $cmd_old . "\n";
-#if(!empty($files_new)) echo 'NEW:'. $cmd_new . "\n";
-#exit;
+		/* Debug */
+		#if(!empty($files_old)) echo 'OLD:'. $cmd_old . "\n";
+		#if(!empty($files_new)) echo 'NEW:'. $cmd_new . "\n";
+		#exit;
 
 		/* Run analysis */
 		if(!empty($files_old))
@@ -192,7 +194,7 @@ switch($query)
 		}
 		else
 		{
-			file_put_contents("/mnt/data/atwal/singlecell/data/$user_id/thumbnail/status_old.xml", "<?xml version='1.0'?>
+			file_put_contents(DIR_ROOT . "/data/$user_id/thumbnail/status_old.xml", "<?xml version='1.0'?>
 <status>
 <step>4</step>
 <processingfile>Done</processingfile>
@@ -214,7 +216,7 @@ switch($query)
 		}
 		else
 		{
-			file_put_contents("/mnt/data/atwal/singlecell/data/$user_id/thumbnail/status_new.xml", "<?xml version='1.0'?>
+			file_put_contents(DIR_ROOT . "/data/$user_id/thumbnail/status_new.xml", "<?xml version='1.0'?>
 <status>
 <step>4</step>
 <processingfile>Done</processingfile>
