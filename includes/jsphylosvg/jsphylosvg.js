@@ -1071,7 +1071,7 @@ Smits.PhyloCanvas.NexmlParse.prototype = {
 		bufferRadius 		: 0.33,		// Margins of Tree Circle
 										// If > 1, it is in pixels
 										// If < 1, it is a percentage of the full canvas size		
-		bufferAngle 		: 20,		// controls split size in circle		
+		bufferAngle 		: 0,		// controls split size in circle		
 		initStartAngle 		: 160,		
 		innerCircleRadius 	: 0,
 		minHeightBetweenLeaves : 5,
