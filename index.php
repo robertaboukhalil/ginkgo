@@ -223,6 +223,7 @@ svgCanvas {
 					<div id="bar-container" class="progress progress-striped">
 						<div class="bar" style="width: 0%;"></div>
 					</div>
+					<br /><small><small>Note: closing this window does not interrupt the analysis<br />E-mail me when the analysis is complete: <input id="email-results" type="text" placeholder="my@email.com" style="margin-top:5px;height:15px;padding-top:4px;font-size:12px"> <input type="button" value="Save" id="save-email" style="height:30px;font-size:12px" class="btn btn-primary"></small></small><br /><br />
 				</div>
 
 				<!-- <div id="dashboard-results" class="row-fluid" style="position:relative;">
@@ -306,7 +307,31 @@ svgCanvas {
 		if(window.location.hash)
 		{
 			_ssa_user_id = window.location.hash.replace("#!/", "");
-			showFinalTree();
+			// If XML status file exists, load from where we left off
+			$.get("data/" + _ssa_user_id + "/thumbnail/status_old.xml", function(xmlFile)
+			{
+				step = xmlFile.getElementsByTagName("step")[0].childNodes[0].nodeValue;
+				percentdone = xmlFile.getElementsByTagName("percentdone")[0].childNodes[0].nodeValue;
+				$("#bar-container").addClass("active");
+
+				if((step == 4 && percentdone >= 100) || typeof step == 'undefined')
+				{
+						//clearInterval(_ssa_interval);
+						//$('.bar').toggleClass('active');
+						//$(".bar").width("0%");
+						//$('.bar').toggleClass('active');
+						//#$("#dashboard-status-text").text("Done with old files. Now processing new files...");
+						getAnalysisStatus('new');
+						_ssa_interval = setInterval( "getAnalysisStatus('new')", 1000 );
+				}
+				else
+				{
+					// Update display right now
+					getAnalysisStatus('old');
+					// Carry on normally for next updates
+					_ssa_interval = setInterval( "getAnalysisStatus('old')", 1000 );
+				}
+			});
 		}
 		else
 			window.location = window.location + "#!/" + generateID();
@@ -488,7 +513,9 @@ svgCanvas {
 
 		/* 3: Start retrieving status */
 		$("#dashboard-status-text").text("Processing old files...");
-		_ssa_interval = setInterval( "getAnalysisStatus('old')", 1500 );
+		$(".bar").width("0%");
+		$("#bar-container").addClass("active");
+		_ssa_interval = setInterval( "getAnalysisStatus('old')", 1000 );
 	}
 
 	// -----------------------------------------------------------------------------------
@@ -550,9 +577,10 @@ svgCanvas {
 					_ssa_interval = setInterval( "getAnalysisStatus('new')", 1000 );
 				}
 			}
-		});
 
-		prevStep = step;
+			prevStep = step;
+
+		});
 	}
 
 	// -----------------------------------------------------------------------------------
