@@ -26,7 +26,7 @@ else
     <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-theme.min.css">
     <!-- Custom styles -->
     <style>
-    #permalink  { border:none; width:350px; text-align:center; color:#999; background:transparent; 	}
+    #permalink  { border:1px solid #DDD; width:100%; text-align:center; color:#666; background:transparent; font-family:"courier"; }
     .jumbotron  { padding:50px 30px 15px 30px; }
     .glyphicon  { vertical-align:top; }
     .badge      { vertical-align:top; margin-top:5px; }
@@ -53,7 +53,6 @@ else
           <a class="navbar-brand" href="."><span class="glyphicon glyphicon-tree-deciduous"></span> Ginkgo</a>
         </div>
         <div class="navbar-collapse collapse">
-
           <ul class="nav navbar-nav">
             <li class="active"><a href="javascript:void(0);">Home</a></li>
             <li><a href="javascript:void(0);">About</a></li>
@@ -61,7 +60,7 @@ else
           </ul>
 
           <?php if(SHOW_DASHBOARD): ?>
-          <ul class="nav navbar-nav navbar-right">
+          <!--<ul class="nav navbar-nav navbar-right">
            <li class="dropdown" id="menu">
              <a class="dropdown-toggle" data-toggle="dropdown" href="#menu">
                Access your results later
@@ -73,7 +72,7 @@ else
                </form>
              </div>
            </li>
-          </ul>
+          </ul>-->
           <?php endif; ?>
           
         </div><!--/.navbar-collapse -->
@@ -95,44 +94,66 @@ else
       </div>
     </div>
 
-    <!-- Main content -->
+    <!-- Main container -->
     <div class="container">
     <?php if(SHOW_DASHBOARD): ?>
+      <!-- Dashboard -->
       <div class="row">
         <div class="col-lg-8">
-          <h3 style="margin-top:-5px;"><span class="badge">STEP 2</span> Choose cells for analysis</h3>
+          <h3 style="margin-top:-5px;"><span class="badge">STEP 1</span> Choose cells for analysis</h3>
           <p>.</p>
 
-          <hr>
 
-          <h3 style="margin-top:-5px;"><span class="badge">STEP 3</span> Set analysis parameters</h3>
+          <h3 style="margin-top:-5px;"><span class="badge">STEP 2</span> Set analysis parameters</h3>
           <p>.</p>
 
-          <hr>
 
-          <h3 style="margin-top:-5px;"><span class="badge">STEP 4</span> Choose e-mail options</h3>
+          <h3 style="margin-top:-5px;"><span class="badge">STEP 3</span> Choose e-mail options</h3>
           <p>.</p>
-
-          <p><a class="btn btn-lg btn-primary" href="">Start Analysis <span class="glyphicon glyphicon-chevron-right"></span></a></p>
+          <p><hr><a class="btn btn-lg btn-primary" href="">Start Analysis <span class="glyphicon glyphicon-chevron-right"></span></a></p>
         </div>
         <div class="col-lg-4">
+
+          <!-- Panel: Info -->
+          <div class="alert alert-danger fade in">
+            <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+            <p>
+                The following files were not valid .bed files:<br/><br/>
+                <code>test.pdf</code>, <code>hello.txt</code>
+            </p>
+          </div>
+
+          <!-- Panel: upload more files -->
           <div class="panel panel-primary">
             <div class="panel-heading">
-              <h3 class="panel-title">Upload a new file</h3>
+              <h3 class="panel-title">Upload more files</h3>
             </div>
             <div class="panel-body">
               Panel content
             </div>
           </div>
+
+          <!-- Panel: Save for later -->
+          <div class="panel panel-primary">
+            <div class="panel-heading">
+              <h3 class="panel-title">View analysis later</h3>
+            </div>
+            <div class="panel-body">
+              Access your results from anywhere at<br/><br/>
+              <input type="text" class="input-sm" id="permalink" value="qb.cshl.edu/ginkgo/#!/kAr13WPVaEOpbdsaNZeDkAr13WPVaEOpbdsaNZeD"><br/><br/>
+              <small><strong>Note:</strong> Closing this window does not interrupt the analysis.</small>
+            </div>
+          </div>
+          
         </div>
       </div>
 
 
-
     <?php else: ?>
+      <!-- Upload files -->
       <div class="row">
         <div class="col-lg-8">
-          <h3 style="margin-top:-5px;"><span class="badge">STEP 1</span> Upload your .bed files</h3>
+          <h3 style="margin-top:-5px;"><span class="badge">STEP 0</span> Upload your .bed files</h3>
           <p></p>
           <p><a class="btn btn-lg btn-primary" href="?q=dashboard"><span class="glyphicon glyphicon-upload"></span> Upload </a></p>
         </div>
@@ -160,6 +181,8 @@ else
         </div>
       </div>
     <?php endif; ?>
+
+
     </div> <!-- /container -->
 
 
@@ -173,9 +196,10 @@ else
 	<script language="javascript">
 	// Transform dropdown menu forms into dialog boxes
 	$('.dropdown-toggle').dropdown();
-	$('.dropdown-menu').find('form').click(function (e) {
-	    e.stopPropagation();
-	  });
+	$('.dropdown-menu').find('form').click(function (e) { e.stopPropagation(); });
+	
+	// When click inside permalink box, select all
+	$("#permalink").focus(function() { $(this).select(); } );
 	</script>
 
     <!-- Ginkgo
@@ -189,7 +213,7 @@ else
 
 		// Set permalink URL
 		$("#permalink").val(window.location.href.replace("http://", ""));
-		$("#permalink").focus(function() { $(this).select(); } );
+		
 
 	});*/
 	</script>
