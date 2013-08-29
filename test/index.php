@@ -13,9 +13,10 @@
     <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-theme.min.css">
     <!-- Custom styles -->
     <style>
-    #permalink { border:none; width:350px; text-align:center; color:#999; background:transparent; 	}
-    .navbar-brand { margin-top:-3px; }
-    .jumbotron { padding:50px 30px 15px 30px; }
+    #permalink  { border:none; width:350px; text-align:center; color:#999; background:transparent; 	}
+    .jumbotron  { padding:50px 30px 15px 30px; }
+    .glyphicon  { vertical-align:top; }
+    .badge      { vertical-align:top; margin-top:5px; }
     </style>
 
     <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
@@ -76,14 +77,47 @@
       <!-- Example row of columns -->
       <div class="row">
         <div class="col-lg-8">
-          <h3><span class="glyphicon glyphicon-upload"></span> Upload your files</h3>
-          <p>Donec id elit non mi porta gravida at eget metus. Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo sit amet risus. Etiam porta sem malesuada magna mollis euismod. Donec sed odio dui. </p>
-          <p><a class="btn btn-default" href="#">View details &raquo;</a></p>
+          <h3><span class="badge">STEP 1</span> Upload your .bed files</h3>
+          <p></p>
+          <p><a class="btn btn-lg btn-primary" href=""><span class="glyphicon glyphicon-upload"></span> Upload </a></p>
         </div>
         <div class="col-lg-4">
-          <h3><span class="glyphicon glyphicon-cog"></span> Analysis Parameters</h3>
-          <p>Donec sed odio dui. Cras justo odio, dapibus ac facilisis in, egestas eget quam. Vestibulum id ligula porta felis euismod semper. Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo sit amet risus.</p>
-          <p><a class="btn btn-default" href="#">View details &raquo;</a></p>
+          <h3><span class="badge">?</span> Help</h3>
+          <h4>How to make .bed files</h4>
+          <p>Open a terminal to the directory containing your files:</p>
+          <p><code>$ echo "hello";</code></p>
+          <p><code>$ echo "world";</code></p>
+
+          <br/>
+          <h4>What a .bed file should look like</h4>
+          <p>
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>chrom</th>
+                    <th>chromStart</th>
+                    <th>chromEnd</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>chr1</td>
+                    <td>555485</td>
+                    <td>555533</td>
+                  </tr>
+                  <tr>
+                    <td>chr1</td>
+                    <td>676584</td>
+                    <td>676632</td>
+                  </tr>
+                  <tr>
+                    <td>chr1</td>
+                    <td>745136</td>
+                    <td>745184</td>
+                  </tr>
+                </tbody>
+              </table>
+          </p>
         </div>
       </div>
 
@@ -108,7 +142,7 @@
     <!-- Ginkgo
     ================================================== -->
 	<script language="javascript">
-	var ginkgo_user_id = "esYyVyU7GZUKxwYH2tNN";
+	/*var ginkgo_user_id = "esYyVyU7GZUKxwYH2tNN";
 	$(document).ready(function(){
 		// Make sure URL ends with user ID
 		if(!window.location.hash)
@@ -118,7 +152,7 @@
 		$("#permalink").val(window.location.href.replace("http://", ""));
 		$("#permalink").focus(function() { $(this).select(); } );
 
-	});
+	});*/
 	</script>
 
 
