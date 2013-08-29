@@ -1,6 +1,0 @@
-Ginkgo
-=====
-
-This is Ginkgo.
-
-
