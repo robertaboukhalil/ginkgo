@@ -5,9 +5,12 @@ error_reporting(E_ALL);
 session_start();
 
 // Get user's query
-$query = $_GET['q'];
-if($query == "dashboard")
+$query = explode("/", $_GET['q']);
+if($query[0] == "dashboard")
+{
     define('SHOW_DASHBOARD', true);
+    $userID = $query[1];
+}
 else
     define('SHOW_DASHBOARD', false);
 
@@ -26,10 +29,11 @@ else
     <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-theme.min.css">
     <!-- Custom styles -->
     <style>
-    #permalink  { border:1px solid #DDD; width:100%; text-align:center; color:#666; background:transparent; font-family:"courier"; }
+    #permalink  { border:1px solid #DDD; width:100%; color:#666; background:transparent; font-family:"courier"; resize:none; height:50px; }
     .jumbotron  { padding:50px 30px 15px 30px; }
     .glyphicon  { vertical-align:top; }
     .badge      { vertical-align:top; margin-top:5px; }
+    td          { vertical-align:middle !important; }
     </style>
 
     <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
@@ -100,33 +104,116 @@ else
       <!-- Dashboard -->
       <div class="row">
         <div class="col-lg-8">
-          <h3 style="margin-top:-5px;"><span class="badge">STEP 1</span> Choose cells for analysis</h3>
-          <p>.</p>
-
-
-          <h3 style="margin-top:-5px;"><span class="badge">STEP 2</span> Set analysis parameters</h3>
-          <p>.</p>
-
-
-          <h3 style="margin-top:-5px;"><span class="badge">STEP 3</span> Choose e-mail options</h3>
-          <p>.</p>
-          <p><hr><a class="btn btn-lg btn-primary" href="">Start Analysis <span class="glyphicon glyphicon-chevron-right"></span></a></p>
-        </div>
-        <div class="col-lg-4">
 
           <!-- Panel: Info -->
           <div class="alert alert-danger fade in">
             <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
             <p>
-                The following files were not valid .bed files:<br/><br/>
+                The following files are not valid .bed files:<br/><br/>
                 <code>test.pdf</code>, <code>hello.txt</code>
             </p>
           </div>
 
+          <!-- Choose cells of interest -->
+          <h3 style="margin-top:-5px;"><span class="badge">STEP 1</span> Choose cells for analysis</h3>
+          <div id="params-cells">
+            <div class="row">
+              <div class="col-md-2"><div class="checkbox"><label><input type="checkbox"> Cell 45</label></div></div>
+              <div class="col-md-2"><div class="checkbox"><label><input type="checkbox"> Cell 45</label></div></div>
+              <div class="col-md-2"><div class="checkbox"><label><input type="checkbox"> Cell 45</label></div></div>
+              <div class="col-md-2"><div class="checkbox"><label><input type="checkbox"> Cell 45</label></div></div>
+              <div class="col-md-2"><div class="checkbox"><label><input type="checkbox"> Cell 45</label></div></div>
+              <div class="col-md-2"><div class="checkbox"><label><input type="checkbox"> Cell 45</label></div></div>
+            </div>
+            <div class="row">
+              <div class="col-md-2"><div class="checkbox"><label><input type="checkbox"> Cell 45</label></div></div>
+              <div class="col-md-2"><div class="checkbox"><label><input type="checkbox"> Cell 45</label></div></div>
+              <div class="col-md-2"><div class="checkbox"><label><input type="checkbox"> Cell 45</label></div></div>
+              <div class="col-md-2"><div class="checkbox"><label><input type="checkbox"> Cell 45</label></div></div>
+              <div class="col-md-2"><div class="checkbox"><label><input type="checkbox"> Cell 45</label></div></div>
+              <div class="col-md-2"><div class="checkbox"><label><input type="checkbox"> Cell 45</label></div></div>
+            </div>
+    		<br/>
+          </div>
+
+          <!-- Get informed by email when done? -->
+          <h3 style="margin-top:-5px;"><span class="badge">STEP 2</span> E-mail notification <small></small></h3>
+          <div id="params-email">
+            <p>If you want to be notified once the analysis is done, enter your e-mail here:<br/></p>
+            <div class="input-group">
+              <span class="input-group-addon"><span class="glyphicon glyphicon-envelope"></span></span>
+              <input id="email" class="form-control" type="text" placeholder="my@email.com">
+            </div>
+          </div>
+          <br/>
+
+          <p><br/><a class="btn btn-lg btn-primary" href="">Start Analysis <span class="glyphicon glyphicon-chevron-right"></span></a></p>
+
+          <hr style="height:5px;border:none;background-color:#CCC;" />
+          
+          <!-- Set parameters -->
+          <h3 style="margin-top:-5px;"><span class="badge">OPTIONAL</span> <a href="#" onClick="javascript:$('#params-table').toggle();">Analysis parameters</a></h3>
+          <table class="table table-striped" id="params-table">
+            <tbody>
+                <tr>
+                    <td>Binning Options</td>
+                    <td>
+                        Use a <select id="param-bins-type" class="input-mini" style="margin-top:8px; font-size:11px; padding-top:3px; padding-bottom:0; height:25px; ">
+        					  <option value="0">fixed</option>
+        					  <option value="4">variable</option>
+        				</select> bin size of <select id="param-bins-value" class="input-mini" style="margin-top:8px; font-size:11px; padding-top:3px; padding-bottom:0; height:25px; ">
+        				 	  <option value="0">10kb</option>
+        					  <option value="1">25kb</option>
+        					  <option value="2">40kb</option>
+        					  <option value="3">50kb</option>
+        				</select> size.
+        			</td>
+        		</tr>
+                <tr>
+                    <td>Segmentation</td>
+                    <td>
+                        Use <select id="param-segmentation" class="input-medium" style="margin-top:8px; font-size:11px; padding-top:3px; padding-bottom:0; height:25px; ">
+        					<option value="0">bin count variability</option>
+        					<option value="1">GC content per bin</option>
+        				</select> to segment.
+                    </td>
+                </tr>
+                <tr>
+                    <td>Clustering</td>
+                    <td>
+                        Use <select id="param-clustering" class="input-small" style="margin-top:8px; font-size:11px; padding-top:3px; padding-bottom:0; height:25px; ">
+        				<option value="0">single</option>
+        				<option value="1">complete</option>
+        				<option value="2">average</option>
+        				<option value="3">ward</option>
+        			    </select> clustering.
+                    </td>
+                </tr>
+                <tr>
+                    <td>Distance metric</td>
+                    <td>
+                        Use <select id="param-distance" class="input-small" style="margin-top:8px; font-size:11px; padding-top:3px; padding-bottom:0; height:25px; ">
+        				<option value="0">Euclidean</option>
+        				<option value="1">maximum</option>
+        				<option value="2">Manhattan</option>
+        				<option value="3">Canberra</option>
+        				<option value="4">binary</option>
+        				<option value="5">Minkowski</option>
+        			    </select> distance.
+        		    </td>
+                </tr>
+            </tbody>
+          </table>
+          <br/>
+
+        </div>
+
+
+        <div class="col-lg-4">
           <!-- Panel: upload more files -->
           <div class="panel panel-primary">
             <div class="panel-heading">
-              <h3 class="panel-title">Upload more files</h3>
+              <h3 class="panel-title"><span class="glyphicon glyphicon-upload"></span> Upload more files</h3>
             </div>
             <div class="panel-body">
               Panel content
@@ -136,11 +223,13 @@ else
           <!-- Panel: Save for later -->
           <div class="panel panel-primary">
             <div class="panel-heading">
-              <h3 class="panel-title">View analysis later</h3>
+              <h3 class="panel-title"><span class="glyphicon glyphicon-time"></span> View analysis later</h3>
             </div>
             <div class="panel-body">
               Access your results from anywhere at<br/><br/>
-              <input type="text" class="input-sm" id="permalink" value="qb.cshl.edu/ginkgo/#!/kAr13WPVaEOpbdsaNZeDkAr13WPVaEOpbdsaNZeD"><br/><br/>
+              <!-- <input type="text" class="input-sm" id="permalink" value="http://qb.cshl.edu/ginkgo/?q=dashboard/kAr13WPVaEOpbdsaNZeDkAr13WPVaEOpbdsaNZeD"> -->
+              <textarea class="input-sm" id="permalink">#</textarea>
+              <br/><br/>
               <small><strong>Note:</strong> Closing this window does not interrupt the analysis.</small>
             </div>
           </div>
@@ -155,7 +244,7 @@ else
         <div class="col-lg-8">
           <h3 style="margin-top:-5px;"><span class="badge">STEP 0</span> Upload your .bed files</h3>
           <p></p>
-          <p><a class="btn btn-lg btn-primary" href="?q=dashboard"><span class="glyphicon glyphicon-upload"></span> Upload </a></p>
+          <p><a class="btn btn-lg btn-primary" href="?q=dashboard/kAr13WPVaEOpbdsaNZeDkAr13WPVaEOpbdsaNZeD"><span class="glyphicon glyphicon-upload"></span> Upload </a></p>
         </div>
         <div class="col-lg-4">
           <h3 style="margin-top:-5px;"><span class="badge">?</span> Help</h3>
@@ -191,6 +280,7 @@ else
     <script src="http://code.jquery.com/jquery-2.0.3.min.js"></script>
 	<script src="//netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.min.js"></script>
 
+
     <!-- JQuery/Bootstrap customization
     ================================================== -->
 	<script language="javascript">
@@ -202,22 +292,21 @@ else
 	$("#permalink").focus(function() { $(this).select(); } );
 	</script>
 
+
+    <?php if(SHOW_DASHBOARD): ?>
     <!-- Ginkgo
     ================================================== -->
 	<script language="javascript">
-	/*var ginkgo_user_id = "esYyVyU7GZUKxwYH2tNN";
+	var ginkgo_user_id = "<?php echo $userID; ?>";
 	$(document).ready(function(){
-		// Make sure URL ends with user ID
-		if(!window.location.hash)
-			window.location = window.location + "#!/" + ginkgo_user_id;
-
 		// Set permalink URL
 		$("#permalink").val(window.location.href.replace("http://", ""));
-		
 
-	});*/
+        // Hide parameters table
+        $("#params-table").hide();
+	});
 	</script>
-
+    <?php endif; ?>
 
   </body>
 </html>
