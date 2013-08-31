@@ -24,7 +24,7 @@ svgCanvas {
     pointer-events: all;
 }
     </style>
-    <link href="/includes/bootstrap/css/bootstrap-responsive.min.css" rel="stylesheet">
+    <!-- <link href="includes/bootstrap/css/bootstrap-responsive.min.css" rel="stylesheet"> -->
 
     <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
     <!--[if lt IE 9]>
@@ -257,11 +257,6 @@ svgCanvas {
 			</div>
           </div>
       </div><!--/row-->
-	<!--
-      <footer>
-        <p>&copy; Company 2012</p>
-      </footer>
-	-->
 
     </div><!--/.fluid-container-->
 

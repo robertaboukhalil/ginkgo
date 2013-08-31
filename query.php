@@ -1,14 +1,14 @@
 <?php
 
-define(DIR_ROOT, "/var/www/html/ginkgo");
+define(DIR_ROOT, "/mnt/data/ginkgo");
 error_reporting(E_ALL);
 set_time_limit(0);
 #set_memory_limit(-1);
 
 /** Configuration **/
 
-set_include_path(PATH_SEPARATOR . 'includes/phpseclib');
-include("Net/SFTP.php");
+#set_include_path(PATH_SEPARATOR . 'includes/phpseclib');
+#include("Net/SFTP.php");
 
 /** Initialization **/
 
