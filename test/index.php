@@ -34,6 +34,7 @@ else
     .glyphicon  { vertical-align:top; }
     .badge      { vertical-align:top; margin-top:5px; }
     td          { vertical-align:middle !important; }
+    code input  { border:none; color:#c7254e; background-color:#f9f2f4; }
     </style>
 
     <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
@@ -57,8 +58,8 @@ else
           <a class="navbar-brand" href="."><span class="glyphicon glyphicon-tree-deciduous"></span> Ginkgo</a>
         </div>
         <div class="navbar-collapse collapse">
-          <ul class="nav navbar-nav">
-            <li class="active"><a href="javascript:void(0);">Home</a></li>
+          <ul class="nav navbar-nav navbar-right">
+            <!-- <li class="active"><a href="javascript:void(0);">Home</a></li> -->
             <li><a href="javascript:void(0);">About</a></li>
             <li><a href="javascript:void(0);">FAQ</a></li>
           </ul>
@@ -250,8 +251,8 @@ else
           <h3 style="margin-top:-5px;"><span class="badge">?</span> Help</h3>
           <h4>How to make .bed files</h4>
           <p>Open a terminal and navigate to your data folder:</p>
-          <p><code>$ echo "hello";</code></p>
-          <p><code>$ echo "world";</code></p>
+          <p><code>$ <input type="text" value="bowtie2 file > file.bam"></code></p>
+          <p><code>$ <input type="text" value="bamToBed file.bam > file.bed"></code></p>
 
           <br/>
           <h4>What a .bed file should look like</h4>
