@@ -20,13 +20,13 @@ int main(int argc, char *argv[]){
 
   if(argc < 4)
   {
-    cout << "Format: ./bin2Genes binFile geneFile outFile bin#" << endl;
+    cout << "Format: ./bin2Genes binFile geneFile binList outFile" << endl;
     return 1;
   }
 
-  if(binFile == NULL || geneFile == NULL)
+  if(binFile == NULL || geneFile == NULL || binList == NULL)
   {
-    cout << "Unable to open files: " << argv[1] << " and/or " << argv[2] << endl;
+    cout << "Unable to open files: " << argv[1] << " and/or " << argv[2] << " and/or " << endl;
     return 1;
   }
 
@@ -40,7 +40,7 @@ int main(int argc, char *argv[]){
   int loc2;
   int score;
 
-  char trash[201];
+  char dump[201];
   char gene[201];
   char chr[201];
   char strand[2];
@@ -48,8 +48,11 @@ int main(int argc, char *argv[]){
   while (fscanf(binList, "%i", &bin) != EOF)
   {
 
+    rewind(binFile);
+    rewind(geneFile);
+
     //ignore file header
-    fscanf(binFile, "%201s%201s", &trash, &trash);
+    fscanf(binFile, "%201s%201s", &dump, &dump);
   
     //Find chr/loc boundaries of bin
     for (int i=0; i < bin; i++)
@@ -69,15 +72,16 @@ int main(int argc, char *argv[]){
       lower_loc = 0;
     }
 
-    //Print (bed format) all genes in bin
+    //Output all discovered genes in bed format
+    fprintf(outfile, "%s%i%s%s%s%i%s%i%s\n", "Genes present in bin #", bin, " (", lower_chr, ":", lower_loc, "-", upper_loc, "):");
+
     while (fscanf(geneFile, "%201s%i%i%201s%i%2s", &chr, &loc, &loc2, &gene, &score, &strand) != EOF)
     {
-      if ( (strcmp(chr, lower_chr) == 0) && (loc >= lower_loc) && (loc < upper_loc) )
-      {
+      if ( (strcmp(chr, lower_chr) == 0) && (loc >= lower_loc) && (loc < upper_loc) ) {
         fprintf(outfile, "%s\t%i\t%i\t%s\t%i\t%s\n", chr, loc, loc2, gene, score, strand);
       }
     }
-
+    fprintf(outfile, "\n");
   }
   
   return 0;
