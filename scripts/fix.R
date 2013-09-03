@@ -15,6 +15,7 @@ statusFile<-file( paste(user_dir, "/", status, sep="") )
 writeLines(c("<?xml version='1.0'?>", "<status>", "<step>4</step>", "<processingfile>Computing Dendogram</processingfile>", "<percentdone>0</percentdone>", "<tree>hist.newick</tree>", "</status>"), statusFile)
 close(statusFile)
 
+
 setwd(user_dir)
 normal=read.table("SegNorm", header=TRUE, sep="\t", as.is=TRUE)
 lab=colnames(normal)
@@ -40,6 +41,7 @@ write(hc2Newick(T_clust), file=paste(user_dir, "/hist.newick", sep=""))
 jpeg("clust.jpeg", width=2000, height=1400)
 plot(T_clust)
 dev.off()
+
 
 if (f == 1) {
 

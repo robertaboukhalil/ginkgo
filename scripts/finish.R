@@ -13,6 +13,7 @@ dm <- args[[8]]
 
 library('ctc')
 library(DNAcopy) #segmentation
+library(biclust) #biclustering
 library(inline) #use of c++
 library(gplots) #visual plotting of tables
 library(plyr)
@@ -21,8 +22,8 @@ statusFile<-file( paste(user_dir, "/", status, sep="") )
 writeLines(c("<?xml version='1.0'?>", "<status>", "<step>2</step>", "<processingfile>Initializing Variables</processingfile>", "<percentdone>0</percentdone>", "<tree>hist.newick</tree>", "</status>"), statusFile)
 close(statusFile)
 
-setwd(main_dir)
-v=read.table(paste("GC", bm, sep=""), header=FALSE, sep="\t")
+setwd(genome)
+v=read.table(paste("GC_", bm, sep=""), header=FALSE, sep="\t")
 b=read.table(paste("bounds_", bm, sep=""), header=FALSE, sep="\t")
 
 setwd(user_dir)
@@ -73,7 +74,7 @@ statusFile<-file( paste(user_dir, "/", status, sep="") )
 close(statusFile)
 
 #PROCESS ALL SAMPLES
-for(k in 1:w){
+for(k in 2:w){
 
   statusFile<-file( paste(user_dir, "/", status, sep="") )
   writeLines(c("<?xml version='1.0'?>", "<status>", "<step>3</step>", paste("<processingfile>", lab[k], "</processingfile>", sep=""), paste("<percentdone>", (k*100)%/%w - 1, "</percentdone>", sep=""), "<tree>hist.xml</tree>", "</status>"), statusFile)
@@ -102,12 +103,12 @@ for(k in 1:w){
   breaks[bps,k]=1
 
   #Modify bins to contain median read count/bin within each segment
-  fixed[,k][1:bps[2]] = median(T[,(k+2)][1:bps[2]])
+  fixed[,k][1:bps[2]] = mean(T[,(k+2)][1:bps[2]])
   for(i in 2:(len-1)){
-    fixed[,k][bps[i]:bps[i+1]] = median(T[,(k+2)][bps[i]:bps[i+1]])
+    fixed[,k][bps[i]:bps[i+1]] = mean(T[,(k+2)][bps[i]:bps[i+1]])
   }
 
-  #Determine frequency distribtion (h) of all pair-wise differences between bins
+  #Determine frequency distribution (h) of all pair-wise differences between bins
   t <- as.integer(fixed[,k])
   h <- as.integer(rep(0,max(t)-min(t)+1))
   sig <- signature(l="integer", t="integer", h="integer")
@@ -151,17 +152,17 @@ for(k in 1:w){
   stats[10,1]="75th:"
   stats[11,1]="Max:"
 
-  stats[1,2]=sum(T[,(k+2)])
+  stats[1,2]=allStats[k,2]
   stats[2,2]=l
   stats[3,2]=""
   stats[4,2]="READS/BIN"
-  stats[5,2]=round(mean(T[,(k+2)]), digits=1)
-  stats[6,2]=round(sd(T[,(k+2)]), digits=1)
-  stats[7,2]=min(T[,(k+2)])
-  stats[8,2]=quantile(T[,(k+2)], c(.25))[[1]]
-  stats[9,2]=median(T[,(k+2)])
-  stats[10,2]=quantile(T[,(k+2)], c(.75))[[1]]
-  stats[11,2]=max(T[,(k+2)])
+  stats[5,2]=allStats[k,3]
+  stats[6,2]=allStats[k,4]
+  stats[7,2]=allStats[k,5]
+  stats[8,2]=allStats[k,6]
+  stats[9,2]=allStats[k,7]
+  stats[10,2]=allStats[k,8]
+  stats[11,2]=allStats[k,9]
 
   #Create histogram of reads/bin
   r=round(mean(T[,(k+2)])+5*sd(T[,(k+2)]))
@@ -177,7 +178,7 @@ for(k in 1:w){
     hist(T[,(k+2)], breaks=100*max(T[,(k+2)])/r, xlim=range(1:r), ylim=range(1:round_any(max(e$counts), 1000, ceiling)), main="Histogram of Read Count Frequency", xlab="Read Count (reads/bin)")
     
     #Plot normalized segmented read counts
-    plot(fixed[,k]/max(fixed[,k]), main="Normalized Reads/Bin (After Segmentation)", xlab="Bin", ylab="Normalized Read Count")
+    plot(fixed[,k], main="Reads/Bin (After Segmentation)", xlab="Bin", ylab="Read Count")
     abline(v=t(b[2]), col='blue')
 
     #Plot frequency distribution of pair-wise differences between read counts (contains peaks)
@@ -192,6 +193,7 @@ for(k in 1:w){
     abline(v=t(b[2]), col='blue')
 
   dev.off()
+
 }
 
 #Store processed sample information

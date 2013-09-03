@@ -38,6 +38,7 @@ lab=colnames(T[3:dim(T)[2]]) #Sample labels
 breaks=matrix(0,l,w)
 fixed=matrix(0,l,w) #Post-segmented, median read counts/bin for each sample
 final=matrix(0,l,w)
+allStats=matrix(0, w, 10)
 
 #Find sample with greatest read count variance across bins
 a=array(0,w)
@@ -73,8 +74,9 @@ statusFile<-file( paste(user_dir, "/", status, sep="") )
  writeLines(c("<?xml version='1.0'?>", "<status>", "<step>3</step>", paste("<processingfile>", lab[i], "</processingfile>", sep=""), paste("<percentdone>", 0, "</percentdone>", sep=""), "<tree>0</tree>", "</status>"), statusFile)
 close(statusFile)
 
+
 #PROCESS ALL SAMPLES
-for(k in 1:w){
+for(k in 25:w){
 
   statusFile<-file( paste(user_dir, "/", status, sep="") )
   writeLines(c("<?xml version='1.0'?>", "<status>", "<step>3</step>", paste("<processingfile>", lab[k], "</processingfile>", sep=""), paste("<percentdone>", (k*100)%/%w - 1, "</percentdone>", sep=""), "<tree>hist.xml</tree>", "</status>"), statusFile)
@@ -167,22 +169,17 @@ for(k in 1:w){
   stats[10,1]="75th:"
   stats[11,1]="Max:"
 
-  stats[1,2]=sum(T[,(k+2)])
+  stats[1,2]=allStats[k,2]
   stats[2,2]=l
   stats[3,2]=""
   stats[4,2]="READS/BIN"
-  stats[5,2]=round(mean(T[,(k+2)]), digits=1)
-  stats[6,2]=round(sd(T[,(k+2)]), digits=1)
-  stats[7,2]=min(T[,(k+2)])
-  stats[8,2]=quantile(T[,(k+2)], c(.25))[[1]]
-  stats[9,2]=median(T[,(k+2)])
-  stats[10,2]=quantile(T[,(k+2)], c(.75))[[1]]
-  stats[11,2]=max(T[,(k+2)])
-
-  #Create histogram of reads/bin
-  r=round(mean(T[,(k+2)])+5*sd(T[,(k+2)]))
-  e=hist(T[,(k+2)], breaks=100*max(T[,(k+2)])/r)
-  dev.off()
+  stats[5,2]=allStats[k,3]
+  stats[6,2]=allStats[k,4]
+  stats[7,2]=allStats[k,5]
+  stats[8,2]=allStats[k,6]
+  stats[9,2]=allStats[k,7]
+  stats[10,2]=allStats[k,8]
+  stats[11,2]=allStats[k,9]
 
   jpeg(filename=paste(lab[k], ".jpeg", sep=""), width=2000, height=1400)
 
@@ -190,18 +187,18 @@ for(k in 1:w){
     
     #plot stats table
     textplot(stats, halign="center", valign="center", show.rownames=FALSE, show.colnames=FALSE)
-    hist(T[,(k+2)], breaks=100*max(T[,(k+2)])/r, xlim=range(1:r), ylim=range(1:round_any(max(e$counts), 1000, ceiling)), main="Histogram of Read Count Frequency", xlab="Read Count (reads/bin)")
+    hist(sort(T[,(k+2)])[round(l*.01) : (l-round(l*.01))], breaks=100, main="Histogram of Read Count Frequency", xlab="Read Count (reads/bin)")
     
     #Plot normalized segmented read counts
-    plot(fixed[,k]/max(fixed[,k]), main="Normalized Reads/Bin (After Segmentation)", xlab="Bin", ylab="Normalized Read Count")
-    abline(v=t(b[2]), col='blue')
+    plot(fixed[,k], main="Reads/Bin (After Segmentation)", xlab="Bin", ylab="Read Count")
+    abline(v=t(b[2]), col='snow4')
 
     #Plot frequency distribution of pair-wise differences between read counts (contains peaks)
     plot(100*fd[[2]]/(sum(fd[[2]])), main="Density Plot: Frequency Distribution of All Pair-Wise Differences Between Bin Counts", xlab="Pair-wise Difference (# of reads)", ylab="% Sampled Density")
 
     #Plot copy number profile
     plot(final[,k], main="Copy Number Profile", xlab="Bin", ylab="Copy Number")
-    abline(v=t(b[2]), col='blue')
+    abline(v=t(b[2]), col='snow4')
 
   dev.off()
 
@@ -214,9 +211,8 @@ write.table(final, file=paste(user_dir, "/SegCopy", sep=""), row.names=FALSE, co
 write.table(breaks, file=paste(user_dir, "/SegBreaks", sep=""), row.names=FALSE, col.names=lab, sep="\t")
 
 statusFile<-file( paste(user_dir, "/", status, sep="") )
-writeLines(c("<?xml version='1.0'?>", "<status>", "<step>3</step>", paste("<processingfile>Creating Dendogram</processingfile>", sep=""), paste("<percentdone>100</percentdone>", sep=""), "<tree>hist.xml</tree>", "</status>"), statusFile)
+writeLines(c("<?xml version='1.0'?>", "<status>", "<step>3</step>", paste("<processingfile>Creating Dendograms</processingfile>", sep=""), paste("<percentdone>100</percentdone>", sep=""), "<tree>hist.xml</tree>", "</status>"), statusFile)
 close(statusFile)
-
 
 #Calculate read distance matrix for clustering
 mat=matrix(0,nrow=w,ncol=w)
@@ -259,5 +255,4 @@ dev.off()
 statusFile<-file( paste(user_dir, "/", status, sep="") )
 writeLines(c("<?xml version='1.0'?>", "<status>", "<step>3</step>", paste("<processingfile>Finished</processingfile>", sep=""), paste("<percentdone>100</percentdone>", sep=""), "<tree>hist.xml</tree>", "</status>"), statusFile)
 close(statusFile)
-
 

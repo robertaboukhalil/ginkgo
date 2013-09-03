@@ -11,14 +11,11 @@
  */
 
 error_reporting(E_ALL | E_STRICT);
-
-##
- set_time_limit(0);
- ini_set('memory_limit', -1);
- ini_set('upload_max_filesize', '2G');
- ini_set('post_max_size', '2G');
-##
-
 require('UploadHandler.php');
+
+#echo ini_get("upload_tmp_dir") . "|";
+#ini_set('upload_tmp_dir','/tmp/web-uploads/2');#mnt/data/ginkgo/test/uploads/
+#echo sys_get_temp_dir() . "---";
 $upload_handler = new UploadHandler();
 
+#phpinfo();

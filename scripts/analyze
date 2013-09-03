@@ -38,6 +38,9 @@ if [ $init -eq 1 ]; then
   paste ${genome}/${binMeth} ${dir}/*_mapped > ${dir}/data
   rm -f ${dir}/*jpeg ${dir}/*_mapped ${dir}/hist* ${dir}/Seg*
 
+  #Generate Statistics
+  ${home}/scripts/stats.R
+  
 fi
 
 if [ $process -eq 1 ]; then

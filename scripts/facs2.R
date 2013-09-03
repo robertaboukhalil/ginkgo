@@ -12,8 +12,12 @@ query <- args[[6]]
 library(gplots) #visual plotting of tables
 library(plyr)
 
+statusFile<-file( paste(user_dir, "/", status, sep="") )
+writeLines(c("<?xml version='1.0'?>", "<status>", "<step>5</step>", "<processingfile>Initializing Variables</processingfile>", "<percentdone>0</percentdone>", "<tree>hist.newick</tree>", "</status>"), statusFile)
+close(statusFile)
+
 #Load bin/gene/boundary files
-setwd(genome)
+setwd(main_dir)
 binList=read.table(bm, header=FALSE, sep="\t", as.is=TRUE)
 geneList=read.table("genes", header=FALSE, sep="\t", as.is=TRUE)
 b=read.table(paste("bounds_", bm, sep=""), header=FALSE, sep="\t")
@@ -22,13 +26,13 @@ b=read.table(paste("bounds_", bm, sep=""), header=FALSE, sep="\t")
 setwd(user_dir)
 T=read.table(dat, header=TRUE, sep="\t")
 genes=read.table(query, header=FALSE, sep="\t", as.is=TRUE)[[1]]
-normal=read.table("SegNorm", header=TRUE, sep="\t", as.is=TRUE)
+raw=read.table("SegRaw", header=TRUE, sep="\t", as.is=TRUE)
 final=read.table("SegCopy", header=TRUE, sep="\t", as.is=TRUE)
 breaks=read.table("SegBreaks", header=TRUE, sep="\t", as.is=TRUE)
 
-l=dim(normal)[1] #Number of bins
-w=dim(normal)[2] #Number of samples
-lab=colnames(normal) #Sample labels
+l=dim(raw)[1] #Number of bins
+w=dim(raw)[2] #Number of samples
+lab=colnames(raw) #Sample labels
 cnt=length(genes) #Genes queried
 bin=t(array(0, cnt))
 
@@ -71,17 +75,17 @@ for(k in 1:w){
   stats[10,1]="75th:"
   stats[11,1]="Max:"
 
-  stats[1,2]=sum(T[,(k+2)])
+  stats[1,2]=allStats[k,2]
   stats[2,2]=l
   stats[3,2]=""
   stats[4,2]="READS/BIN"
-  stats[5,2]=round(mean(T[,(k+2)]), digits=1)
-  stats[6,2]=round(sd(T[,(k+2)]), digits=1)
-  stats[7,2]=min(T[,(k+2)])
-  stats[8,2]=quantile(T[,(k+2)], c(.25))[[1]]
-  stats[9,2]=median(T[,(k+2)])
-  stats[10,2]=quantile(T[,(k+2)], c(.75))[[1]]
-  stats[11,2]=max(T[,(k+2)])
+  stats[5,2]=allStats[k,3]
+  stats[6,2]=allStats[k,4]
+  stats[7,2]=allStats[k,5]
+  stats[8,2]=allStats[k,6]
+  stats[9,2]=allStats[k,7]
+  stats[10,2]=allStats[k,8]
+  stats[11,2]=allStats[k,9]
 
   #Create histogram of reads/bin
   r=round(mean(T[,(k+2)])+5*sd(T[,(k+2)]))
@@ -102,12 +106,12 @@ for(k in 1:w){
     #Plot pair-wise read difference histogram
     hist(T[,(k+2)], breaks=100*max(T[,(k+2)])/r, xlim=range(1:r), ylim=range(1:round_any(max(e$counts), 1000, ceiling)), main="Histogram of Read Count Frequency", xlab="Read Count (reads/bin)")
 
-    #Plot normalized segmented read counts
-    plot(normal[,k], main="Normalized Reads/Bin (After Segmentation)", xlab="Bin", ylab="Normalized Read Count")
+    #Plot segmented read counts
+    plot(raw[,k], main="Reads/Bin (After Segmentation)", xlab="Bin", ylab="Read Count")
     abline(v=t(b[2]), col='snow4')
     if (cnt <= 3) {
       for (i in 1:cnt) {
-        abline(v=bin[i], h=normal[,k][bin[i]], lwd=3, col=colors[i])
+        abline(v=bin[i], h=normakl[,k][bin[i]], lwd=3, col=colors[i])
       }
     } else {
       for (i in 1:cnt) {
