@@ -3,16 +3,45 @@
 // Configuration
 error_reporting(E_ALL);
 session_start();
+include "bootstrap.php";
 
 // Get user's query
 $query = explode("/", $_GET['q']);
+$userID = $query[1];
+
+// Steps >= 1
 if($query[0] == "dashboard")
-{
     define('SHOW_DASHBOARD', true);
-    $userID = $query[1];
-}
+// Step 0
 else
+{
+		// Generate user ID (source: http://stackoverflow.com/questions/4356289/php-random-string-generator)
+		if(!$userID)
+		{
+			$userID = generateID();
+			@mkdir(DIR_UPLOADS . '/' . $userID);
+		}
+
+    //
     define('SHOW_DASHBOARD', false);
+}
+
+$_SESSION["user_id"] = $userID;
+
+
+// Permalink
+$permalink = URL_ROOT . '?q=/' . $userID;
+$PANEL_LATER = <<<PANEL
+			<!-- Panel: Save for later -->
+			<div class="panel panel-primary">
+				<div class="panel-heading"><h3 class="panel-title"><span class="glyphicon glyphicon-time"></span> View analysis later</h3></div>
+				<div class="panel-body">
+					Access your results later at:<br/><br/>
+					<textarea class="input-sm" id="permalink">{$permalink}</textarea><br/><br/>
+					<small><strong>Note:</strong> Closing this window does not interrupt the analysis.</small>
+				</div>
+			</div>
+PANEL;
 
 ?><!DOCTYPE html>
 <html lang="en">
@@ -30,10 +59,10 @@ else
 		<!-- Custom styles -->
 		<style>
 		#permalink  { border:1px solid #DDD; width:100%; color:#666; background:transparent; font-family:"courier"; resize:none; height:50px; }
+		#status-analysis	{ display:none; }
 		.jumbotron  { padding:50px 30px 15px 30px; }
 		.glyphicon  { vertical-align:top; }
 		.badge      { vertical-align:top; margin-top:5px; }
-		.status-box	{ display:none; }
 		td          { vertical-align:middle !important; }
 		code input  { border:none; color:#c7254e; background-color:#f9f2f4; width:100%; }
 	</style>
@@ -56,7 +85,7 @@ else
 					<span class="icon-bar"></span>
 					<span class="icon-bar"></span>
 			  </button>
-				<a class="navbar-brand" href="."><span class="glyphicon glyphicon-tree-deciduous"></span> Ginkgo</a>
+				<a class="navbar-brand" href="?q=home/<?php echo $userID; ?>"><span class="glyphicon glyphicon-tree-deciduous"></span> Ginkgo</a>
 			</div>
 			<div class="navbar-collapse collapse">
 				<ul class="nav navbar-nav navbar-right">
@@ -74,8 +103,7 @@ else
 			<h1>Ginkgo</h1>
 			<div id="status" style="margin-top:20px;">
 				<?php if(SHOW_DASHBOARD): ?>
-				<div class="status-box" id="status-upload">Your files have been uploaded!</div>
-
+				<div class="status-box" id="status-upload">Your files were uploaded. Now let's do some analysis:</div>
 				<div class="status-box" id="status-analysis">
 					Processing...<br />
 					<div class="progress progress-striped"><div class="progress-bar" role="progressbar" style="width: 45%"></div></div>
@@ -95,14 +123,14 @@ else
 			<div class="col-lg-8">
 
 				<!-- Panel: Info -->
-				<div class="alert alert-danger fade in">
+				<!-- <div class="alert alert-danger fade in">
 					<button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
 					<p>
 						The following files are not valid .bed files and were not uploaded:<br/><br/>
 						<code>test.pdf</code> <code>hello.txt</code>
 					</p>
 					<br/>
-				</div>
+				</div>-->
 
 				<!-- Choose cells of interest -->
 				<h3 style="margin-top:-5px;"><span class="badge">STEP 1</span> Choose cells for analysis</h3>
@@ -138,7 +166,16 @@ else
 				</div>
 				<br/>
 
-				<p><br/><a class="btn btn-lg btn-primary" href="">Start Analysis <span class="glyphicon glyphicon-chevron-right"></span></a><br/><br/></p>
+				<p><br/>
+					<div style="float:left">
+						<a class="btn btn-lg btn-primary" href="?q=/<?php echo $userID; ?>"><span class="glyphicon glyphicon-chevron-left"></span> Manage Files </a>
+					</div>
+					
+					<div style="float:right">
+						<a class="btn btn-lg btn-primary" href="">Start Analysis <span class="glyphicon glyphicon-chevron-right"></span></a>
+					</div>
+					<br/><br/><br/>
+				</p>
 
 				<hr style="height:5px;border:none;background-color:#CCC;" /><br/>
           
@@ -199,21 +236,9 @@ else
 		</div>
 
 		<div class="col-lg-4">
-			<!-- Panel: upload more files -->
-			<div class="panel panel-primary">
-				<div class="panel-heading"><h3 class="panel-title"><span class="glyphicon glyphicon-upload"></span> Upload more files</h3></div>
-				<div class="panel-body">Panel content</div>
-			</div>
 
-			<!-- Panel: Save for later -->
-			<div class="panel panel-primary">
-				<div class="panel-heading"><h3 class="panel-title"><span class="glyphicon glyphicon-time"></span> View analysis later</h3></div>
-				<div class="panel-body">
-					Access your results from anywhere at<br/><br/>
-					<textarea class="input-sm" id="permalink">#</textarea><br/><br/>
-					<small><strong>Note:</strong> Closing this window does not interrupt the analysis.</small>
-				</div>
-			</div>
+			<?php echo $PANEL_LATER; ?>
+
 		</div>
 	</div>
 
@@ -225,19 +250,16 @@ else
 			<h3 style="margin-top:-5px;"><span class="badge">STEP 0</span> Upload your .bed files</h3>
 			<p>
 				<!-- The fileinput-button span is used to style the file input field as button -->
-				<span class="btn btn-success fileinput-button">
+				<!-- <span class="btn btn-success fileinput-button">
 					<i class="glyphicon glyphicon-plus"></i>
 					<span>Select files...</span>
-					<!-- The file input field used as target for the file upload widget -->
 					<input id="fileupload" type="file" name="files[]" data-url="server/php/" multiple>
 				</span>
 				<br>
 				<br>
 
-				<!-- The global progress bar -->
 				<div id="progress" class="progress"><div class="progress-bar progress-bar-success"></div></div>
 
-				<!-- The container for the uploaded files -->
 				<div id="files" class="files">[abc]</div>
 				<br>
 				
@@ -252,13 +274,26 @@ else
 						<li>Uploaded files will be deleted automatically after <strong>5 minutes</strong> (demo setting).</li>
 						</ul>
 					</div>
-				</div>
+				</div>-->
+
+				<iframe id="upload-iframe" style="width:100%; height:300px; border:0;" src="includes/fileupload/?user_id=<?php echo $userID; ?>"></iframe>
 		  </p>
 
-			<p><a class="btn btn-lg btn-primary" href="?q=dashboard/kAr13WPVaEOpbdsaNZeDkAr13WPVaEOpbdsaNZeD"><span class="glyphicon glyphicon-upload"></span> Upload </a></p>
+			<p>
+				<div style="float:right">
+					<a class="btn btn-lg btn-primary" href="?q=dashboard/<?php echo $userID; ?>">Next step <span class="glyphicon glyphicon-chevron-right"></span></a>
+				</div>
+			</p>
 		</div>
 		<div class="col-lg-4">
-			<h3 style="margin-top:-5px;"><span class="badge">?</span> Help</h3>
+		
+		<?php echo $PANEL_LATER; ?>
+		
+		<!-- Panel: Help -->
+		<div class="panel panel-primary">
+			<div class="panel-heading"><h3 class="panel-title"><span class="glyphicon glyphicon-question-sign"></span> Help</h3></div>
+			<div class="panel-body">
+
 
 				<div class="panel-group" id="help-makebed">
 					<div class="panel panel-default">
@@ -295,6 +330,12 @@ else
 						</div>
 					</div>
 				</div>
+
+
+			</div>
+		</div>
+
+
 				<?php endif; ?>
 			</div> <!-- /container -->
 
@@ -302,37 +343,6 @@ else
 			================================================== -->
 			<script src="http://code.jquery.com/jquery-2.0.3.min.js"></script>
 			<script src="//netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.min.js"></script>
-
-			<script src="js/jquery.ui.widget.js"></script>
-			<script src="js/jquery.iframe-transport.js"></script>
-			<script src="js/jquery.fileupload.js"></script>
-			<script>
-			/*jslint unparam: true */
-			/*global window, $ */
-			$(function () {
-			    'use strict';
-			    // Change this to the location of your server-side upload handler:
-			    var url = window.location.hostname === 'blueimp.github.io' ?
-			                '//jquery-file-upload.appspot.com/' : 'uploads/';
-			    $('#fileupload').fileupload({
-			        url: url,
-			        dataType: 'json',
-			        done: function (e, data) {
-			            $.each(data.result.files, function (index, file) {
-			                $('<p/>').text(file.name).appendTo('#files');
-			            });
-			        },
-			        progressall: function (e, data) {
-			            var progress = parseInt(data.loaded / data.total * 100, 10);
-			            $('#progress .progress-bar').css(
-			                'width',
-			                progress + '%'
-			            );
-			        }
-			    }).prop('disabled', !$.support.fileInput)
-			        .parent().addClass($.support.fileInput ? undefined : 'disabled');
-			});
-			</script>
 
 
 	    <!-- JQuery/Bootstrap customization
@@ -346,31 +356,43 @@ else
 			$("#permalink").focus(function() { $(this).select(); } );
 			</script>
 
+
+	    <!-- .js files for upload functionality
+	    ================================================== -->
+			<script src="js/vendor/jquery.ui.widget.js"></script>
+			<script src="js/jquery.iframe-transport.js"></script>
+			<script src="js/jquery.fileupload.js"></script>
+			<script src="js/jquery.fileupload-process.js"></script>
+			<script src="js/jquery.fileupload-image.js"></script>
+			<script src="js/jquery.fileupload-audio.js"></script>
+			<script src="js/jquery.fileupload-video.js"></script>
+			<script src="js/jquery.fileupload-validate.js"></script>
+			<script src="js/jquery.fileupload-ui.js"></script>
+			<script src="js/main.js"></script>
+			<!--[if (gte IE 8)&(lt IE 10)]>
+			<script src="js/cors/jquery.xdr-transport.js"></script>
+			<![endif]-->
+
+
 		  <!-- Ginkgo
 		  ================================================== -->
 			<script language="javascript">
 			var ginkgo_user_id = "<?php echo $userID; ?>";
 			$(document).ready(function(){
 				<?php if(SHOW_DASHBOARD): ?>
-				// Set permalink URL
-				$("#permalink").val(window.location.href.replace("http://", ""));
-
 				// Hide parameters table
 				$("#params-table").hide();
-
 				// Hide analysis status
 				$("#status-analysis").hide();
-		
 				// Show upload status
 				$("#status-upload").show();
-
-				<?php else: ?>
-				$('.accordion-toggle').collapse("hide");
+				//
+				//$('.accordion-toggle').collapse("hide");
+				<?php endif; ?>				
+				//$('.panel').show();
 			});
 			</script>
-			
-			
 
-			<?php endif; ?>
+
 	</body>
 </html>

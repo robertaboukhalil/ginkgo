@@ -26,6 +26,7 @@ b=read.table(paste("bounds_", bm, sep=""), header=FALSE, sep="\t")
 setwd(user_dir)
 T=read.table(dat, header=TRUE, sep="\t")
 genes=read.table(query, header=FALSE, sep="\t", as.is=TRUE)[[1]]
+allStats=read.table("SegStats", header=FALSE, sep="\t")
 aneuploid=read.table("SegAneuploid", header=TRUE, sep="\t", as.is=TRUE)
 diploid=read.table("SegDiploid", header=TRUE, sep="\t", as.is=TRUE)
 raw=read.table("SegRaw", header=TRUE, sep="\t", as.is=TRUE)
@@ -56,8 +57,6 @@ for(k in 1:w){
   statusFile<-file( paste(user_dir, "/", status, sep="") )
   writeLines(c("<?xml version='1.0'?>", "<status>", "<step>5</step>", paste("<processingfile>", lab[k], "</processingfile>", sep=""), paste("<percentdone>", (k*100)%/%w - 1, "</percentdone>", sep=""), "<tree>hist.xml</tree>", "</status>"), statusFile)
   close(statusFile)
-
-  print(paste("Starting", k))
 
   #Load frequency distribution of pair-wise differences between read counts
   fd=read.table(paste(lab[k], "_fit", sep=""), header=TRUE, sep="\t", as.is=TRUE)

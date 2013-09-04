@@ -72,6 +72,6 @@ fi
 
 #Write genes in queried bins to bed file
 if [ $b -eq 1 ]; then
-  ${home}/scripts/bin2Genes ${genome}/$binMeth ${genome}/genes ${genome}/$binList ${dir}/bin2Genes.bed
+  ${home}/scripts/bin2Genes ${genome}/$binMeth ${genome}/genes ${dir}/$binList ${dir}/bin2Genes.bed
 fi
 

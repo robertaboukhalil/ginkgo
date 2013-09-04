@@ -28,6 +28,7 @@ b=read.table(paste("bounds_", bm, sep=""), header=FALSE, sep="\t")
 
 setwd(user_dir)
 T=read.table(dat, header=TRUE, sep="\t")
+allStats=read.table("SegStats", header=FALSE, sep="\t")
 
 l=dim(T)[1] #Number of bins
 w=dim(T)[2]-2 #Number of samples
@@ -79,8 +80,6 @@ for(k in 2:w){
   statusFile<-file( paste(user_dir, "/", status, sep="") )
   writeLines(c("<?xml version='1.0'?>", "<status>", "<step>3</step>", paste("<processingfile>", lab[k], "</processingfile>", sep=""), paste("<percentdone>", (k*100)%/%w - 1, "</percentdone>", sep=""), "<tree>hist.xml</tree>", "</status>"), statusFile)
   close(statusFile)
-
-  print(paste("Starting", k))
 
   #Compute log ratio between kth sample and reference
   lr = -log2((T[,(k+2)]+1)/(F+1))

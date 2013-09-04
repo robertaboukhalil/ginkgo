@@ -28,6 +28,7 @@ b=read.table(paste("bounds_", bm, sep=""), header=FALSE, sep="\t")
 
 setwd(user_dir)
 T=read.table(dat, header=TRUE, sep="\t")
+allStats=read.table("SegStats", header=FALSE, sep="\t")
 ploidy=read.table(facs, header=FALSE, sep="\t", as.is=TRUE)
 
 l=dim(T)[1] #Number of bins
@@ -76,13 +77,11 @@ close(statusFile)
 
 
 #PROCESS ALL SAMPLES
-for(k in 25:w){
+ior(k in 1:w){
 
   statusFile<-file( paste(user_dir, "/", status, sep="") )
   writeLines(c("<?xml version='1.0'?>", "<status>", "<step>3</step>", paste("<processingfile>", lab[k], "</processingfile>", sep=""), paste("<percentdone>", (k*100)%/%w - 1, "</percentdone>", sep=""), "<tree>hist.xml</tree>", "</status>"), statusFile)
   close(statusFile)
-
-  print(paste("Starting", k))
 
   #Compute log ratio between kth sample and reference
   lr = -log2((T[,(k+2)]+1)/(F+1))
@@ -141,17 +140,13 @@ for(k in 25:w){
   if (ploidy[,2][k] < 2.5) {
 
     final[,k] = round(2*fixed[,k]/median(fixed[,k]))
-    print(paste(k, "= diploid -->", mean(round(fixed[,k]/i))))
-
   } else {
 
     if ( abs(mean(round(fixed[,k]/i))-ploidy[,2][k]) <= .25*ploidy[,2][k] ) {
       final[,k] = round(fixed[,k]/i)
-      print(paste(k, "= YAY -->", mean(round(fixed[,k]/i))))
-    } else {
+         } else {
       final[,k] = round(fixed[,k]/(mean(fixed[,k])/4))
-      print(paste(k, "= fixed -->",  mean(round(fixed[,k]/i))))
-    }
+         }
 
   }
 
@@ -189,7 +184,7 @@ for(k in 25:w){
     textplot(stats, halign="center", valign="center", show.rownames=FALSE, show.colnames=FALSE)
     hist(sort(T[,(k+2)])[round(l*.01) : (l-round(l*.01))], breaks=100, main="Histogram of Read Count Frequency", xlab="Read Count (reads/bin)")
     
-    #Plot normalized segmented read counts
+    #Plot segmented read counts
     plot(fixed[,k], main="Reads/Bin (After Segmentation)", xlab="Bin", ylab="Read Count")
     abline(v=t(b[2]), col='snow4')
 

@@ -10,6 +10,8 @@
  * http://www.opensource.org/licenses/MIT
  */
 
+session_start();
+
 class UploadHandler
 {
     protected $options;
@@ -37,8 +39,8 @@ class UploadHandler
     function __construct($options = null, $initialize = true, $error_messages = null) {
         $this->options = array(
             'script_url' => $this->get_full_url().'/',
-            'upload_dir' => '/mnt/data/ginkgo/uploads/', #'/mnt/data/ginkgo/includes/fileupload/files/'
-            'upload_url' => 'http://qb.cshl.edu/ginkgo/uploads/',#$this->get_full_url().'/files/' #
+            'upload_dir' => '/mnt/data/ginkgo/uploads/' . $_SESSION["user_id"] . '/', #'/mnt/data/ginkgo/includes/fileupload/files/'
+            'upload_url' => 'http://qb.cshl.edu/ginkgo/uploads/' . $_SESSION["user_id"] . '/',#$this->get_full_url().'/files/' #
             'user_dirs' => false,
             'mkdir_mode' => 0755,
             'param_name' => 'files',

@@ -17,7 +17,7 @@ writeLines(c("<?xml version='1.0'?>", "<status>", "<step>5</step>", "<processing
 close(statusFile)
 
 #Load bin/gene/boundary files
-setwd(main_dir)
+setwd(genome)
 binList=read.table(bm, header=FALSE, sep="\t", as.is=TRUE)
 geneList=read.table("genes", header=FALSE, sep="\t", as.is=TRUE)
 b=read.table(paste("bounds_", bm, sep=""), header=FALSE, sep="\t")
@@ -25,6 +25,7 @@ b=read.table(paste("bounds_", bm, sep=""), header=FALSE, sep="\t")
 #Load user data files
 setwd(user_dir)
 T=read.table(dat, header=TRUE, sep="\t")
+allStats=read.table("SegStats", header=FALSE, sep="\t")
 genes=read.table(query, header=FALSE, sep="\t", as.is=TRUE)[[1]]
 raw=read.table("SegRaw", header=TRUE, sep="\t", as.is=TRUE)
 final=read.table("SegCopy", header=TRUE, sep="\t", as.is=TRUE)
@@ -55,8 +56,6 @@ for(k in 1:w){
   statusFile<-file( paste(user_dir, "/", status, sep="") )
   writeLines(c("<?xml version='1.0'?>", "<status>", "<step>5</step>", paste("<processingfile>", lab[k], "</processingfile>", sep=""), paste("<percentdone>", (k*100)%/%w - 1, "</percentdone>", sep=""), "<tree>hist.xml</tree>", "</status>"), statusFile)
   close(statusFile)
-
-  print(paste("Starting", k))
 
   #Load frequency distribution of pair-wise differences between read counts
   fd=read.table(paste(lab[k], "_fit", sep=""), header=TRUE, sep="\t", as.is=TRUE)
@@ -111,11 +110,11 @@ for(k in 1:w){
     abline(v=t(b[2]), col='snow4')
     if (cnt <= 3) {
       for (i in 1:cnt) {
-        abline(v=bin[i], h=normakl[,k][bin[i]], lwd=3, col=colors[i])
+        abline(v=bin[i], h=raw[,k][bin[i]], lwd=3, col=colors[i])
       }
     } else {
       for (i in 1:cnt) {
-        points(bin[i], normal[,k][bin[i]], pch=13, cex=4, lwd=2, col=colors[i])
+        points(bin[i], raw[,k][bin[i]], pch=13, cex=4, lwd=2, col=colors[i])
       }
     }
 
