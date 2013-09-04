@@ -1,5 +1,13 @@
 <?php
 
+// TODO
+## scripts/analyze
+#permalink=
+#echo "Your analysis on Ginkgo is complete! Check out your results at "$permalink | mail -s "Ginkgo: Your Analysis Results" raboukha@cshl.edu -- -f raboukha@cshl.edu
+
+
+
+
 // Configuration
 error_reporting(E_ALL);
 session_start();
@@ -11,7 +19,10 @@ $userID = $query[1];
 
 // Steps >= 1
 if($query[0] == "dashboard")
+{
     define('SHOW_DASHBOARD', true);
+    $MY_CELLS = getMyFiles($userID);
+}
 // Step 0
 else
 {
@@ -36,9 +47,9 @@ $PANEL_LATER = <<<PANEL
 			<div class="panel panel-primary">
 				<div class="panel-heading"><h3 class="panel-title"><span class="glyphicon glyphicon-time"></span> View analysis later</h3></div>
 				<div class="panel-body">
-					Access your results later at:<br/><br/>
-					<textarea class="input-sm" id="permalink">{$permalink}</textarea><br/><br/>
-					<small><strong>Note:</strong> Closing this window does not interrupt the analysis.</small>
+					Access your results later at the following address:<br/><br/>
+					<textarea class="input-sm" id="permalink">{$permalink}</textarea>
+					<!-- <br/><br/><small><strong>Note:</strong> Closing this window does not interrupt the analysis.</small> -->
 				</div>
 			</div>
 PANEL;
@@ -103,7 +114,7 @@ PANEL;
 			<h1>Ginkgo</h1>
 			<div id="status" style="margin-top:20px;">
 				<?php if(SHOW_DASHBOARD): ?>
-				<div class="status-box" id="status-upload">Your files were uploaded. Now let's do some analysis:</div>
+				<div class="status-box" id="status-upload">Your files are uploaded. Now let's do some analysis:</div>
 				<div class="status-box" id="status-analysis">
 					Processing...<br />
 					<div class="progress progress-striped"><div class="progress-bar" role="progressbar" style="width: 45%"></div></div>
@@ -135,22 +146,14 @@ PANEL;
 				<!-- Choose cells of interest -->
 				<h3 style="margin-top:-5px;"><span class="badge">STEP 1</span> Choose cells for analysis</h3>
 					<div id="params-cells">
-						<div class="row">
-							<div class="col-md-2"><div class="checkbox"><label><input type="checkbox"> Cell 45</label></div></div>
-							<div class="col-md-2"><div class="checkbox"><label><input type="checkbox"> Cell 45</label></div></div>
-							<div class="col-md-2"><div class="checkbox"><label><input type="checkbox"> Cell 45</label></div></div>
-							<div class="col-md-2"><div class="checkbox"><label><input type="checkbox"> Cell 45</label></div></div>
-							<div class="col-md-2"><div class="checkbox"><label><input type="checkbox"> Cell 45</label></div></div>
-							<div class="col-md-2"><div class="checkbox"><label><input type="checkbox"> Cell 45</label></div></div>
+						<?php foreach($MY_CELLS as $currCell): ?>
+					    <label>
+						<div class="input-group" style="margin:20px;">
+							  <span class="input-group-addon"><input type="checkbox"></span>
+							  <span class="form-control"><?php echo $currCell; ?></span>
 						</div>
-						<div class="row">
-							<div class="col-md-2"><div class="checkbox"><label><input type="checkbox"> Cell 45</label></div></div>
-							<div class="col-md-2"><div class="checkbox"><label><input type="checkbox"> Cell 45</label></div></div>
-							<div class="col-md-2"><div class="checkbox"><label><input type="checkbox"> Cell 45</label></div></div>
-							<div class="col-md-2"><div class="checkbox"><label><input type="checkbox"> Cell 45</label></div></div>
-							<div class="col-md-2"><div class="checkbox"><label><input type="checkbox"> Cell 45</label></div></div>
-							<div class="col-md-2"><div class="checkbox"><label><input type="checkbox"> Cell 45</label></div></div>
-						</div>
+					  	</label>
+						<?php endforeach; ?>
 						<br/>
 					</div>
 
@@ -180,7 +183,7 @@ PANEL;
 				<hr style="height:5px;border:none;background-color:#CCC;" /><br/>
           
 				<!-- Set parameters -->
-				<h3 style="margin-top:-5px;"><span class="badge">OPTIONAL</span> <a href="#" onClick="javascript:$('#params-table').toggle();">Analysis parameters</a></h3>
+				<h3 style="margin-top:-5px;"><span class="badge">OPTIONAL</span> <a href="#parameters" onClick="javascript:$('#params-table').toggle();">Analysis parameters</a></h3>
 				<table class="table table-striped" id="params-table">
 					<tbody>
 						<tr>
@@ -233,6 +236,7 @@ PANEL;
 				</tbody>
 			</table>
 			<br/>
+			<a name="parameters"/>
 		</div>
 
 		<div class="col-lg-4">
@@ -247,7 +251,7 @@ PANEL;
 	<!-- Upload files -->
 	<div class="row">
 		<div class="col-lg-8">
-			<h3 style="margin-top:-5px;"><span class="badge">STEP 0</span> Upload your .bed files</h3>
+			<h3 style="margin-top:-5px;"><span class="badge">STEP 0</span> Upload your .bed files <small><strong>(We accept *.bed, *.tar, *.tar.gz or *.zip)</strong></small></h3>
 			<p>
 				<!-- The fileinput-button span is used to style the file input field as button -->
 				<!-- <span class="btn btn-success fileinput-button">
