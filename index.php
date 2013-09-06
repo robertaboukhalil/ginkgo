@@ -251,7 +251,7 @@ PANEL;
 	<!-- Upload files -->
 	<div class="row">
 		<div class="col-lg-8">
-			<h3 style="margin-top:-5px;"><span class="badge">STEP 0</span> Upload your .bed files <small><strong>(We accept *.bed, *.tar, *.tar.gz or *.zip)</strong></small></h3>
+			<h3 style="margin-top:-5px;"><span class="badge">STEP 0</span> Upload your .bed files <small><strong>(We accept *.bed, *.tar, *.tar.gz, *.tgz or *.zip)</strong></small></h3>
 			<p>
 				<!-- The fileinput-button span is used to style the file input field as button -->
 				<!-- <span class="btn btn-success fileinput-button">

@@ -38,6 +38,7 @@ class UploadHandler
 
     function __construct($options = null, $initialize = true, $error_messages = null) {
         $this->options = array(
+        		'ginkgo_zip' => false,
             'script_url' => $this->get_full_url().'/',
             'upload_dir' => '/mnt/data/ginkgo/uploads/' . $_SESSION["user_id"] . '/', #'/mnt/data/ginkgo/includes/fileupload/files/'
             'upload_url' => 'http://qb.cshl.edu/ginkgo/uploads/' . $_SESSION["user_id"] . '/',#$this->get_full_url().'/files/' #
@@ -713,10 +714,81 @@ class UploadHandler
                         FILE_APPEND
                     );
                 } else {
-                		#echo "Moving...";
                     move_uploaded_file($uploaded_file, $file_path);
-                    #echo $uploaded_file . " ---- " . $file_path . "\n " . $a;
+
+                    ## ========================================================================
+                    ## == Added code to handle zipped files ===================================
+                    ## ========================================================================
+                    $fileExtension = strtolower(pathinfo($file_path, PATHINFO_EXTENSION));
+                    $fileDirname   = strtolower(pathinfo($file_path, PATHINFO_DIRNAME  ));
+                    $fileName      = strtolower(pathinfo($file_path, PATHINFO_FILENAME ));
+
+										## ------------------------------------------------------------------------
+                    ## --- Handle .zip files --------------------------------------------------
+										## ------------------------------------------------------------------------
+                    if($fileExtension == "zip")
+                    {
+                    	//
+											$this->options['ginkgo_zip'] = true;
+
+											// -- Go through the files in the .zip and only unzip .bed files
+                    	$zip = new ZipArchive;
+											if($zip->open($file_path))
+											{
+												for($i = 0; $i < $zip->numFiles; $i++)
+												{
+													$subfilename = $zip->getNameIndex($i);
+													$subfileinfo = pathinfo($subfilename);
+													if($subfileinfo['extension'] == "bed")
+														copy("zip://".$file_path."#".$subfilename, $fileDirname . '/' . $subfilename);
+												}
+											  $zip->close();
+											}
+											// -- Delete archive after extracting
+											unlink($file_path);
+                    }
+
+										## ------------------------------------------------------------------------
+                    ## --- Handle .tar.gz/.tar... files ---------------------------------------
+										## ------------------------------------------------------------------------
+										if($fileExtension == "tar" || $fileExtension == "gz" || $fileExtension == "tgz")
+										{
+											// -- Extract .bed files from tar file
+											$this->options['ginkgo_zip'] = true;
+											$cmd = "tar -xvf $file_path *.bed -C $fileDirname/";
+											// -- Add redirection so we can get stderr.
+											session_regenerate_id(TRUE);	
+											$handle = popen($cmd, 'r');
+											$out = stream_get_contents($handle);
+											pclose($handle);
+											#file_put_contents($file_path . ".OMG", $cmd . "\n\n" . $out);
+											// -- Delete archive after extracting
+											unlink($file_path);
+										}
+
+
+										/*
+										if($fileExtension == "gz" || $fileExtension == "tgz")
+										{
+
+										## ------------------------------------------------------------------------
+                    ## --- Handle .tar files --------------------------------------------------
+										## ------------------------------------------------------------------------
+
+										} else if($fileExtension == "tar") {
+											$tar = <<<CMD
+$tgz = new PharData($file_path);
+$phar->extractTo($fileDirname . '/');
+CMD;
+											$cmd = "/opt/php/bin/php <(echo \"$tar\")";
+											// Add redirection so we can get stderr.
+											session_regenerate_id(TRUE);	
+											$handle = popen($cmd, 'r');
+											$out = stream_get_contents($handle);
+											pclose($handle);										
+										}*/
                 }
+
             } else {
                 // Non-multipart uploads (PUT method support)
                 file_put_contents(
