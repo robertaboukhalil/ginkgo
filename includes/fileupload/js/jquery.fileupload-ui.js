@@ -138,7 +138,6 @@
                     deferred;
                 if (data.context) {
                     data.context.each(function (index) {
-                    		alert("ERROR: " + index + "---" + files[index])
                         var file = files[index] ||
                                 {error: 'Empty file upload result'};
                         deferred = that._addFinishedDeferreds();

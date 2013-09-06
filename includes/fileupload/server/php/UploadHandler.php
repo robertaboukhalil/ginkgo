@@ -794,7 +794,7 @@ class UploadHandler
 
         if($this->options['ginkgo_zip'])
         {
-        	$file->error = 'Unzipping...<script>window.location="?q=home/' . $_SESSION['user_id'] . '"</script>';
+        	$file->error = 'zip';
         	#header("Location: ?q=home/" . $_SESSION['user_id']);
         }
 

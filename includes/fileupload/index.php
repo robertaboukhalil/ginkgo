@@ -1,4 +1,6 @@
-<!DOCTYPE HTML>
+<?php
+session_start();
+?><!DOCTYPE HTML>
 <html lang="en">
 <head>
 <!-- Force latest IE rendering engine or ChromeFrame if installed -->
@@ -60,14 +62,6 @@
         <table role="presentation" class="table table-striped"><tbody class="files"></tbody></table>
     </form>
 
-
-
-<?php
-$err = "{%=file.error%}";
-#echo $err;
-?>
-
-
 <script id="template-upload" type="text/x-tmpl">
 {% for (var i=0, file; file=o.files[i]; i++) { %}
     <tr class="template-upload fade">
@@ -115,6 +109,9 @@ $err = "{%=file.error%}";
             {% if (file.error) { %}
                 <div><span class="label label-danger">Error</span> {%=file.error%}</div>
             {% } %}
+            {% if (file.error == "zip") {
+            		window.location = "?q=home/<?php echo $_SESSION['user_id']; ?>";
+            	 } %}
         </td>
         <td width="20%">
             <span class="size">{%=o.formatFileSize(file.size)%}</span>
