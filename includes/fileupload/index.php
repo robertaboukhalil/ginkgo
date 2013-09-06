@@ -30,10 +30,10 @@
                     <span>Add files...</span>
                     <input type="file" name="files[]" multiple>
                 </span>
-                <button type="submit" class="btn btn-primary start">
+<!--                <button type="submit" class="btn btn-primary start">
                     <i class="glyphicon glyphicon-upload"></i>
                     <span>Start upload</span>
-                </button>
+                </button>-->
                 <button type="reset" class="btn btn-warning cancel">
                     <i class="glyphicon glyphicon-ban-circle"></i>
                     <span>Cancel upload</span>
@@ -62,7 +62,10 @@
 
 
 
-
+<?php
+$err = "{%=file.error%}";
+#echo $err;
+?>
 
 
 <script id="template-upload" type="text/x-tmpl">

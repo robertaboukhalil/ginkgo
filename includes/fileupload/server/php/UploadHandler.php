@@ -755,38 +755,15 @@ class UploadHandler
 										{
 											// -- Extract .bed files from tar file
 											$this->options['ginkgo_zip'] = true;
-											$cmd = "tar -xvf $file_path *.bed -C $fileDirname/";
+											$cmd = "tar -xvf $file_path -C $fileDirname/ *.bed --exclude=\"._*\"";
 											// -- Add redirection so we can get stderr.
 											session_regenerate_id(TRUE);	
 											$handle = popen($cmd, 'r');
 											$out = stream_get_contents($handle);
 											pclose($handle);
-											#file_put_contents($file_path . ".OMG", $cmd . "\n\n" . $out);
 											// -- Delete archive after extracting
 											unlink($file_path);
 										}
-
-
-										/*
-										if($fileExtension == "gz" || $fileExtension == "tgz")
-										{
-
-										## ------------------------------------------------------------------------
-                    ## --- Handle .tar files --------------------------------------------------
-										## ------------------------------------------------------------------------
-
-										} else if($fileExtension == "tar") {
-											$tar = <<<CMD
-$tgz = new PharData($file_path);
-$phar->extractTo($fileDirname . '/');
-CMD;
-											$cmd = "/opt/php/bin/php <(echo \"$tar\")";
-											// Add redirection so we can get stderr.
-											session_regenerate_id(TRUE);	
-											$handle = popen($cmd, 'r');
-											$out = stream_get_contents($handle);
-											pclose($handle);										
-										}*/
                 }
 
             } else {
@@ -814,6 +791,14 @@ CMD;
             }
             $this->set_additional_file_properties($file);
         }
+
+        if($this->options['ginkgo_zip'])
+        {
+        	$file->error = 'Unzipping...<script>window.location="?q=home/' . $_SESSION['user_id'] . '"</script>';
+        	#header("Location: ?q=home/" . $_SESSION['user_id']);
+        }
+
+
         return $file;
     }
 

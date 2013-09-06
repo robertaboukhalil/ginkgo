@@ -48,7 +48,7 @@
             // By default, files added to the widget are uploaded as soon
             // as the user clicks on the start buttons. To enable automatic
             // uploads, set the following option to true:
-            autoUpload: false,
+            autoUpload: true,
             // The ID of the upload template:
             uploadTemplateId: 'template-upload',
             // The ID of the download template:
@@ -138,6 +138,7 @@
                     deferred;
                 if (data.context) {
                     data.context.each(function (index) {
+                    		alert("ERROR: " + index + "---" + files[index])
                         var file = files[index] ||
                                 {error: 'Empty file upload result'};
                         deferred = that._addFinishedDeferreds();

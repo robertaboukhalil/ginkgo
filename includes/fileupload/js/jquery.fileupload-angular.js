@@ -138,7 +138,7 @@
                     return this.scope().queue.length;
                 },
                 dataType: 'json',
-                autoUpload: false
+                autoUpload: true
             };
             this.$get = [
                 function () {

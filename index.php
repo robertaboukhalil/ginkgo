@@ -251,7 +251,7 @@ PANEL;
 	<!-- Upload files -->
 	<div class="row">
 		<div class="col-lg-8">
-			<h3 style="margin-top:-5px;"><span class="badge">STEP 0</span> Upload your .bed files <small><strong>(We accept *.bed, *.tar, *.tar.gz, *.tgz or *.zip)</strong></small></h3>
+			<h3 style="margin-top:-5px;"><span class="badge">STEP 0</span> Upload your .bed files <small><strong>(We accept *.bed, *.zip, *.tar, *.gz, *.tar.gz and *.tgz)</strong></small></h3>
 			<p>
 				<!-- The fileinput-button span is used to style the file input field as button -->
 				<!-- <span class="btn btn-success fileinput-button">
@@ -363,18 +363,18 @@ PANEL;
 
 	    <!-- .js files for upload functionality
 	    ================================================== -->
-			<script src="js/vendor/jquery.ui.widget.js"></script>
-			<script src="js/jquery.iframe-transport.js"></script>
-			<script src="js/jquery.fileupload.js"></script>
-			<script src="js/jquery.fileupload-process.js"></script>
-			<script src="js/jquery.fileupload-image.js"></script>
-			<script src="js/jquery.fileupload-audio.js"></script>
-			<script src="js/jquery.fileupload-video.js"></script>
-			<script src="js/jquery.fileupload-validate.js"></script>
-			<script src="js/jquery.fileupload-ui.js"></script>
-			<script src="js/main.js"></script>
+			<script src="includes/fileupload/js/vendor/jquery.ui.widget.js"></script>
+			<script src="includes/fileupload/js/jquery.iframe-transport.js"></script>
+			<script src="includes/fileupload/js/jquery.fileupload.js"></script>
+			<script src="includes/fileupload/js/jquery.fileupload-process.js"></script>
+			<script src="includes/fileupload/js/jquery.fileupload-image.js"></script>
+			<script src="includes/fileupload/js/jquery.fileupload-audio.js"></script>
+			<script src="includes/fileupload/js/jquery.fileupload-video.js"></script>
+			<script src="includes/fileupload/js/jquery.fileupload-validate.js"></script>
+			<script src="includes/fileupload/js/jquery.fileupload-ui.js"></script>
+			<script src="includes/fileupload/js/main.js"></script>
 			<!--[if (gte IE 8)&(lt IE 10)]>
-			<script src="js/cors/jquery.xdr-transport.js"></script>
+			<script src="includes/fileupload/js/cors/jquery.xdr-transport.js"></script>
 			<![endif]-->
 
 
