@@ -698,13 +698,9 @@ class UploadHandler
                 mkdir($upload_dir, $this->options['mkdir_mode'], true);
             }
             $file_path = $this->get_upload_path($file->name);
-            #echo "filePath=$file_path ---- ";
             $append_file = $content_range && is_file($file_path) &&
                 $file->size > $this->get_file_size($file_path);
 
-
-						#echo "uploaded_file= $uploaded_file ----";
-						#echo "is_uploaded_file= " . is_uploaded_file($uploaded_file) . " ----";
             if ($uploaded_file && is_uploaded_file($uploaded_file)) {
                 // multipart/formdata uploads (POST method uploads)
                 if ($append_file) {
@@ -792,12 +788,9 @@ class UploadHandler
             $this->set_additional_file_properties($file);
         }
 
+				// Refresh page when finish uploading so user sees archive contents!
         if($this->options['ginkgo_zip'])
-        {
         	$file->error = 'zip';
-        	#header("Location: ?q=home/" . $_SESSION['user_id']);
-        }
-
 
         return $file;
     }
