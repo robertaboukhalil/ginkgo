@@ -69,13 +69,14 @@ PANEL;
 		<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-theme.min.css">
 		<!-- Custom styles -->
 		<style>
-		#permalink  { border:1px solid #DDD; width:100%; color:#666; background:transparent; font-family:"courier"; resize:none; height:50px; }
-		#status-analysis	{ display:none; }
+		html, body	{ height:100%; }
+		td          { vertical-align:middle !important; }
+		code input  { border:none; color:#c7254e; background-color:#f9f2f4; width:100%; }
 		.jumbotron  { padding:50px 30px 15px 30px; }
 		.glyphicon  { vertical-align:top; }
 		.badge      { vertical-align:top; margin-top:5px; }
-		td          { vertical-align:middle !important; }
-		code input  { border:none; color:#c7254e; background-color:#f9f2f4; width:100%; }
+		#permalink  { border:1px solid #DDD; width:100%; color:#666; background:transparent; font-family:"courier"; resize:none; height:50px; }
+		#status-analysis	{ display:none; }
 	</style>
 
 	  <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
@@ -249,40 +250,10 @@ PANEL;
 
 	<?php else: ?>
 	<!-- Upload files -->
-	<div class="row">
+	<div class="row" style="height:100%;">
 		<div class="col-lg-8">
 			<h3 style="margin-top:-5px;"><span class="badge">STEP 0</span> Upload your .bed files <small><strong>(We accept *.bed, *.zip, *.tar, *.gz, *.tar.gz and *.tgz)</strong></small></h3>
-			<p>
-				<!-- The fileinput-button span is used to style the file input field as button -->
-				<!-- <span class="btn btn-success fileinput-button">
-					<i class="glyphicon glyphicon-plus"></i>
-					<span>Select files...</span>
-					<input id="fileupload" type="file" name="files[]" data-url="server/php/" multiple>
-				</span>
-				<br>
-				<br>
-
-				<div id="progress" class="progress"><div class="progress-bar progress-bar-success"></div></div>
-
-				<div id="files" class="files">[abc]</div>
-				<br>
-				
-				<div class="panel panel-default">
-					<div class="panel-heading">
-					<h3 class="panel-title">Demo Notes</h3>
-					</div>
-					<div class="panel-body">
-					<ul>
-						<li>The maximum file size for uploads in this demo is <strong>5 MB</strong> (default file size is unlimited).</li>
-						<li>Only image files (<strong>JPG, GIF, PNG</strong>) are allowed in this demo (by default there is no file type restriction).</li>
-						<li>Uploaded files will be deleted automatically after <strong>5 minutes</strong> (demo setting).</li>
-						</ul>
-					</div>
-				</div>-->
-
-				<iframe id="upload-iframe" style="width:100%; height:300px; border:0;" src="includes/fileupload/?user_id=<?php echo $userID; ?>"></iframe>
-		  </p>
-
+			<iframe id="upload-iframe" style="width:100%; height:100%; border:0;" src="includes/fileupload/?user_id=<?php echo $userID; ?>"></iframe>
 			<p>
 				<div style="float:right">
 					<a class="btn btn-lg btn-primary" href="?q=dashboard/<?php echo $userID; ?>">Next step <span class="glyphicon glyphicon-chevron-right"></span></a>
@@ -394,7 +365,11 @@ PANEL;
 				//$('.accordion-toggle').collapse("hide");
 				<?php endif; ?>				
 				//$('.panel').show();
+				$(window).resize();
 			});
+			$(window).resize(function() {
+        $(".col-lg-8").height(window.innerHeight - $(".navbar").height() - $(".jumbotron").height() - 200 );
+    	});
 			</script>
 
 
