@@ -21,6 +21,11 @@ facs=ploidy.txt
 g=1
 geneList=geneQuery
 
+permalink="http://qb.cshl.edu/ginkgo?dashboard/robert"
+email="raboukha@cshl.edu"
+
+## =======================================================
+
 total=`wc -l < ${dir}/${inFile}`
 
 if [ $init -eq 1 ]; then
@@ -74,4 +79,8 @@ fi
 if [ $b -eq 1 ]; then
   ${home}/scripts/bin2Genes ${genome}/$binMeth ${genome}/genes ${dir}/$binList ${dir}/bin2Genes.bed
 fi
+
+echo -e "Your analysis on Ginkgo is complete! Check out your results at $permalink" | mail -s "Your Analysis Results" $email -- -F "Ginkgo"
+
+
 
