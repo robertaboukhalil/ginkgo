@@ -21,7 +21,7 @@ facs=ploidy.txt
 g=1
 geneList=geneQuery
 
-permalink="http://qb.cshl.edu/ginkgo?dashboard/robert"
+permalink="http://qb.cshl.edu/ginkgo?q=dashboard/robert"
 email="raboukha@cshl.edu"
 
 ## =======================================================
