@@ -24,7 +24,7 @@
 
 ## == Setup more variables ===============================
 home=/mnt/data/ginkgo
-dir=${home}/uploads/$1
+dir=${home}/uploads/${1}
 source ${dir}/config
 
 inFile=list
@@ -51,7 +51,7 @@ if [ $init -eq 1 ]; then
   rm -f ${dir}/*jpeg ${dir}/*_mapped ${dir}/hist* ${dir}/Seg*
 
   #Generate Statistics
-  ${home}/scripts/stats.R
+  ${home}/scripts/stats.R $dir statFile ${dir}/data
 
 fi
 
