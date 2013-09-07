@@ -89,6 +89,9 @@ if(isset($_POST['analyze']))
 	// Start analysis
 	echo "\n$config\n\n";
 	print_r($_POST);
+	
+	// Refresh page to show progress
+	#header("Location: ?q=dashboard/" . $userID);
 	exit;
 }
 
