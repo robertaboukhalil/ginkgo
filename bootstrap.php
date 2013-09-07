@@ -1,21 +1,28 @@
 <?php
 
-/**
- * 
- */
+// =============================================================================
+// == Application constants ====================================================
+// =============================================================================
 
-//
+// Directories
 define('DIR_ROOT', '/mnt/data/ginkgo');
 define('DIR_UPLOADS', DIR_ROOT . '/uploads');
-//
+
+// URLs
 define('URL_ROOT', 'http://qb.cshl.edu/ginkgo');
 
 
+// =============================================================================
+// == Misc. configuration ======================================================
+// =============================================================================
+
+error_reporting(E_ALL);
+session_start();
 
 
-/**
- * 
- */
+// =============================================================================
+// == Helper functions =========================================================
+// =============================================================================
 
 // Generate random ID of arbitrary length
 function generateID($length = 20)
@@ -27,7 +34,6 @@ function generateID($length = 20)
     }
     return $randomString;
 }
-
 
 // Return list of files uploaded by user (excluding . and ..)
 function getMyFiles($userID)
