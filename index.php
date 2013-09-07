@@ -1,13 +1,5 @@
 <?php
 
-// TODO
-## scripts/analyze
-#permalink=
-#echo "Your analysis on Ginkgo is complete! Check out your results at "$permalink | mail -s "Ginkgo: Your Analysis Results" raboukha@cshl.edu -- -f raboukha@cshl.edu
-
-
-
-
 // Configuration
 error_reporting(E_ALL);
 session_start();
