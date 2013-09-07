@@ -24,6 +24,8 @@ include "bootstrap.php";
 $query = explode("/", $_GET['q']);
 $userID = $query[1];
 $analysisID = $query[2];
+if(!$analysisID)
+	$analysisID = generateID(10);
 
 // Steps >= 1
 if($query[0] == "dashboard")
@@ -39,13 +41,55 @@ else
 	if(!$userID)
 	{
 		$userID = generateID(20);
-		$analysisID = generateID(10);
 		@mkdir(DIR_UPLOADS . '/' . $userID);
 	}
 
   //
   define('SHOW_DASHBOARD', false);
 	define('SHOW_HOME', true);
+}
+
+if(isset($_POST['analyze']))
+{
+	// Sanitize user input (see bootstrap.php)
+	array_walk_recursive($_POST, 'sanitize');
+	$user = $userID; sanitize($user);
+
+	// Create list-of-cells-to-analyze file	
+	$cells = '';
+	foreach($_POST['cells'] as $cell)
+		$cells .= str_replace("'", "", $cell) . "\n";
+	file_put_contents(DIR_UPLOADS . '/' . $userID . '/list', $cells);
+
+	// Create config file
+	$config = '#!/bin/bash' . "\n";
+	$config.= 'user=' . $user . "\n";
+	$config.= 'email=' . $_POST['email'] . "\n";
+	$config.= 'permalink=\'' . URL_ROOT . '/?q=dashboard/' . str_replace("'", "", $user) . "'\n";
+
+	$config.= 'segMeth=' . $_POST['segMeth'] . "\n";
+	$config.= 'binMeth=' . $_POST['binMeth'] . "\n";
+	$config.= 'clustMeth=' . $_POST['clustMeth'] . "\n";
+	$config.= 'distMeth=' . $_POST['distMeth'] . "\n";
+
+	$config.= 'b=' . $_POST['b'] . "\n";
+	$config.= 'binList=' . $_POST['binList'] . "\n";
+	$config.= 'f=' . $_POST['f'] . "\n";
+	$config.= 'facs=' . $_POST['facs'] . "\n";
+	$config.= 'g=' . $_POST['g'] . "\n";
+	$config.= 'geneList=' . $_POST['geneList'] . "\n";
+	$config.= 'chosen_genome=' . $_POST['chosen_genome'] . "\n";
+
+	$config.= 'init=1' . "\n";
+	$config.= 'process=1' . "\n";
+	$config.= 'fix=0' . "\n";
+
+	file_put_contents(DIR_UPLOADS . '/' . $userID . '/config', $config);
+
+	// Start analysis
+	echo "\n$config\n\n";
+	print_r($_POST);
+	exit;
 }
 
 $_SESSION["user_id"] = $userID;
@@ -200,7 +244,7 @@ PANEL;
 					<h3 style="margin-top:-5px;"><span class="badge">STEP 1</span> Choose cells for analysis</h3>
 					<div id="params-cells">
 						<?php foreach($MY_CELLS as $currCell): ?>
-				    <label><div class="input-group" style="margin:20px;"><span class="input-group-addon"><input type="checkbox"></span><span class="form-control"><?php echo $currCell; ?></span></div></label>
+				    <label><div class="input-group" style="margin:20px;"><span class="input-group-addon"><input type="checkbox" name="dashboard_cells[]" value="<?php echo $currCell; ?>"></span><span class="form-control"><?php echo $currCell; ?></span></div></label>
 						<?php endforeach; ?>
 						<br/>
 						<button id="dashboard-toggle-cells" class="btn btn-info" style="margin:20px;">Select all cells</button>
@@ -219,7 +263,7 @@ PANEL;
 
 					<!-- Buttons: back or next -->
 					<div style="float:left"><a class="btn btn-lg btn-primary" href="?q=/<?php echo $userID; ?>"><span class="glyphicon glyphicon-chevron-left"></span> Manage Files </a></div>
-					<div style="float:right"><a class="btn btn-lg btn-primary" href="">Start Analysis <span class="glyphicon glyphicon-chevron-right"></span></a></div><br/><br/><br/>
+					<div style="float:right"><a id="analyze" class="btn btn-lg btn-primary" href="javascript:void(0);">Start Analysis <span class="glyphicon glyphicon-chevron-right"></span></a></div><br/><br/><br/>
 					<hr style="height:5px;border:none;background-color:#CCC;" /><br/>
 
 					<!-- Set parameters -->
@@ -230,13 +274,13 @@ PANEL;
 								<td>Binning Options</td>
 								<td>
 									Use a <select id="param-bins-type" class="input-mini" style="margin-top:8px; font-size:11px; padding-top:3px; padding-bottom:0; height:25px; ">
-									<option value="0">fixed</option>
-									<option value="4">variable</option>
+									<option value="fixed_">fixed</option>
+									<option value="variable_">variable</option>
 									</select> bin size of <select id="param-bins-value" class="input-mini" style="margin-top:8px; font-size:11px; padding-top:3px; padding-bottom:0; height:25px; ">
-									<option value="0">10kb</option>
-									<option value="1">25kb</option>
-									<option value="2">40kb</option>
-									<option value="3">50kb</option>
+									<option value="10000">10kb</option>
+									<option value="25000">25kb</option>
+									<option value="40000">40kb</option>
+									<option value="50000">50kb</option>
 									</select> size.
 								</td>
 							</tr>
@@ -251,10 +295,10 @@ PANEL;
 								<td>Clustering</td>
 								<td>
 									Use <select id="param-clustering" class="input-small" style="margin-top:8px; font-size:11px; padding-top:3px; padding-bottom:0; height:25px; ">
-									<option value="0">single</option>
-									<option value="1">complete</option>
-									<option value="2">average</option>
-									<option value="3">ward</option>
+									<option value="single">single</option>
+									<option value="complete">complete</option>
+									<option value="average">average</option>
+									<option value="ward">ward</option>
 									</select> clustering.
 								</td>
 							</tr>
@@ -262,12 +306,12 @@ PANEL;
 								<td>Distance metric</td>
 								<td>
 									Use <select id="param-distance" class="input-small" style="margin-top:8px; font-size:11px; padding-top:3px; padding-bottom:0; height:25px; ">
-									<option value="0">Euclidean</option>
-									<option value="1">maximum</option>
-									<option value="2">Manhattan</option>
-									<option value="3">Canberra</option>
-									<option value="4">binary</option>
-									<option value="5">Minkowski</option>
+									<option value="euclidian">Euclidean</option>
+									<option value="maximum">maximum</option>
+									<option value="manhattan">Manhattan</option>
+									<option value="canberra">Canberra</option>
+									<option value="binary">binary</option>
+									<option value="minkowski">Minkowski</option>
 									</select> distance.
 								</td>
 							</tr>
@@ -356,9 +400,52 @@ PANEL;
 		// -- Dashboard ------------------------------------------------------------
 		// Toggle b/w select all cells and select none
 		$('#dashboard-toggle-cells').click(function() {
-			$('input[type="checkbox"]').prop('checked',!$('input[type="checkbox"]').prop('checked'));
+			$('#params-cells input[type="checkbox"]').prop('checked',!$('input[type="checkbox"]').prop('checked'));
 		});
+		
+		// -- Launch analysis ------------------------------------------------------
+		$('#analyze').click(function() {
+			// -- Get list of cells of interest
+			arrCells = [];
+			$("#params-cells :checked").each(function() { arrCells.push($(this).val()); });
 
+			// -- Get email
+			email = $('#email').val();
+
+			// -- Submit query
+			$.post("?q=dashboard/<?php echo $userID; ?>", {
+					// General
+					'analyze':	1,
+					'cells[]':	arrCells,
+					'email':		email,
+
+					// Methods
+					'binMeth':	$('#param-bins-type').val() + $('#param-bins-value').val(),
+					'segMeth':	$('#param-segmentation').val(),
+					'clustMeth':$('#param-clustering').val(),
+					'distMeth':	$('#param-distance').val(),
+
+					// FACS file
+					'f':				0,
+					'facs':			'',
+
+					// Plot gene locations
+					'g':				0,
+					'geneList':	'',
+
+					// User-specified bin file
+					'b':				0,
+					'binList':	'',
+					
+					// Genome
+					'chosen_genome': 'hg18',
+				},
+				function(data)
+				{
+					alert(data);
+				}
+			);
+		});
 
 		</script>
 

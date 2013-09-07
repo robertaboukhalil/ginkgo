@@ -36,10 +36,21 @@ function generateID($length = 20)
 }
 
 // Return list of files uploaded by user (excluding . and ..)
-function getMyFiles($userID)
+function getMyFiles($userID, $ext = 'bed')
 {
 	$directory = DIR_UPLOADS . '/' . $userID . '/';
-	$files = array_diff(scandir($directory), array('..', '.'));
+	//$files = array_diff(scandir($directory), array('..', '.'));
+	$files = array_diff(glob($directory . '/*.' . $ext), array('..', '.'));
 	
-	return $files;
+	$result = array();
+	foreach($files as $file)
+		if(pathinfo($filename, PATHINFO_EXTENSION) != $ext)
+			$result[] = basename($file);
+	return $result;
+}
+
+//
+function sanitize(&$item, $key)
+{
+	$item = escapeshellarg($item);
 }
