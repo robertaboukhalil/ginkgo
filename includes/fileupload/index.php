@@ -96,7 +96,13 @@ session_start();
 </script>
 
 <script id="template-download" type="text/x-tmpl">
-{% for (var i=0, file; file=o.files[i]; i++) { %}
+{% for (var i=0, file; file=o.files[i]; i++) {
+
+		fileExtension = file.name.split(".").pop();
+		if(fileExtension != "bed")
+			continue;
+
+%}
     <tr class="template-download fade">
         <td width="40%">
             <p>
