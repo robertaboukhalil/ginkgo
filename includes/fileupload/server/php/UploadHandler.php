@@ -736,10 +736,7 @@ class UploadHandler
 													$subfilename = $zip->getNameIndex($i);
 													$subfileinfo = pathinfo($subfilename);
 													if($subfileinfo['extension'] == "bed")
-													{
 														copy("zip://".$file_path."#".$subfilename, $fileDirname . '/' . $subfilename);
-														$stuff .= $file_path . "#" . $subfilename . "\t\t\t" . $fileDirname . '/' . $subfilename . "\n\n";
-													}
 												}
 											  $zip->close();
 											}

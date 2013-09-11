@@ -87,9 +87,16 @@ if(isset($_POST['analyze']))
 	file_put_contents(DIR_UPLOADS . '/' . $userID . '/config', $config);
 
 	// Start analysis
-	echo "\n$config\n\n";
-	print_r($_POST);
-	
+	#echo "\n$config\n\n";
+	#print_r($_POST);
+	$cmd = "./scripts/analyze $userID";
+	session_regenerate_id(TRUE);	
+	$handle = popen($cmd, 'r');
+	$out = stream_get_contents($handle);
+	pclose($handle);
+
+	echo $out;
+
 	// Refresh page to show progress
 	#header("Location: ?q=dashboard/" . $userID);
 	exit;
