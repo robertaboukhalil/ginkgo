@@ -98,6 +98,11 @@ session_start();
 <script id="template-download" type="text/x-tmpl">
 {% for (var i=0, file; file=o.files[i]; i++) {
 
+		// File.error = zip means user uploaded archive and need to refresh list of files
+    if (file.error == "zip")
+			window.location = "?q=home/<?php echo $_SESSION['user_id']; ?>";
+
+		// Only list .bed files
 		fileExtension = file.name.split(".").pop();
 		if(fileExtension != "bed")
 			continue;
@@ -115,9 +120,6 @@ session_start();
             {% if (file.error) { %}
                 <div><span class="label label-danger">Error</span> {%=file.error%}</div>
             {% } %}
-            {% if (file.error == "zip") {
-            		window.location = "?q=home/<?php echo $_SESSION['user_id']; ?>";
-            	 } %}
         </td>
         <td width="20%">
             <span class="size">{%=o.formatFileSize(file.size)%}</span>

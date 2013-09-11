@@ -716,8 +716,8 @@ class UploadHandler
                     ## == Added code to handle zipped files ===================================
                     ## ========================================================================
                     $fileExtension = strtolower(pathinfo($file_path, PATHINFO_EXTENSION));
-                    $fileDirname   = strtolower(pathinfo($file_path, PATHINFO_DIRNAME  ));
-                    $fileName      = strtolower(pathinfo($file_path, PATHINFO_FILENAME ));
+                    $fileDirname   = pathinfo($file_path, PATHINFO_DIRNAME );
+                    $fileName      = pathinfo($file_path, PATHINFO_FILENAME);
 
 										## ------------------------------------------------------------------------
                     ## --- Handle .zip files --------------------------------------------------
@@ -736,7 +736,10 @@ class UploadHandler
 													$subfilename = $zip->getNameIndex($i);
 													$subfileinfo = pathinfo($subfilename);
 													if($subfileinfo['extension'] == "bed")
+													{
 														copy("zip://".$file_path."#".$subfilename, $fileDirname . '/' . $subfilename);
+														$stuff .= $file_path . "#" . $subfilename . "\t\t\t" . $fileDirname . '/' . $subfilename . "\n\n";
+													}
 												}
 											  $zip->close();
 											}
@@ -760,6 +763,7 @@ class UploadHandler
 											// -- Delete archive after extracting
 											unlink($file_path);
 										}
+
                 }
 
             } else {
