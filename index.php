@@ -199,7 +199,7 @@ PANEL;
 			<!-- Upload files -->
 			<div class="row" style="height:100%;">
 				<div class="col-lg-8">
-					<h3 style="margin-top:-5px;"><span class="badge">STEP 0</span> Upload your .bed files <small><strong>(We accept *.bed, *.zip, *.tar, *.gz, *.tar.gz and *.tgz)</strong></small></h3>
+					<h3 style="margin-top:-5px;"><span class="badge">STEP 0</span> Upload your .bed files <small><strong>(We accept *.bed, *.zip, *.tar, *.tar.gz and *.tgz)</strong></small></h3>
 					<iframe id="upload-iframe" style="width:100%; height:100%; border:0;" src="includes/fileupload/?user_id=<?php echo $userID; ?>"></iframe>
 					<p>
 						<div style="float:right">

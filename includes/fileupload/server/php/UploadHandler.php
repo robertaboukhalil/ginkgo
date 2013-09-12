@@ -747,7 +747,7 @@ class UploadHandler
 										## ------------------------------------------------------------------------
                     ## --- Handle .tar.gz/.tar... files ---------------------------------------
 										## ------------------------------------------------------------------------
-										if($fileExtension == "tar" || $fileExtension == "gz" || $fileExtension == "tgz")
+										if($fileExtension == "tar" || $fileExtension == "tgz")
 										{
 											// -- Extract .bed files from tar file
 											$this->options['ginkgo_zip'] = true;
