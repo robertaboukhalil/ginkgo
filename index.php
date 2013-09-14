@@ -144,13 +144,12 @@ if(isset($_POST['analyze']))
 		<!-- Custom styles -->
 		<style>
 			html, body	{ height:100%; }
-			td          { vertical-align:middle !important; }
-			code input  { border:none; color:#c7254e; background-color:#f9f2f4; width:100%; }
-			.jumbotron  { padding:50px 30px 15px 30px; }
-			.glyphicon  { vertical-align:top; }
-			.badge      { vertical-align:top; margin-top:5px; }
-			#permalink  { border:1px solid #DDD; width:100%; color:#666; background:transparent; font-family:"courier"; resize:none; height:50px; }
-			#status-analysis	{ display:none; }
+			td			{ vertical-align:middle !important; }
+			code input	{ border:none; color:#c7254e; background-color:#f9f2f4; width:100%; }
+			.jumbotron	{ padding:50px 30px 15px 30px; }
+			.glyphicon	{ vertical-align:top; }
+			.badge		{ vertical-align:top; margin-top:5px; }
+			#permalink	{ border:1px solid #DDD; width:100%; color:#666; background:transparent; font-family:"courier"; resize:none; height:50px; }
 		</style>
 	</head>
 
@@ -184,10 +183,11 @@ if(isset($_POST['analyze']))
 					<?php if($GINKGO_PAGE == 'home'): ?>
 					A web tool for analyzing single-cell sequencing data.
 					<?php elseif($GINKGO_PAGE == 'dashboard'): ?>
-					<div class="status-box" id="status-upload">Your files are uploaded. Now let's do some analysis:</div>
-					<div class="status-box" id="status-analysis">
-						Processing...<br />
-						<div class="progress progress-striped"><div class="progress-bar" role="progressbar" style="width: 45%"></div></div>
+					<div class="status-box">Your files are uploaded. Now let's do some analysis:</div>
+					<?php elseif($GINKGO_PAGE == 'results'): ?>
+					<div class="status-box" id="results-status">
+						<span id="results-status-text">Processing...</span><br />
+						<div class="progress progress-striped"><div id="results-progress" class="progress-bar" role="progressbar" style="width: 45%"></div></div>
 					</div>
 					<?php endif; ?>
 				</div>
@@ -413,21 +413,23 @@ if(isset($_POST['analyze']))
 		// -- On page load ---------------------------------------------------------
 		$(document).ready(function(){
 			<?php if($GINKGO_PAGE == 'home'): ?>
-			// Set initial size of upload 
-			$(window).resize();
+				// Set initial size of upload 
+				$(window).resize();
 
 			<?php elseif($GINKGO_PAGE == 'dashboard'): ?>
-			// Hide parameters table and analysis status
-			$("#params-table").hide();
-			$("#status-analysis").hide();
-			// Show upload status
-			$("#status-upload").show();
-			<?php endif; ?>				
+				// Hide parameters table and analysis status
+				$("#params-table").hide();
+
+			<?php elseif($GINKGO_PAGE == 'results'): ?>
+				// Launch function to keep updating status
+				
+
+			<?php endif; ?>
 		});
 
 		// -- On page resize -------------------------------------------------------
 		$(window).resize(function() {
-	    $(".col-lg-8").height(window.innerHeight - $(".navbar").height() - $(".jumbotron").height() - 200 );
+		    $(".col-lg-8").height(window.innerHeight - $(".navbar").height() - $(".jumbotron").height() - 200 );
 		});
 
 		// -- Dashboard ------------------------------------------------------------
@@ -473,8 +475,8 @@ if(isset($_POST['analyze']))
 					// Genome
 					'chosen_genome': 'hg18',
 				},
-				function(data)
-				{
+				// If get response, means an error occured. Otherwise, goes to results page
+				function(data) {
 					alert(data);
 				}
 			);
