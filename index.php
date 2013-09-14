@@ -14,58 +14,87 @@
 //
 //	analysisID = user can perform many analyses on the same data and save
 //							 analysis results. Each such analysis has a unique ID.
-// 
+// 							 (NOT YET IMPLEMENTED)
 // =============================================================================
 
-// Configuration
+## -- Configuration ------------------------------------------------------------
 include "bootstrap.php";
+$GINKGO_MIN_NB_CELLS= 3;
 
-// Parse user query
-$query = explode("/", $_GET['q']);
-$userID = $query[1];
-$analysisID = $query[2];
-if(!$analysisID)
-	$analysisID = generateID(10);
+## -- Parse user query ---------------------------------------------------------
+$query				= explode("/", $_GET['q']);
 
-// Steps >= 1
-if($query[0] == "dashboard")
-{
-	define('SHOW_HOME', false);
-  define('SHOW_DASHBOARD', true);
-  $MY_CELLS = getMyFiles($userID);
-}
-// Step 0
-else
-{
-	// Generate user ID (source: http://stackoverflow.com/questions/4356289/php-random-string-generator)
-	if(!$userID)
-	{
-		$userID = generateID(20);
-		@mkdir(DIR_UPLOADS . '/' . $userID);
-	}
+// Extract page
+$GINKGO_PAGE			= $query[0];
+if(!$GINKGO_PAGE)
+	$GINKGO_PAGE		= 'home';
 
-  //
-  define('SHOW_DASHBOARD', false);
-	define('SHOW_HOME', true);
-}
+// Extract user ID
+$GINKGO_USER_ID		= $query[1];
+if(!$GINKGO_USER_ID)
+	$GINKGO_USER_ID	= generateID(20);
 
+## -- Page-specific configuration ----------------------------------------------
+// Step 1 (choose cells) & Step 2 (specify email)
+if($GINKGO_PAGE == "dashboard")
+  $MY_CELLS = getMyFiles($GINKGO_USER_ID);
+
+## -- Session management -------------------------------------------------------
+$_SESSION["user_id"] = $GINKGO_USER_ID;
+
+## -- Template configuration -----
+// Panel for permalink
+$permalink = URL_ROOT . '?q=/' . $GINKGO_USER_ID;
+$PANEL_LATER = <<<PANEL
+			<!-- Panel: Save for later -->
+			<div class="panel panel-primary">
+				<div class="panel-heading"><h3 class="panel-title"><span class="glyphicon glyphicon-time"></span> View analysis later</h3></div>
+				<div class="panel-body">
+					Access your results later at the following address:<br/><br/>
+					<textarea class="input-sm" id="permalink">{$permalink}</textarea>
+				</div>
+			</div>
+PANEL;
+
+// Panel to show user's last analysis, if any
+if(file_exists(DIR_UPLOADS . '/' . $GINKGO_USER_ID . '/status.xml'))
+	$PANEL_PREVIOUS = <<<PANEL
+			<!-- Panel: View previous analysis results -->
+			<div class="panel panel-primary">
+				<div class="panel-heading"><h3 class="panel-title"><span class="glyphicon glyphicon-stats"></span> Previous analysis results</h3></div>
+				<div class="panel-body">
+					[TODO: list previous analysis reports]<br/><br/>
+					<strong>Note</strong>: Running another analysis will overwrite previous results.
+				</div>
+			</div>
+PANEL;
+
+## -- Submit analysis ----------------------------------------------------------
 if(isset($_POST['analyze']))
 {
+	// Create user directory if doesn't exist
+	@mkdir(DIR_UPLOADS . '/' . $GINKGO_USER_ID);
+		
 	// Sanitize user input (see bootstrap.php)
 	array_walk_recursive($_POST, 'sanitize');
-	$user = $userID; sanitize($user);
+	$user = $GINKGO_USER_ID;
+	sanitize($user);
+
+	// Make sure have enough cells for analysis
+	if(count($_POST['cells']) < $GINKGO_MIN_NB_CELLS)
+		die("Please select at least " . $GINKGO_MIN_NB_CELLS . " cells for your analysis.");
 
 	// Create list-of-cells-to-analyze file	
 	$cells = '';
 	foreach($_POST['cells'] as $cell)
 		$cells .= str_replace("'", "", $cell) . "\n";
-	file_put_contents(DIR_UPLOADS . '/' . $userID . '/list', $cells);
+	file_put_contents(DIR_UPLOADS . '/' . $GINKGO_USER_ID . '/list', $cells);
 
 	// Create config file
 	$config = '#!/bin/bash' . "\n";
 	$config.= 'user=' . $user . "\n";
 	$config.= 'email=' . $_POST['email'] . "\n";
-	$config.= 'permalink=\'' . URL_ROOT . '/?q=dashboard/' . str_replace("'", "", $user) . "'\n";
+	$config.= 'permalink=\'' . URL_ROOT . '/?q=results/' . str_replace("'", "", $user) . "'\n";
 
 	$config.= 'segMeth=' . $_POST['segMeth'] . "\n";
 	$config.= 'binMeth=' . $_POST['binMeth'] . "\n";
@@ -84,39 +113,20 @@ if(isset($_POST['analyze']))
 	$config.= 'process=1' . "\n";
 	$config.= 'fix=0' . "\n";
 
-	file_put_contents(DIR_UPLOADS . '/' . $userID . '/config', $config);
+	file_put_contents(DIR_UPLOADS . '/' . $GINKGO_USER_ID . '/config', $config);
 
 	// Start analysis
-	#echo "\n$config\n\n";
-	#print_r($_POST);
-	$cmd = "./scripts/analyze $userID";
+	$cmd = "./scripts/analyze $GINKGO_USER_ID";
 	session_regenerate_id(TRUE);	
 	$handle = popen($cmd, 'r');
-	$out = stream_get_contents($handle);
+	#$out = stream_get_contents($handle);
 	pclose($handle);
 
-	echo $out;
-
-	// Refresh page to show progress
-	#header("Location: ?q=dashboard/" . $userID);
+	// Go to result page to show progress (that way if user refreshes page for whatever reason, won't try to re-POST)
+	#header("Location: ?q=results/" . $GINKGO_USER_ID);
 	exit;
 }
 
-$_SESSION["user_id"] = $userID;
-$_SESSION["analysis_id"] = $analysisID;
-
-// Permalink
-$permalink = URL_ROOT . '?q=/' . $userID;
-$PANEL_LATER = <<<PANEL
-			<!-- Panel: Save for later -->
-			<div class="panel panel-primary">
-				<div class="panel-heading"><h3 class="panel-title"><span class="glyphicon glyphicon-time"></span> View analysis later</h3></div>
-				<div class="panel-body">
-					Access your results later at the following address:<br/><br/>
-					<textarea class="input-sm" id="permalink">{$permalink}</textarea>
-				</div>
-			</div>
-PANEL;
 
 ?><!DOCTYPE html>
 <html lang="en">
@@ -133,21 +143,15 @@ PANEL;
 		<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-theme.min.css">
 		<!-- Custom styles -->
 		<style>
-		html, body	{ height:100%; }
-		td          { vertical-align:middle !important; }
-		code input  { border:none; color:#c7254e; background-color:#f9f2f4; width:100%; }
-		.jumbotron  { padding:50px 30px 15px 30px; }
-		.glyphicon  { vertical-align:top; }
-		.badge      { vertical-align:top; margin-top:5px; }
-		#permalink  { border:1px solid #DDD; width:100%; color:#666; background:transparent; font-family:"courier"; resize:none; height:50px; }
-		#status-analysis	{ display:none; }
-	</style>
-
-	  <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
-	  <!--[if lt IE 9]>
-	    <script src="../../assets/js/html5shiv.js"></script>
-	    <script src="../../assets/js/respond.min.js"></script>
-	  <![endif]-->
+			html, body	{ height:100%; }
+			td          { vertical-align:middle !important; }
+			code input  { border:none; color:#c7254e; background-color:#f9f2f4; width:100%; }
+			.jumbotron  { padding:50px 30px 15px 30px; }
+			.glyphicon  { vertical-align:top; }
+			.badge      { vertical-align:top; margin-top:5px; }
+			#permalink  { border:1px solid #DDD; width:100%; color:#666; background:transparent; font-family:"courier"; resize:none; height:50px; }
+			#status-analysis	{ display:none; }
+		</style>
 	</head>
 
 	<body>
@@ -161,7 +165,7 @@ PANEL;
 						<span class="icon-bar"></span>
 						<span class="icon-bar"></span>
 				  </button>
-					<a class="navbar-brand" href="?q=home/<?php echo $userID; ?>"><span class="glyphicon glyphicon-tree-deciduous"></span> Ginkgo</a>
+					<a class="navbar-brand" href="?q=home/<?php echo $GINKGO_USER_ID; ?>"><span class="glyphicon glyphicon-tree-deciduous"></span> Ginkgo</a>
 				</div>
 				<div class="navbar-collapse collapse">
 					<ul class="nav navbar-nav navbar-right">
@@ -177,9 +181,9 @@ PANEL;
 			<div class="container">
 				<h1>Ginkgo</h1>
 				<div id="status" style="margin-top:20px;">
-					<?php if(SHOW_HOME): ?>
+					<?php if($GINKGO_PAGE == 'home'): ?>
 					A web tool for analyzing single-cell sequencing data.
-					<?php elseif(SHOW_DASHBOARD): ?>
+					<?php elseif($GINKGO_PAGE == 'dashboard'): ?>
 					<div class="status-box" id="status-upload">Your files are uploaded. Now let's do some analysis:</div>
 					<div class="status-box" id="status-analysis">
 						Processing...<br />
@@ -195,20 +199,21 @@ PANEL;
 			<?php // ================================================================ ?>
 			<?php // == Home: Upload files ========================================== ?>
 			<?php // ================================================================ ?>
-			<?php if(SHOW_HOME): ?>
+			<?php if($GINKGO_PAGE == 'home'): ?>
 			<!-- Upload files -->
 			<div class="row" style="height:100%;">
 				<div class="col-lg-8">
 					<h3 style="margin-top:-5px;"><span class="badge">STEP 0</span> Upload your .bed files <small><strong>(We accept *.bed, *.zip, *.tar, *.tar.gz and *.tgz)</strong></small></h3>
-					<iframe id="upload-iframe" style="width:100%; height:100%; border:0;" src="includes/fileupload/?user_id=<?php echo $userID; ?>"></iframe>
+					<iframe id="upload-iframe" style="width:100%; height:100%; border:0;" src="includes/fileupload/?user_id=<?php echo $GINKGO_USER_ID; ?>"></iframe>
 					<p>
 						<div style="float:right">
-							<a class="btn btn-lg btn-primary" href="?q=dashboard/<?php echo $userID; ?>">Next step <span class="glyphicon glyphicon-chevron-right"></span></a>
+							<a class="btn btn-lg btn-primary" href="?q=dashboard/<?php echo $GINKGO_USER_ID; ?>">Next step <span class="glyphicon glyphicon-chevron-right"></span></a>
 						</div>
 					</p>
 				</div>
 				<div class="col-lg-4">
 
+					<?php echo $PANEL_PREVIOUS; ?>
 					<?php echo $PANEL_LATER; ?>
 
 					<!-- Panel: Help -->
@@ -246,7 +251,7 @@ PANEL;
 			<?php // ================================================================ ?>
 			<?php // == Dashboard: Analysis settings ================================ ?>
 			<?php // ================================================================ ?>
-			<?php elseif(SHOW_DASHBOARD): ?>
+			<?php elseif($GINKGO_PAGE == 'dashboard'): ?>
 			<!-- Dashboard -->
 			<div class="row">
 				<div id="dashboard" class="col-lg-8">
@@ -272,7 +277,7 @@ PANEL;
 					<br/><br/>
 
 					<!-- Buttons: back or next -->
-					<div style="float:left"><a class="btn btn-lg btn-primary" href="?q=/<?php echo $userID; ?>"><span class="glyphicon glyphicon-chevron-left"></span> Manage Files </a></div>
+					<div style="float:left"><a class="btn btn-lg btn-primary" href="?q=/<?php echo $GINKGO_USER_ID; ?>"><span class="glyphicon glyphicon-chevron-left"></span> Manage Files </a></div>
 					<div style="float:right"><a id="analyze" class="btn btn-lg btn-primary" href="javascript:void(0);">Start Analysis <span class="glyphicon glyphicon-chevron-right"></span></a></div><br/><br/><br/>
 					<hr style="height:5px;border:none;background-color:#CCC;" /><br/>
 
@@ -332,16 +337,34 @@ PANEL;
 				</div>
 
 				<div class="col-lg-4">
-					<!-- Panel: View previous analysis results -->
-					<div class="panel panel-primary">
-						<div class="panel-heading"><h3 class="panel-title"><span class="glyphicon glyphicon-stats"></span> Previous analysis results</h3></div>
-						<div class="panel-body">
-							[TODO: list previous analysis reports]
-						</div>
-					</div>
+					<?php echo $PANEL_PREVIOUS; ?>
 					<?php echo $PANEL_LATER; ?>
 				</div>
 			</div>
+			<?php // ================================================================ ?>
+			<?php // == Dashboard: Analysis settings ================================ ?>
+			<?php // ================================================================ ?>
+			<?php elseif($GINKGO_PAGE == 'results'): ?>
+
+			<!-- Results -->
+			<div class="row">
+				<div id="results" class="col-lg-8">
+					<h3 style="margin-top:-5px;"><span class="badge">STEP 3</span> View results</h3>
+					<div id="results-stuff">
+						Sup.
+					</div>
+
+					<!-- Buttons: back or next -->
+					<br/><br/>
+					<hr style="height:5px;border:none;background-color:#CCC;" /><br/>
+					<div style="float:left"><a class="btn btn-lg btn-primary" href="?q=dashboard/<?php echo $GINKGO_USER_ID; ?>"><span class="glyphicon glyphicon-chevron-left"></span> Analysis Options </a></div>
+				</div>
+
+				<div class="col-lg-4">
+					<?php echo $PANEL_LATER; ?>
+				</div>
+			</div>
+
 			<?php endif; ?>
 
 		</div> <!-- /container -->
@@ -385,15 +408,15 @@ PANEL;
 	  <!-- Ginkgo
 	  ================================================== -->
 		<script language="javascript">
-		var ginkgo_user_id = "<?php echo $userID; ?>";
+		var ginkgo_user_id = "<?php echo $GINKGO_USER_ID; ?>";
 		
 		// -- On page load ---------------------------------------------------------
 		$(document).ready(function(){
-			<?php if(SHOW_HOME): ?>
+			<?php if($GINKGO_PAGE == 'home'): ?>
 			// Set initial size of upload 
 			$(window).resize();
 
-			<?php elseif(SHOW_DASHBOARD): ?>
+			<?php elseif($GINKGO_PAGE == 'dashboard'): ?>
 			// Hide parameters table and analysis status
 			$("#params-table").hide();
 			$("#status-analysis").hide();
@@ -423,7 +446,7 @@ PANEL;
 			email = $('#email').val();
 
 			// -- Submit query
-			$.post("?q=dashboard/<?php echo $userID; ?>", {
+			$.post("?q=dashboard/<?php echo $GINKGO_USER_ID; ?>", {
 					// General
 					'analyze':	1,
 					'cells[]':	arrCells,
