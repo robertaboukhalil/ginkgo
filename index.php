@@ -485,10 +485,10 @@ if(isset($_POST['analyze']))
 		// -- Refresh progress -----------------------------------------------------
 		function getAnalysisStatus()
 		{
-			//alert('test -- ' + "<?php echo DIR_UPLOADS; ?>/<?php echo $GINKGO_USER_ID; ?>/status.xml");
-			// Load status.xml
+			// Load status file
 			$.get("<?php echo URL_UPLOADS; ?>/<?php echo $GINKGO_USER_ID; ?>/status.xml", function(xmlFile)
 			{
+				// Extract status fields from status file
 				step			= xmlFile.getElementsByTagName("step")[0].childNodes[0].nodeValue;
 				processing	= xmlFile.getElementsByTagName("processingfile")[0].childNodes[0].nodeValue;
 				percentdone	= xmlFile.getElementsByTagName("percentdone")[0].childNodes[0].nodeValue;
@@ -496,6 +496,7 @@ if(isset($_POST['analyze']))
 				if(typeof tree != 'undefined')
 					tree = tree.nodeValue;
 
+				// Determine progress status output
 				if(step == "1")
 					desc = "Mapping reads to bins";
 				else if(step == "2")
@@ -506,21 +507,27 @@ if(isset($_POST['analyze']))
 				processingMsg = "(" + processing.replace("_", " ") + ")";
 				$("#results-status-text").html("Step " + step + ": " + percentdone + "%" + " <small style='color:#999'>" + desc + "... " + processingMsg + "<small>");
 
+				// Update progress bar % completed
 				if(percentdone > 100)
 					percentdone = 100;
 				$("#results-progress").width((100*(step-1+percentdone/100)/3) + "%");
 
-				// Get current tree
-				//if(tree != "0")
-				//	loadTree(tree);
-
 				// When we're done with the analysis, stop getting progress continually
 				if((step == 3 && percentdone >= 100) || typeof step == 'undefined')
 				{
-						clearInterval(ginkgo_progress);
-				}
+					// Remove auto-update timer
+					clearInterval(ginkgo_progress);
 
-				prevStep = step;
+					// Load tree
+					if(typeof tree != 'undefined')
+						alert(tree);
+
+					// Fix UI
+					$(".progress").hide();
+					$("#results-status-text").html("Analysis complete!");
+					
+					// TODO: Output results
+				}
 			});
 		}
 
