@@ -10,6 +10,7 @@ define('DIR_UPLOADS', DIR_ROOT . '/uploads');
 
 // URLs
 define('URL_ROOT', 'http://qb.cshl.edu/ginkgo');
+define('URL_UPLOADS', URL_ROOT . '/uploads');
 
 
 // =============================================================================

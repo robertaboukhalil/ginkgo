@@ -123,7 +123,7 @@ if(isset($_POST['analyze']))
 	pclose($handle);
 
 	// Go to result page to show progress (that way if user refreshes page for whatever reason, won't try to re-POST)
-	#header("Location: ?q=results/" . $GINKGO_USER_ID);
+	header("Location: ?q=results/" . $GINKGO_USER_ID);
 	exit;
 }
 
@@ -186,8 +186,8 @@ if(isset($_POST['analyze']))
 					<div class="status-box">Your files are uploaded. Now let's do some analysis:</div>
 					<?php elseif($GINKGO_PAGE == 'results'): ?>
 					<div class="status-box" id="results-status">
-						<span id="results-status-text">Processing...</span><br />
-						<div class="progress progress-striped"><div id="results-progress" class="progress-bar" role="progressbar" style="width: 45%"></div></div>
+						<span id="results-status-text">Updating status...</span><br />
+						<div class="progress progress-striped active"><div id="results-progress" class="progress-bar" role="progressbar" style="width: 0%"></div></div>
 					</div>
 					<?php endif; ?>
 				</div>
@@ -422,7 +422,7 @@ if(isset($_POST['analyze']))
 
 			<?php elseif($GINKGO_PAGE == 'results'): ?>
 				// Launch function to keep updating status
-				
+				ginkgo_progress = setInterval( "getAnalysisStatus()", 1000 );
 
 			<?php endif; ?>
 		});
@@ -481,6 +481,49 @@ if(isset($_POST['analyze']))
 				}
 			);
 		});
+		
+		// -- Refresh progress -----------------------------------------------------
+		function getAnalysisStatus()
+		{
+			//alert('test -- ' + "<?php echo DIR_UPLOADS; ?>/<?php echo $GINKGO_USER_ID; ?>/status.xml");
+			// Load status.xml
+			$.get("<?php echo URL_UPLOADS; ?>/<?php echo $GINKGO_USER_ID; ?>/status.xml", function(xmlFile)
+			{
+				step			= xmlFile.getElementsByTagName("step")[0].childNodes[0].nodeValue;
+				processing	= xmlFile.getElementsByTagName("processingfile")[0].childNodes[0].nodeValue;
+				percentdone	= xmlFile.getElementsByTagName("percentdone")[0].childNodes[0].nodeValue;
+				tree			= xmlFile.getElementsByTagName("tree")[0].childNodes[0];
+				if(typeof tree != 'undefined')
+					tree = tree.nodeValue;
+
+				if(step == "1")
+					desc = "Mapping reads to bins";
+				else if(step == "2")
+					desc = "Computing statistics for segmentation";
+				else if(step == "3")
+					desc = "Clustering";
+
+				processingMsg = "(" + processing.replace("_", " ") + ")";
+				$("#results-status-text").html("Step " + step + ": " + percentdone + "%" + " <small style='color:#999'>" + desc + "... " + processingMsg + "<small>");
+
+				if(percentdone > 100)
+					percentdone = 100;
+				$("#results-progress").width((100*(step-1+percentdone/100)/3) + "%");
+
+				// Get current tree
+				//if(tree != "0")
+				//	loadTree(tree);
+
+				// When we're done with the analysis, stop getting progress continually
+				if((step == 3 && percentdone >= 100) || typeof step == 'undefined')
+				{
+						clearInterval(ginkgo_progress);
+				}
+
+				prevStep = step;
+			});
+		}
+
 
 		</script>
 
