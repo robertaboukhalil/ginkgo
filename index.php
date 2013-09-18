@@ -70,8 +70,7 @@ if(file_exists(DIR_UPLOADS . '/' . $GINKGO_USER_ID . '/status.xml'))
 PANEL;
 
 ## -- Submit analysis ----------------------------------------------------------
-if(isset($_POST['analyze']))
-{
+if(isset($_POST['analyze'])) {
 	// Create user directory if doesn't exist
 	@mkdir(DIR_UPLOADS . '/' . $GINKGO_USER_ID);
 		
@@ -125,16 +124,13 @@ if(isset($_POST['analyze']))
 	exit;
 }
 
-// TODO: Load status.xml if exists and check if analysis under way
-if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard")
-{
+// Load status.xml if exists and check if analysis under way
+if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 	$statusFile = DIR_UPLOADS . '/' . $GINKGO_USER_ID . '/status.xml';
-	if(file_exists($statusFile))
-	{
+	if(file_exists($statusFile)) {
 		$status = simplexml_load_file($statusFile);
 		
-		if($status->step < 3 && $status->percentdone < 100)
-		{
+		if($status->step < 3 && $status->percentdone < 100) {
 			header("Location: ?q=results/" . $GINKGO_USER_ID);
 			exit;
 		}
@@ -411,11 +407,12 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard")
 		    <div class="modal-content">
 		      <div class="modal-header">
 		        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-		        <h4 class="modal-title">Are you sure?</h4>
+		        <h4 class="modal-title">Start a new analysis</h4>
 		      </div>
 		      <div class="modal-body">
+						<h4>Are you sure? This will require uploading new files.</h4><br/>
 		        <p>
-		        	<strong>Note</strong>: You can come back to this analysis later:<br/><br/>
+		        	<strong>Note</strong>: You can always come back to this analysis later:<br/><br/>
 		        	<textarea class="input-sm permalink"><?php echo $permalink; ?></textarea>
 		        </p>
 		      </div>
@@ -432,7 +429,6 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard")
 		================================================== -->
 		<script src="http://code.jquery.com/jquery-2.0.3.min.js"></script>
 		<script src="//netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.min.js"></script>
-
 
 	  <!-- JQuery/Bootstrap customization
 	  ================================================== -->
@@ -462,7 +458,6 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard")
 		<script src="includes/fileupload/js/cors/jquery.xdr-transport.js"></script>
 		<![endif]-->
 
-
 	  <!-- jsPhyloSVG
 	  ================================================== -->
 		<script type="text/javascript" src="includes/jsphylosvg/raphael-min.js" ></script>
@@ -473,16 +468,15 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard")
 		<link rel="stylesheet" type="text/css" href="includes/unitip/unitip.css">
 		<script type="text/javascript" src="includes/unitip/unitip.js"></script>
 
-	  <!-- Tinycon
-	  ================================================== -->
-
 
 	  <!-- Ginkgo
 	  ================================================== -->
 		<script language="javascript">
 		var ginkgo_user_id = "<?php echo $GINKGO_USER_ID; ?>";
 
+		// -------------------------------------------------------------------------
 		// -- On page load ---------------------------------------------------------
+		// -------------------------------------------------------------------------
 		$(document).ready(function(){
 			<?php if($GINKGO_PAGE == 'home'): ?>
 				// Set initial size of upload 
@@ -503,34 +497,34 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard")
 			<?php endif; ?>
 		});
 
+		// -------------------------------------------------------------------------
 		// -- Miscellaneous --------------------------------------------------------
+		// -------------------------------------------------------------------------
 		// On page resize
 		$(window).resize(function() {
 		    $(".col-lg-8").height(window.innerHeight - $(".navbar").height() - $(".jumbotron").height() - 200 );
 		});
-		// 
+		// New Analysis button
 		$("#btn-new-analysis").on("click", function(event){
 			window.location = '?q=home'
 		});
-
-		// -- Dashboard ------------------------------------------------------------
-		// Toggle b/w select all cells and select none
+		// Dashboard: Toggle b/w select all cells and select none
 		$('#dashboard-toggle-cells').click(function() {
 			$('#params-cells input[type="checkbox"]').prop('checked',!$('input[type="checkbox"]').prop('checked'));
 		});
 
-		// --
-		// -- Create new analysis
-		// --
+		// -------------------------------------------------------------------------
+		// -- Create new analysis --------------------------------------------------
+		// -------------------------------------------------------------------------
 		function startOver()
 		{
 			if(confirm("Are you sure?\n\nPS: You can come back to this analysis later:\n\n<?php echo $permalink; ?>"))
 				window.location = '?q=';
 		}
 
-		// -----------------------------------------------------------------------------------
+		// -------------------------------------------------------------------------
 		// -- Launch analysis ------------------------------------------------------
-		// -----------------------------------------------------------------------------------
+		// -------------------------------------------------------------------------
 		$('#analyze').click(function() {
 			// -- Get list of cells of interest
 			arrCells = [];
@@ -545,7 +539,7 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard")
 			email = $('#email').val();
 
 			// -- Submit query
-			$.post("?q=dashboard/<?php echo $GINKGO_USER_ID; ?>", {
+			$.post("?q=dashboard/" + ginkgo_user_id, {
 					// General
 					'analyze':	1,
 					'cells[]':	arrCells,
@@ -575,7 +569,7 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard")
 				// If get response
 				function(data) {
 					if(data == "OK")
-						window.location = "<?php echo URL_ROOT . "/?q=results/" . $GINKGO_USER_ID; ?>";
+						window.location = "<?php echo URL_ROOT . "/?q=results/"; ?>" + ginkgo_user_id;
 				}
 			);
 			
@@ -583,14 +577,14 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard")
 			
 		});
 
-		// -----------------------------------------------------------------------------------		
+		// -------------------------------------------------------------------------
 		// -- Refresh progress -----------------------------------------------------
-		// -----------------------------------------------------------------------------------
+		// -------------------------------------------------------------------------
 		function getAnalysisStatus()
 		{
 			// Load status file
 			rndNb = Math.round(Math.random()*10000); // to prevent browser from caching xml file!
-			$.get("<?php echo URL_UPLOADS; ?>/<?php echo $GINKGO_USER_ID; ?>/status.xml?uniq=" + rndNb, function(xmlFile)
+			$.get("<?php echo URL_UPLOADS; ?>/" + ginkgo_user_id + "/status.xml?uniq=" + rndNb, function(xmlFile)
 			{
 				// Extract status fields from status file
 				step				= xmlFile.getElementsByTagName("step")[0].childNodes[0].nodeValue;
@@ -615,8 +609,9 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard")
 				if(percentdone > 100)
 					percentdone = 100;
 
-				$("#results-progress").width((100*(step-1+percentdone/100)/3) + "%");
-				Tinycon.setBubble(percentdone);
+				overallDone = (100*(step-1+percentdone/100)/3);
+				$("#results-progress").width(overallDone + "%");
+				Tinycon.setBubble(overallDone);
 
 				// When we're done with the analysis, stop getting progress continually
 				if((step == 3 && percentdone >= 100) || typeof step == 'undefined')
@@ -637,63 +632,61 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard")
 			});
 		}
 		
-	// -----------------------------------------------------------------------------------
-	// Load a tree
-	// -----------------------------------------------------------------------------------
-	function drawTree(treeFile, outputXML)
-	{
-		Tinycon.setBubble(0);
-		$.get("<?php echo URL_UPLOADS; ?>/<?php echo $GINKGO_USER_ID; ?>" + "/" + treeFile, function(xmlFile)
+		// -------------------------------------------------------------------------
+		// -- Load a tree ----------------------------------------------------------
+		// -------------------------------------------------------------------------
+		function drawTree(treeFile, outputXML)
 		{
-			// Debug
-			if(outputXML == true)
-				console.log( (new XMLSerializer()).serializeToString(xmlFile) );
-
-			//
-			if(xmlFile == "")
-				return;
-
-			// Annotate the phyloXML file
-			$( xmlFile.getElementsByTagName("name") ).each(function(index, value)
+			Tinycon.setBubble(0);
+			$.get("<?php echo URL_UPLOADS; ?>/" + ginkgo_user_id + "/" + treeFile, function(xmlFile)
 			{
-				//	<name>Espresso</name>
-				//	<annotation>
-				//		<desc>Base of many coffees</desc>
-				//		<uri>http://en.wikipedia.org/wiki/Espresso</uri>
-				//	</annotation>
+				// Debug
+				if(outputXML == true)
+					console.log( (new XMLSerializer()).serializeToString(xmlFile) );
 
-				// Current 'name' node
-				currElement = xmlFile.getElementsByTagName("name")[index];
-				cellId = value.childNodes[0].nodeValue;
-				//value.childNodes[0].nodeValue = 'Cell # ' + cellId; // if do that, screw up assigning cell-ID below
+				//
+				if(xmlFile == "")
+					return;
 
-				// Add 'annotation' node next to 'name'
-				annotationNode	= currElement.parentNode.appendChild(xmlFile.createElement("annotation"));
-				annotationNode
-					.appendChild(xmlFile.createElement("desc"))
-					.appendChild(xmlFile.createTextNode("<img width='500' src='<?php echo URL_UPLOADS; ?>/<?php echo $GINKGO_USER_ID; ?>/" + cellId + ".jpeg'>" + cellId));
-				annotationNode
-					.appendChild(xmlFile.createElement("uri"))
-					.appendChild(xmlFile.createTextNode("javascript:showProfile('" + cellId + "')"));
+				// Annotate the phyloXML file
+				$( xmlFile.getElementsByTagName("name") ).each(function(index, value)
+				{
+					//	<name>Espresso</name>
+					//	<annotation>
+					//		<desc>Base of many coffees</desc>
+					//		<uri>http://en.wikipedia.org/wiki/Espresso</uri>
+					//	</annotation>
+
+					// Current 'name' node
+					currElement = xmlFile.getElementsByTagName("name")[index];
+					cellId = value.childNodes[0].nodeValue;
+					//value.childNodes[0].nodeValue = 'Cell # ' + cellId; // if do that, screw up assigning cell-ID below
+
+					// Add 'annotation' node next to 'name'
+					annotationNode	= currElement.parentNode.appendChild(xmlFile.createElement("annotation"));
+					annotationNode
+						.appendChild(xmlFile.createElement("desc"))
+						.appendChild(xmlFile.createTextNode("<img width='500' src='<?php echo URL_UPLOADS; ?>/" + ginkgo_user_id + "/" + cellId + ".jpeg'>" + cellId));
+					annotationNode
+						.appendChild(xmlFile.createElement("uri"))
+						.appendChild(xmlFile.createTextNode("javascript:showProfile('" + cellId + "')"));
+				});
+
+				$("#svgCanvas").html("");
+				ginkgo_phylocanvas = "";
+				dataObject = "";
+
+				// Define tree and size (based on current window size!)
+				var dataObject = { xml: xmlFile, fileSource: true };
+				treeHeight = 500;
+				treeWidth  = 500;
+				// Show tree
+				ginkgo_phylocanvas = new Smits.PhyloCanvas(dataObject, 'svgCanvas', treeWidth, treeHeight); //, 'circular'
+
+				// Init unitip (see unitip.css to change tip size)
+				init();
 			});
-
-			$("#svgCanvas").html("");
-			ginkgo_phylocanvas = "";
-			dataObject = "";
-
-			// Define tree and size (based on current window size!)
-			var dataObject = { xml: xmlFile, fileSource: true };
-			treeHeight = 500;
-			treeWidth  = 500;
-			// Show tree
-			ginkgo_phylocanvas = new Smits.PhyloCanvas(dataObject, 'svgCanvas', treeWidth, treeHeight); //, 'circular'
-
-			// Init unitip (see unitip.css to change tip size)
-			init();
-		});
-	}
-
-
+		}
 		</script>
 
 	</body>
