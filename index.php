@@ -166,6 +166,15 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard")
 			#permalink	{ border:1px solid #DDD; width:100%; color:#666; background:transparent; font-family:"courier"; resize:none; height:50px; }
 			#results-navigation { display:none; }
 		</style>
+
+		<script type="text/javascript" src="includes/tinycon/tinycon.min.js"></script>
+		<link rel="icon" href="includes/tinycon/favicon.ico" />
+		<script>
+			(function(){
+				//Tinycon.setBubble(34);
+			})();
+		</script>
+
 	</head>
 
 	<body>
@@ -430,19 +439,25 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard")
 		<![endif]-->
 
 
-	  <!-- jsPhyloSVG + uniTip
+	  <!-- jsPhyloSVG
 	  ================================================== -->
 		<script type="text/javascript" src="includes/jsphylosvg/raphael-min.js" ></script>
 		<script type="text/javascript" src="includes/jsphylosvg/jsphylosvg.js"></script>
+
+	  <!-- uniTip
+	  ================================================== -->
 		<link rel="stylesheet" type="text/css" href="includes/unitip/unitip.css">
 		<script type="text/javascript" src="includes/unitip/unitip.js"></script>
+
+	  <!-- Tinycon
+	  ================================================== -->
 
 
 	  <!-- Ginkgo
 	  ================================================== -->
 		<script language="javascript">
 		var ginkgo_user_id = "<?php echo $GINKGO_USER_ID; ?>";
-		
+
 		// -- On page load ---------------------------------------------------------
 		$(document).ready(function(){
 			<?php if($GINKGO_PAGE == 'home'): ?>
@@ -560,7 +575,9 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard")
 				// Update progress bar % completed
 				if(percentdone > 100)
 					percentdone = 100;
+
 				$("#results-progress").width((100*(step-1+percentdone/100)/3) + "%");
+				Tinycon.setBubble(percentdone);
 
 				// When we're done with the analysis, stop getting progress continually
 				if((step == 3 && percentdone >= 100) || typeof step == 'undefined')
