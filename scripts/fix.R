@@ -54,7 +54,7 @@ dev.off()
 if (f == 1) {
 
   statusFile<-file( paste(user_dir, "/", status, sep="") )
-  writeLines(c("<?xml version='1.0'?>", "<status>", "<step>4</step>", "<processingfile>Computing Copy Number Dendogram</processingfile>", "<percentdone>50</percentdone>", "<tree>hist.newick</tree>", "</status>"), statusFile)
+  writeLines(c("<?xml version='1.0'?>", "<status>", "<step>4</step>", "<processingfile>Computing Copy Number Dendogram</processingfile>", "<percentdone>50</percentdone>", "<tree>hist2.newick</tree>", "</status>"), statusFile)
   close(statusFile)
 
   final=read.table("SegCopy", header=TRUE, sep="\t", as.is=TRUE)
@@ -72,6 +72,14 @@ if (f == 1) {
   T_clust2 = hclust(d, method = cm)
   T_clust2$labels = lab
   write(hc2Newick(T_clust), file=paste(user_dir, "/hist2.newick", sep=""))
+
+	###
+	main_dir="/mnt/data/ginkgo/scripts"
+	command=paste("java -cp ", main_dir, "/forester_1025.jar org.forester.application.phyloxml_converter -f=nn ", user_dir, "/hist2.newick ", user_dir, "/hist2.xml", sep="");
+	unlink( paste(user_dir, "/hist2.xml", sep="") );
+	system(command);
+	### 
+
 
   #Plot copy number cluster
   jpeg("clust2.jpeg", width=2000, height=1400)
