@@ -63,7 +63,7 @@ if(file_exists(DIR_UPLOADS . '/' . $GINKGO_USER_ID . '/status.xml'))
 			<div class="panel panel-primary">
 				<div class="panel-heading"><h3 class="panel-title"><span class="glyphicon glyphicon-stats"></span> Previous analysis results</h3></div>
 				<div class="panel-body">
-					[TODO: list previous analysis reports]<br/><br/>
+					See your <a href="?q=results/$GINKGO_USER_ID">previous analysis results</a>.<br/><br/>
 					<strong>Note</strong>: Running another analysis will overwrite previous results.
 				</div>
 			</div>
@@ -273,8 +273,16 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard")
 					<!-- Choose cells of interest -->
 					<h3 style="margin-top:-5px;"><span class="badge">STEP 1</span> Choose cells for analysis</h3>
 					<div id="params-cells">
+						<?php $previouslySelected = file(DIR_UPLOADS . '/' . $GINKGO_USER_ID . '/list', FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES); ?>
+						<?php $selected = array(); ?>
 						<?php foreach($MY_CELLS as $currCell): ?>
-				    <label><div class="input-group" style="margin:20px;"><span class="input-group-addon"><input type="checkbox" name="dashboard_cells[]" value="<?php echo $currCell; ?>"></span><span class="form-control"><?php echo $currCell; ?></span></div></label>
+						<?php
+										// Was the current cell previously selected in an analysis?
+										$selected[$currCell] = "";
+										if(in_array($currCell, $previouslySelected))
+											$selected[$currCell] = " checked";
+						?>
+				    <label><div class="input-group" style="margin:20px;"><span class="input-group-addon"><input type="checkbox" name="dashboard_cells[]" value="<?php echo $currCell; ?>"<?php echo $selected[$currCell];?>></span><span class="form-control"><?php echo $currCell; ?></span></div></label>
 						<?php endforeach; ?>
 						<br/>
 						<button id="dashboard-toggle-cells" class="btn btn-info" style="margin:20px;">Select all cells</button>
