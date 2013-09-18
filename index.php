@@ -144,8 +144,9 @@ if(isset($_POST['analyze']))
 		<!-- Custom styles -->
 		<style>
 			html, body	{ height:100%; }
-			td			{ vertical-align:middle !important; }
+			td					{ vertical-align:middle !important; }
 			code input	{ border:none; color:#c7254e; background-color:#f9f2f4; width:100%; }
+			svgCanvas		{ fill: none; pointer-events: all; }
 			.jumbotron	{ padding:50px 30px 15px 30px; }
 			.glyphicon	{ vertical-align:top; }
 			.badge		{ vertical-align:top; margin-top:5px; }
@@ -350,7 +351,7 @@ if(isset($_POST['analyze']))
 			<div class="row">
 				<div id="results" class="col-lg-8">
 					<h3 style="margin-top:-5px;"><span class="badge">STEP 3</span> View results</h3>
-					<div id="results-tree">
+					<div id="svgCanvas" class="row-fluid">
 						
 					</div>
 
@@ -403,6 +404,14 @@ if(isset($_POST['analyze']))
 		<!--[if (gte IE 8)&(lt IE 10)]>
 		<script src="includes/fileupload/js/cors/jquery.xdr-transport.js"></script>
 		<![endif]-->
+
+
+	  <!-- jsPhyloSVG + uniTip
+	  ================================================== -->
+		<script type="text/javascript" src="includes/jsphylosvg/raphael-min.js" ></script>
+		<script type="text/javascript" src="includes/jsphylosvg/jsphylosvg.js"></script>
+		<link rel="stylesheet" type="text/css" href="includes/unitip/unitip.css">
+		<script type="text/javascript" src="includes/unitip/unitip.js"></script>
 
 
 	  <!-- Ginkgo
@@ -535,7 +544,7 @@ if(isset($_POST['analyze']))
 	// -----------------------------------------------------------------------------------
 	// Load a tree
 	// -----------------------------------------------------------------------------------
-	function drawTree(treeFile, outputXML, dendrogram)
+	function drawTree(treeFile, outputXML)
 	{
 		$.get("<?php echo URL_UPLOADS; ?>/<?php echo $GINKGO_USER_ID; ?>" + "/" + treeFile, function(xmlFile)
 		{
@@ -565,14 +574,14 @@ if(isset($_POST['analyze']))
 				annotationNode	= currElement.parentNode.appendChild(xmlFile.createElement("annotation"));
 				annotationNode
 					.appendChild(xmlFile.createElement("desc"))
-					.appendChild(xmlFile.createTextNode("<img width='500' src='./data/" + _ssa_user_id + "/" + cellId + ".jpeg'>" + cellId));
+					.appendChild(xmlFile.createTextNode("<img width='500' src='<?php echo URL_UPLOADS; ?>/<?php echo $GINKGO_USER_ID; ?>/" + cellId + ".jpeg'>" + cellId));
 				annotationNode
 					.appendChild(xmlFile.createElement("uri"))
 					.appendChild(xmlFile.createTextNode("javascript:showProfile('" + cellId + "')"));
 			});
 
 			$("#svgCanvas").html("");
-			_ssa_phylocanvas = "";
+			ginkgo_phylocanvas = "";
 			dataObject = "";
 
 			// Define tree and size (based on current window size!)
@@ -580,17 +589,10 @@ if(isset($_POST['analyze']))
 			treeHeight = 500;
 			treeWidth  = 500;
 			// Show tree
-			if(dendrogram)
-				_ssa_phylocanvas = new Smits.PhyloCanvas(dataObject, 'svgCanvas', treeWidth, treeHeight);
-			else
-				_ssa_phylocanvas = new Smits.PhyloCanvas(dataObject, 'svgCanvas', treeWidth, treeHeight, 'circular');
+			ginkgo_phylocanvas = new Smits.PhyloCanvas(dataObject, 'svgCanvas', treeWidth, treeHeight); //, 'circular'
 
 			// Init unitip (see unitip.css to change tip size)
 			init();
-
-			// Show results
-			$("#dashboard-results").show();
-			_ssa_is_init = true;
 		});
 	}
 
