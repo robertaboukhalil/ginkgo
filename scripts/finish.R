@@ -220,6 +220,14 @@ T_clust = hclust(d, method = cm)
 T_clust$labels = lab
 write(hc2Newick(T_clust), file=paste(user_dir, "/hist.newick", sep=""))
 
+###
+main_dir="/mnt/data/ginkgo/scripts"
+command=paste("java -cp ", main_dir, "/forester_1025.jar org.forester.application.phyloxml_converter -f=nn ", user_dir, "/hist.newick ", user_dir, "/hist.xml", sep="");
+unlink( paste(user_dir, "/hist.xml", sep="") );
+system(command);
+### 
+
+
 #Plot cluster
 jpeg("clust.jpeg", width=2000, height=1400)
 plot(T_clust)
