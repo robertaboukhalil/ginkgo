@@ -125,6 +125,21 @@ if(isset($_POST['analyze']))
 	exit;
 }
 
+// TODO: Load status.xml if exists and check if analysis under way
+if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard")
+{
+	$statusFile = DIR_UPLOADS . '/' . $GINKGO_USER_ID . '/status.xml';
+	if(file_exists($statusFile))
+	{
+		$status = simplexml_load_file($statusFile);
+		
+		if($status->step < 3 && $status->percentdone < 100)
+		{
+			header("Location: ?q=results/" . $GINKGO_USER_ID);
+			exit;
+		}
+	}
+}
 
 ?><!DOCTYPE html>
 <html lang="en">
@@ -147,8 +162,9 @@ if(isset($_POST['analyze']))
 			svgCanvas		{ fill: none; pointer-events: all; }
 			.jumbotron	{ padding:50px 30px 15px 30px; }
 			.glyphicon	{ vertical-align:top; }
-			.badge		{ vertical-align:top; margin-top:5px; }
+			.badge			{ vertical-align:top; margin-top:5px; }
 			#permalink	{ border:1px solid #DDD; width:100%; color:#666; background:transparent; font-family:"courier"; resize:none; height:50px; }
+			#results-navigation { display:none; }
 		</style>
 	</head>
 
@@ -350,13 +366,15 @@ if(isset($_POST['analyze']))
 				<div id="results" class="col-lg-8">
 					<h3 style="margin-top:-5px;"><span class="badge">STEP 3</span> View results</h3>
 					<div id="svgCanvas" class="row-fluid">
-						
+						Analyzing your data...
 					</div>
 
 					<!-- Buttons: back or next -->
-					<br/><br/>
-					<hr style="height:5px;border:none;background-color:#CCC;" /><br/>
-					<div style="float:left"><a class="btn btn-lg btn-primary" href="?q=dashboard/<?php echo $GINKGO_USER_ID; ?>"><span class="glyphicon glyphicon-chevron-left"></span> Analysis Options </a></div>
+					<div id="results-navigation">
+						<br/><br/>
+						<hr style="height:5px;border:none;background-color:#CCC;" /><br/>
+						<div style="float:left"><a class="btn btn-lg btn-primary" href="?q=dashboard/<?php echo $GINKGO_USER_ID; ?>"><span class="glyphicon glyphicon-chevron-left"></span> Analysis Options </a></div>
+					</div>
 				</div>
 
 				<div class="col-lg-4">
@@ -549,6 +567,7 @@ if(isset($_POST['analyze']))
 					// Fix UI
 					$(".progress").hide();
 					$("#results-status-text").html("Analysis complete!");
+					$("#results-navigation").show();
 					
 					// TODO: Output other results
 				}
