@@ -116,14 +116,12 @@ if(isset($_POST['analyze']))
 	file_put_contents(DIR_UPLOADS . '/' . $GINKGO_USER_ID . '/config', $config);
 
 	// Start analysis
-	$cmd = "./scripts/analyze $GINKGO_USER_ID";
+	$cmd = "./scripts/analyze $GINKGO_USER_ID &";
 	session_regenerate_id(TRUE);	
 	$handle = popen($cmd, 'r');
 	#$out = stream_get_contents($handle);
 	pclose($handle);
-
-	// Go to result page to show progress (that way if user refreshes page for whatever reason, won't try to re-POST)
-	header("Location: ?q=results/" . $GINKGO_USER_ID);
+	echo "OK";
 	exit;
 }
 
@@ -430,6 +428,9 @@ if(isset($_POST['analyze']))
 				$("#params-table").hide();
 
 			<?php elseif($GINKGO_PAGE == 'results'): ?>
+				// Don't wait 1 second to show 'Analysis Complete'
+				getAnalysisStatus();
+				
 				// Launch function to keep updating status
 				ginkgo_progress = setInterval( "getAnalysisStatus()", 1000 );
 
@@ -447,11 +448,18 @@ if(isset($_POST['analyze']))
 			$('#params-cells input[type="checkbox"]').prop('checked',!$('input[type="checkbox"]').prop('checked'));
 		});
 		
+		// -----------------------------------------------------------------------------------
 		// -- Launch analysis ------------------------------------------------------
+		// -----------------------------------------------------------------------------------
 		$('#analyze').click(function() {
 			// -- Get list of cells of interest
 			arrCells = [];
 			$("#params-cells :checked").each(function() { arrCells.push($(this).val()); });
+			if(arrCells.length < 3)
+			{
+				alert("Please choose at least 3 cells for your analysis.");
+				return;
+			}
 
 			// -- Get email
 			email = $('#email').val();
@@ -484,14 +492,20 @@ if(isset($_POST['analyze']))
 					// Genome
 					'chosen_genome': 'hg18',
 				},
-				// If get response, means an error occured. Otherwise, goes to results page
+				// If get response
 				function(data) {
-					alert(data);
+					if(data == "OK")
+						window.location = "<?php echo URL_ROOT . "/?q=results/" . $GINKGO_USER_ID; ?>";
 				}
 			);
+			
+			//
+			
 		});
-		
+
+		// -----------------------------------------------------------------------------------		
 		// -- Refresh progress -----------------------------------------------------
+		// -----------------------------------------------------------------------------------
 		function getAnalysisStatus()
 		{
 			// Load status file
@@ -536,7 +550,7 @@ if(isset($_POST['analyze']))
 					$(".progress").hide();
 					$("#results-status-text").html("Analysis complete!");
 					
-					// TODO: Output results
+					// TODO: Output other results
 				}
 			});
 		}
