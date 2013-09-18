@@ -51,7 +51,7 @@ $PANEL_LATER = <<<PANEL
 				<div class="panel-heading"><h3 class="panel-title"><span class="glyphicon glyphicon-time"></span> View analysis later</h3></div>
 				<div class="panel-body">
 					Access your results later at the following address:<br/><br/>
-					<textarea class="input-sm" id="permalink">{$permalink}</textarea>
+					<textarea class="input-sm permalink">{$permalink}</textarea>
 				</div>
 			</div>
 PANEL;
@@ -163,17 +163,13 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard")
 			.jumbotron	{ padding:50px 30px 15px 30px; }
 			.glyphicon	{ vertical-align:top; }
 			.badge			{ vertical-align:top; margin-top:5px; }
-			#permalink	{ border:1px solid #DDD; width:100%; color:#666; background:transparent; font-family:"courier"; resize:none; height:50px; }
+			.permalink	{ border:1px solid #DDD; width:100%; color:#666; background:transparent; font-family:"courier"; resize:none; height:50px; }
 			#results-navigation { display:none; }
 		</style>
 
+		<!-- Tinycon styles/javascript -->
 		<script type="text/javascript" src="includes/tinycon/tinycon.min.js"></script>
-		<link rel="icon" href="includes/tinycon/favicon.ico" />
-		<script>
-			(function(){
-				//Tinycon.setBubble(34);
-			})();
-		</script>
+		<link rel="icon" href="includes/tinycon/ginkgo.ico" />
 
 	</head>
 
@@ -189,6 +185,12 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard")
 						<span class="icon-bar"></span>
 				  </button>
 					<a class="navbar-brand" href="?q=home/<?php echo $GINKGO_USER_ID; ?>"><span class="glyphicon glyphicon-tree-deciduous"></span> Ginkgo</a>
+
+					<ul class="nav navbar-nav">
+						<li><a data-toggle="modal" href="#modal-new-analysis"><strong>New analysis</strong></a></li>
+					</ul>
+
+
 				</div>
 				<div class="navbar-collapse collapse">
 					<ul class="nav navbar-nav navbar-right">
@@ -403,6 +405,28 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard")
 
 		</div> <!-- /container -->
 
+		<!-- Dialog to confirm creating a new analysis -->
+		<div class="modal fade" id="modal-new-analysis">
+		  <div class="modal-dialog">
+		    <div class="modal-content">
+		      <div class="modal-header">
+		        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+		        <h4 class="modal-title">Are you sure?</h4>
+		      </div>
+		      <div class="modal-body">
+		        <p>
+		        	<strong>Note</strong>: You can come back to this analysis later:<br/><br/>
+		        	<textarea class="input-sm permalink"><?php echo $permalink; ?></textarea>
+		        </p>
+		      </div>
+		      <div class="modal-footer">
+		        <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+		        <button type="button" class="btn btn-primary" id="btn-new-analysis">Create new analysis</button>
+		      </div>
+		    </div><!-- /.modal-content -->
+		  </div><!-- /.modal-dialog -->
+		</div><!-- /.modal -->
+
 
 		<!-- Bootstrap core JavaScript
 		================================================== -->
@@ -418,7 +442,7 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard")
 		$('.dropdown-menu').find('form').click(function (e) { e.stopPropagation(); });
 		
 		// When click inside permalink box, select all
-		$("#permalink").focus(function() { $(this).select(); } );
+		$(".permalink").focus(function() { $(this).select(); } );
 		</script>
 
 
@@ -470,6 +494,7 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard")
 
 			<?php elseif($GINKGO_PAGE == 'results'): ?>
 				// Don't wait 1 second to show 'Analysis Complete'
+				Tinycon.setBubble(0);
 				getAnalysisStatus();
 				
 				// Launch function to keep updating status
@@ -478,9 +503,14 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard")
 			<?php endif; ?>
 		});
 
-		// -- On page resize -------------------------------------------------------
+		// -- Miscellaneous --------------------------------------------------------
+		// On page resize
 		$(window).resize(function() {
 		    $(".col-lg-8").height(window.innerHeight - $(".navbar").height() - $(".jumbotron").height() - 200 );
+		});
+		// 
+		$("#btn-new-analysis").on("click", function(event){
+			window.location = '?q=home'
 		});
 
 		// -- Dashboard ------------------------------------------------------------
@@ -488,7 +518,16 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard")
 		$('#dashboard-toggle-cells').click(function() {
 			$('#params-cells input[type="checkbox"]').prop('checked',!$('input[type="checkbox"]').prop('checked'));
 		});
-		
+
+		// --
+		// -- Create new analysis
+		// --
+		function startOver()
+		{
+			if(confirm("Are you sure?\n\nPS: You can come back to this analysis later:\n\n<?php echo $permalink; ?>"))
+				window.location = '?q=';
+		}
+
 		// -----------------------------------------------------------------------------------
 		// -- Launch analysis ------------------------------------------------------
 		// -----------------------------------------------------------------------------------
@@ -584,7 +623,6 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard")
 				{
 					// Remove auto-update timer
 					clearInterval(ginkgo_progress);
-
 					// Load tree
 					if(typeof tree != 'undefined')
 						drawTree(tree);
@@ -604,6 +642,7 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard")
 	// -----------------------------------------------------------------------------------
 	function drawTree(treeFile, outputXML)
 	{
+		Tinycon.setBubble(0);
 		$.get("<?php echo URL_UPLOADS; ?>/<?php echo $GINKGO_USER_ID; ?>" + "/" + treeFile, function(xmlFile)
 		{
 			// Debug
