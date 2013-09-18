@@ -44,7 +44,7 @@ $_SESSION["user_id"] = $GINKGO_USER_ID;
 
 ## -- Template configuration -----
 // Panel for permalink
-$permalink = URL_ROOT . '?q=/' . $GINKGO_USER_ID;
+$permalink = URL_ROOT . '?q=results/' . $GINKGO_USER_ID;
 $PANEL_LATER = <<<PANEL
 			<!-- Panel: Save for later -->
 			<div class="panel panel-primary">
@@ -350,8 +350,8 @@ if(isset($_POST['analyze']))
 			<div class="row">
 				<div id="results" class="col-lg-8">
 					<h3 style="margin-top:-5px;"><span class="badge">STEP 3</span> View results</h3>
-					<div id="results-stuff">
-						Sup.
+					<div id="results-tree">
+						
 					</div>
 
 					<!-- Buttons: back or next -->
@@ -486,13 +486,14 @@ if(isset($_POST['analyze']))
 		function getAnalysisStatus()
 		{
 			// Load status file
-			$.get("<?php echo URL_UPLOADS; ?>/<?php echo $GINKGO_USER_ID; ?>/status.xml", function(xmlFile)
+			rndNb = Math.round(Math.random()*10000); // to prevent browser from caching xml file!
+			$.get("<?php echo URL_UPLOADS; ?>/<?php echo $GINKGO_USER_ID; ?>/status.xml?uniq=" + rndNb, function(xmlFile)
 			{
 				// Extract status fields from status file
-				step			= xmlFile.getElementsByTagName("step")[0].childNodes[0].nodeValue;
+				step				= xmlFile.getElementsByTagName("step")[0].childNodes[0].nodeValue;
 				processing	= xmlFile.getElementsByTagName("processingfile")[0].childNodes[0].nodeValue;
 				percentdone	= xmlFile.getElementsByTagName("percentdone")[0].childNodes[0].nodeValue;
-				tree			= xmlFile.getElementsByTagName("tree")[0].childNodes[0];
+				tree				= xmlFile.getElementsByTagName("tree")[0].childNodes[0];
 				if(typeof tree != 'undefined')
 					tree = tree.nodeValue;
 
@@ -520,7 +521,7 @@ if(isset($_POST['analyze']))
 
 					// Load tree
 					if(typeof tree != 'undefined')
-						alert(tree);
+						drawTree(tree);
 
 					// Fix UI
 					$(".progress").hide();
@@ -530,6 +531,68 @@ if(isset($_POST['analyze']))
 				}
 			});
 		}
+		
+	// -----------------------------------------------------------------------------------
+	// Load a tree
+	// -----------------------------------------------------------------------------------
+	function drawTree(treeFile, outputXML, dendrogram)
+	{
+		$.get("<?php echo URL_UPLOADS; ?>/<?php echo $GINKGO_USER_ID; ?>" + "/" + treeFile, function(xmlFile)
+		{
+			// Debug
+			if(outputXML == true)
+				console.log( (new XMLSerializer()).serializeToString(xmlFile) );
+
+			//
+			if(xmlFile == "")
+				return;
+
+			// Annotate the phyloXML file
+			$( xmlFile.getElementsByTagName("name") ).each(function(index, value)
+			{
+				//	<name>Espresso</name>
+				//	<annotation>
+				//		<desc>Base of many coffees</desc>
+				//		<uri>http://en.wikipedia.org/wiki/Espresso</uri>
+				//	</annotation>
+
+				// Current 'name' node
+				currElement = xmlFile.getElementsByTagName("name")[index];
+				cellId = value.childNodes[0].nodeValue;
+				//value.childNodes[0].nodeValue = 'Cell # ' + cellId; // if do that, screw up assigning cell-ID below
+
+				// Add 'annotation' node next to 'name'
+				annotationNode	= currElement.parentNode.appendChild(xmlFile.createElement("annotation"));
+				annotationNode
+					.appendChild(xmlFile.createElement("desc"))
+					.appendChild(xmlFile.createTextNode("<img width='500' src='./data/" + _ssa_user_id + "/" + cellId + ".jpeg'>" + cellId));
+				annotationNode
+					.appendChild(xmlFile.createElement("uri"))
+					.appendChild(xmlFile.createTextNode("javascript:showProfile('" + cellId + "')"));
+			});
+
+			$("#svgCanvas").html("");
+			_ssa_phylocanvas = "";
+			dataObject = "";
+
+			// Define tree and size (based on current window size!)
+			var dataObject = { xml: xmlFile, fileSource: true };
+			treeHeight = 500;
+			treeWidth  = 500;
+			// Show tree
+			if(dendrogram)
+				_ssa_phylocanvas = new Smits.PhyloCanvas(dataObject, 'svgCanvas', treeWidth, treeHeight);
+			else
+				_ssa_phylocanvas = new Smits.PhyloCanvas(dataObject, 'svgCanvas', treeWidth, treeHeight, 'circular');
+
+			// Init unitip (see unitip.css to change tip size)
+			init();
+
+			// Show results
+			$("#dashboard-results").show();
+			_ssa_is_init = true;
+		});
+	}
 
 
 		</script>
