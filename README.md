@@ -5,6 +5,8 @@ Ginkgo: Single-cell copy-number analysis
 
 ###### First release
 - If launch an analysis that was already run before, don't redo it
+- Show QA stats
+- Show stats per cell
 
 ###### Next release
 - Have "Cancel" button to stop an analysis (but how? store pid?)
