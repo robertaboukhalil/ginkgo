@@ -325,6 +325,7 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 				<div id="dashboard" class="col-lg-8">
 					<!-- Choose cells of interest -->
 					<h3 style="margin-top:-5px;"><span class="badge">STEP 1</span> Choose cells for analysis</h3>
+					
 					<div id="params-cells">
 						<?php $previouslySelected = file(DIR_UPLOADS . '/' . $GINKGO_USER_ID . '/list', FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES); ?>
 						<?php $selected = array(); ?>
@@ -341,8 +342,31 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 						<button id="dashboard-toggle-cells" class="btn btn-info" style="margin:20px;">Select all cells</button>
 					</div>
 
+					<!-- Which genome? -->
+					<br/><br/><h3 style="margin-top:-5px;"><span class="badge">STEP 2</span> Choose genome <small></small></h3>
+					<div id="params-genome" style="margin:20px;">
+						<table class="table table-striped">
+							<tbody>
+								<tr>
+									<td width="20%">Genome:</td>
+									<td>
+										<select id="param-genome" class="input-mini" style="margin-top:8px; font-size:11px; padding-top:3px; padding-bottom:0; height:25px; ">
+											<optgroup label="Latest genomes">
+												<option value="hg19">hg19</option>
+												<option value="panTro4">panTro4</option>
+											</optgroup>
+											<optgroup label="Older genomes">
+												<option value="hg18">hg18</option>
+												<option value="panTro3">panTro3</option>
+											</optgroup>
+										</select>
+									</td>
+								</tr>
+							</table>
+					</div>
+
 					<!-- Get informed by email when done? -->
-					<br/><h3 style="margin-top:-5px;"><span class="badge">STEP 2</span> E-mail notification <small></small></h3>
+					<br/><br/><h3 style="margin-top:-5px;"><span class="badge">STEP 3</span> E-mail notification <small></small></h3>
 					<div id="params-email" style="margin:20px;">
 						<p>If you want to be notified once the analysis is done, enter your e-mail here:<br/></p>
 						<div class="input-group">
@@ -351,6 +375,9 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 						</div>
 					</div>
 					<br/><br/>
+
+
+
 
 					<!-- Buttons: back or next -->
 					<div style="float:left"><a class="btn btn-lg btn-primary" href="?q=/<?php echo $GINKGO_USER_ID; ?>"><span class="glyphicon glyphicon-chevron-left"></span> Manage Files </a></div>
@@ -610,7 +637,7 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 					'binList':	'',
 					
 					// Genome
-					'chosen_genome': 'hg18',
+					'chosen_genome': $('#param-genome').val(),
 				},
 				// If get response
 				function(data) {
