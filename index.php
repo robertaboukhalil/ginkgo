@@ -72,27 +72,41 @@ PANEL;
 // Define user directory
 $userDir = DIR_UPLOADS . '/' . $GINKGO_USER_ID;
 
-## -- Upload facs file ---------------------------------------------------------
-if($GINKGO_PAGE == 'facs') {
-	// No facs file => return empty
-	if(empty($_FILES))
-		die("");
-
-	// Error: invalid file type => return error
-	if($_FILES['file']['type'] != "text/plain")
-		die("error");
+## -- Upload facs / binning file -----------------------------------------------
+if($GINKGO_PAGE == 'admin-upload') {
 
 	// Create user directory if doesn't exist
 	@mkdir($userDir);
 
-	// Upload facs file	(return ok if works)
-	if(is_uploaded_file($_FILES['file']['tmp_name']))
+	// Error: invalid file type => return error
+	if($_FILES['params-facs-file']['type'] != "text/plain" || $_FILES['params-binning-file']['type'] != "text/plain")
+		die("error");
+
+	$result = "";
+
+	// FACS file
+	if(!empty($_FILES['params-facs-file']))
 	{
-		move_uploaded_file($_FILES['file']['tmp_name'], $userDir . "/facs.txt");
-		die("ok");
+		// Upload facs file
+		if(is_uploaded_file($_FILES['params-facs-file']['tmp_name']))
+		{
+			move_uploaded_file($_FILES['params-facs-file']['tmp_name'], $userDir . "/user-facs.txt");
+			$result .= "facs";
+		}
 	}
-	
-	die("");
+
+	// Binning file
+	if(!empty($_FILES['params-binning-file']))
+	{
+		// Upload binning file
+		if(is_uploaded_file($_FILES['params-binning-file']['tmp_name']))
+		{
+			move_uploaded_file($_FILES['params-binning-file']['tmp_name'], $userDir . "/user-bins.txt");
+			$result .= "bins";
+		}
+	}
+
+	die($result);
 }
 
 
@@ -346,6 +360,7 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 			<!-- Dashboard -->
 			<div class="row">
 				<div id="dashboard" class="col-lg-8">
+				<form id="form-dashboard">
 					<!-- Choose cells of interest -->
 					<h3 style="margin-top:-5px;"><span class="badge">STEP 1</span> Choose cells for analysis</h3>
 					
@@ -389,7 +404,7 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 								<tr>
 									<td>FACS file:</td>
 									<td>
-										<form enctype='multipart/form-data'>
+										<!-- <form enctype='multipart/form-data'> -->
 											<div class="fileupload fileupload-new" data-provides="fileupload">
 												<div class="input-append">
 													<div class="uneditable-input span3">
@@ -398,7 +413,7 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 													</div>
 
 													<span class="btn btn-file">
-														<span class="fileupload-new btn btn-success">Select .facs file</span>
+														<span class="fileupload-new btn btn-success">Select .txt file</span>
 														<span class="fileupload-exists btn btn-success">Change</span>
 														<input type="file" name="params-facs-file" />
 													</span>
@@ -406,7 +421,6 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 													<a href="#" class="btn btn-danger fileupload-exists" data-dismiss="fileupload">Remove</a>
 												</div>
 											</div>
-										</form>
 									</td>
 								</tr>
 							</table>
@@ -425,11 +439,7 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 
 
 
-
-					<!-- Buttons: back or next -->
-					<div style="float:left"><a class="btn btn-lg btn-primary" href="?q=/<?php echo $GINKGO_USER_ID; ?>"><span class="glyphicon glyphicon-chevron-left"></span> Manage Files </a></div>
-					<div style="float:right"><a id="analyze" class="btn btn-lg btn-primary" href="javascript:void(0);">Start Analysis <span class="glyphicon glyphicon-chevron-right"></span></a></div><br/><br/><br/>
-					<hr style="height:5px;border:none;background-color:#CCC;" /><br/>
+				<!-- buttons -->
 
 					<!-- Set parameters -->
 					<h3 style="margin-top:-5px;"><span class="badge">OPTIONAL</span> <a href="#parameters" onClick="javascript:$('#params-table').toggle();">Advanced parameters</a></h3>
@@ -452,8 +462,27 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 							<tr>
 								<td>Custom binning file (format?)</td>
 								<td style="height:45px;">
-									[]<br/>
-									This will discard the general binning options.
+									
+										<!-- <form enctype='multipart/form-data'> -->
+										<div class="fileupload fileupload-new" data-provides="fileupload">
+											<div class="input-append">
+												<div class="uneditable-input span3">
+													<i class="glyphicon glyphicon-upload"></i>
+													<span class="fileupload-preview"></span>
+												</div>
+
+												<span class="btn btn-file">
+													<span class="fileupload-new btn btn-success">Select .txt file</span>
+													<span class="fileupload-exists btn btn-success">Change</span>
+													<input type="file" name="params-binning-file" />
+												</span>
+
+												<a href="#" class="btn btn-danger fileupload-exists" data-dismiss="fileupload">Remove</a>
+											</div>
+										</div>
+
+									
+									This will overwrite the general binning options.
 								</td>
 							</tr>
 							<tr>
@@ -491,6 +520,17 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 					</table>
 					<br/>
 					<a name="parameters"></a>
+					
+					
+					
+
+					<!-- Buttons: back or next -->
+					<hr style="height:5px;border:none;background-color:#CCC;" /><br/>
+					<div style="float:left"><a class="btn btn-lg btn-primary" href="?q=/<?php echo $GINKGO_USER_ID; ?>"><span class="glyphicon glyphicon-chevron-left"></span> Manage Files </a></div>
+					<div style="float:right"><a id="analyze" class="btn btn-lg btn-primary" href="javascript:void(0);">Start Analysis <span class="glyphicon glyphicon-chevron-right"></span></a></div><br/><br/><br/>
+
+				</form>
+					
 				</div>
 
 				<div class="col-lg-4">
@@ -670,27 +710,32 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 			email = $('#email').val();
 
 			// -- Submit query
-			//alert(document.querySelector("input[type='file']").files[0])
-			el = document.querySelector("input[type='file']")
-
-			var fd = new FormData();    
-			fd.append( 'file', el.files[0] );
-
+			var fd = new FormData( $("form#form-dashboard")[0] );
 			$.ajax({
-			  url: '?q=facs/' + ginkgo_user_id,
+			  url: '?q=admin-upload/' + ginkgo_user_id,
 			  data: fd,
 			  processData: false,
 			  contentType: false,
 			  type: 'POST',
 			  success: function(data){
 
-					if(data != "ok" && data != "")
-						alert("Error: If you upload a FACS file, please use a .txt extension")
+					if(data == "error")
+						alert("Error: Please use a .txt extension for FACS files/custom bin files")
 					else
 					{
-						facs = "";
-						if(data == "ok")
-							facs = "facs.txt"
+						facs = ""; bins = ""; genes = "";
+						if(data == "facs" || data == "facsbins")
+							facs = "user-facs.txt"
+						if(data == "bins" || data == "facsbins")
+							bins = "user-bins.txt"
+
+						f = 0; b = 0; g = 0;
+						if(facs != "")
+							f = 1;
+						if(bins != "")
+							b = 1;
+						if(genes != "")
+							g = 1;
 
 						$.post("?q=dashboard/" + ginkgo_user_id, {
 								// General
@@ -705,7 +750,7 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 								'distMeth':	$('#param-distance').val(),
 
 								// FACS file
-								'f':				0,
+								'f':				f,
 								'facs':			facs,
 
 								// Plot gene locations
@@ -713,8 +758,8 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 								'geneList':	'',
 
 								// User-specified bin file
-								'b':				0,
-								'binList':	'',
+								'b':				b,
+								'binList':	bins,
 								
 								// Genome
 								'chosen_genome': $('#param-genome').val(),
