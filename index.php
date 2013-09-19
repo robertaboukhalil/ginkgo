@@ -69,11 +69,36 @@ if(file_exists(DIR_UPLOADS . '/' . $GINKGO_USER_ID . '/status.xml'))
 			</div>
 PANEL;
 
+// Define user directory
+$userDir = DIR_UPLOADS . '/' . $GINKGO_USER_ID;
+
+## -- Upload facs file ---------------------------------------------------------
+if($GINKGO_PAGE == 'facs') {
+	// No facs file => return empty
+	if(empty($_FILES))
+		die("");
+
+	// Error: invalid file type => return error
+	if($_FILES['file']['type'] != "text/plain")
+		die("error");
+
+	// Create user directory if doesn't exist
+	@mkdir($userDir);
+
+	// Upload facs file	(return ok if works)
+	if(is_uploaded_file($_FILES['file']['tmp_name']))
+	{
+		move_uploaded_file($_FILES['file']['tmp_name'], $userDir . "/facs.txt");
+		die("ok");
+	}
+	
+	die("");
+}
+
 
 ## -- Submit analysis ----------------------------------------------------------
 if(isset($_POST['analyze'])) {
 	// Create user directory if doesn't exist
-	$userDir = DIR_UPLOADS . '/' . $GINKGO_USER_ID;
 	@mkdir($userDir);
 
 	// Sanitize user input (see bootstrap.php)
@@ -158,8 +183,6 @@ if(isset($_POST['analyze'])) {
 
 	file_put_contents($userDir . '/config', $config);
 
-	#echo "OK";
-	#exit;
 	// Start analysis
 	$cmd = "./scripts/analyze $GINKGO_USER_ID &";
 	session_regenerate_id(TRUE);	
@@ -343,7 +366,7 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 					</div>
 
 					<!-- Which genome? -->
-					<br/><br/><h3 style="margin-top:-5px;"><span class="badge">STEP 2</span> Choose genome <small></small></h3>
+					<br/><br/><h3 style="margin-top:-5px;"><span class="badge">STEP 2</span> Set analysis options <small></small></h3>
 					<div id="params-genome" style="margin:20px;">
 						<table class="table table-striped">
 							<tbody>
@@ -352,14 +375,38 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 									<td>
 										<select id="param-genome" class="input-mini" style="margin-top:8px; font-size:11px; padding-top:3px; padding-bottom:0; height:25px; ">
 											<optgroup label="Latest genomes">
-												<option value="hg19">hg19</option>
-												<option value="panTro4">panTro4</option>
+												<option value="hg19">Human (hg19)</option>
+												<option value="panTro4">Chimpanzee (panTro4)</option>
 											</optgroup>
 											<optgroup label="Older genomes">
-												<option value="hg18">hg18</option>
-												<option value="panTro3">panTro3</option>
+												<option value="hg18">Human (hg18)</option>
+												<option value="panTro3">Chimpanzee (panTro3)</option>
 											</optgroup>
 										</select>
+									</td>
+								</tr>
+
+								<tr>
+									<td>FACS file:</td>
+									<td>
+										<form enctype='multipart/form-data'>
+											<div class="fileupload fileupload-new" data-provides="fileupload">
+												<div class="input-append">
+													<div class="uneditable-input span3">
+														<i class="glyphicon glyphicon-upload"></i>
+														<span class="fileupload-preview"></span>
+													</div>
+
+													<span class="btn btn-file">
+														<span class="fileupload-new btn btn-success">Select .facs file</span>
+														<span class="fileupload-exists btn btn-success">Change</span>
+														<input type="file" name="params-facs-file" />
+													</span>
+
+													<a href="#" class="btn btn-danger fileupload-exists" data-dismiss="fileupload">Remove</a>
+												</div>
+											</div>
+										</form>
 									</td>
 								</tr>
 							</table>
@@ -385,11 +432,11 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 					<hr style="height:5px;border:none;background-color:#CCC;" /><br/>
 
 					<!-- Set parameters -->
-					<h3 style="margin-top:-5px;"><span class="badge">OPTIONAL</span> <a href="#parameters" onClick="javascript:$('#params-table').toggle();">Analysis parameters</a></h3>
+					<h3 style="margin-top:-5px;"><span class="badge">OPTIONAL</span> <a href="#parameters" onClick="javascript:$('#params-table').toggle();">Advanced parameters</a></h3>
 					<table class="table table-striped" id="params-table">
 						<tbody>
 							<tr>
-								<td>Binning Options</td>
+								<td>General Binning Options</td>
 								<td>
 									Use a <select id="param-bins-type" class="input-mini" style="margin-top:8px; font-size:11px; padding-top:3px; padding-bottom:0; height:25px; ">
 									<option value="fixed_">fixed</option>
@@ -400,6 +447,13 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 									<option value="40000">40kb</option>
 									<option value="50000">50kb</option>
 									</select> size.
+								</td>
+							</tr>
+							<tr>
+								<td>Custom binning file (format?)</td>
+								<td style="height:45px;">
+									[]<br/>
+									This will discard the general binning options.
 								</td>
 							</tr>
 							<tr>
@@ -531,6 +585,10 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 		<script src="includes/fileupload/js/cors/jquery.xdr-transport.js"></script>
 		<![endif]-->
 
+		<!-- jasny bootstrap-upload -->
+		<script src="includes/jasny/bootstrap-fileupload.min.js"></script>
+		<link rel="stylesheet" type="text/css" href="includes/jasny/bootstrap-fileupload.min.css">
+
 	  <!-- jsPhyloSVG
 	  ================================================== -->
 		<script type="text/javascript" src="includes/jsphylosvg/raphael-min.js" ></script>
@@ -612,39 +670,68 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 			email = $('#email').val();
 
 			// -- Submit query
-			$.post("?q=dashboard/" + ginkgo_user_id, {
-					// General
-					'analyze':	1,
-					'cells[]':	arrCells,
-					'email':		email,
+			//alert(document.querySelector("input[type='file']").files[0])
+			el = document.querySelector("input[type='file']")
 
-					// Methods
-					'binMeth':	$('#param-bins-type').val() + $('#param-bins-value').val(),
-					'segMeth':	$('#param-segmentation').val(),
-					'clustMeth':$('#param-clustering').val(),
-					'distMeth':	$('#param-distance').val(),
+			var fd = new FormData();    
+			fd.append( 'file', el.files[0] );
 
-					// FACS file
-					'f':				0,
-					'facs':			'',
+			$.ajax({
+			  url: '?q=facs/' + ginkgo_user_id,
+			  data: fd,
+			  processData: false,
+			  contentType: false,
+			  type: 'POST',
+			  success: function(data){
 
-					// Plot gene locations
-					'g':				0,
-					'geneList':	'',
+					if(data != "ok" && data != "")
+						alert("Error: If you upload a FACS file, please use a .txt extension")
+					else
+					{
+						facs = "";
+						if(data == "ok")
+							facs = "facs.txt"
 
-					// User-specified bin file
-					'b':				0,
-					'binList':	'',
-					
-					// Genome
-					'chosen_genome': $('#param-genome').val(),
-				},
-				// If get response
-				function(data) {
-					if(data == "OK")
-						window.location = "<?php echo URL_ROOT . "/?q=results/"; ?>" + ginkgo_user_id;
-				}
-			);
+						$.post("?q=dashboard/" + ginkgo_user_id, {
+								// General
+								'analyze':	1,
+								'cells[]':	arrCells,
+								'email':		email,
+
+								// Methods
+								'binMeth':	$('#param-bins-type').val() + $('#param-bins-value').val(),
+								'segMeth':	$('#param-segmentation').val(),
+								'clustMeth':$('#param-clustering').val(),
+								'distMeth':	$('#param-distance').val(),
+
+								// FACS file
+								'f':				0,
+								'facs':			facs,
+
+								// Plot gene locations
+								'g':				0,
+								'geneList':	'',
+
+								// User-specified bin file
+								'b':				0,
+								'binList':	'',
+								
+								// Genome
+								'chosen_genome': $('#param-genome').val(),
+							},
+							// If get response
+							function(data) {
+								if(data == "OK")
+									window.location = "<?php echo URL_ROOT . "/?q=results/"; ?>" + ginkgo_user_id;
+								else
+									alert(data)
+							}
+						);
+					}
+			  }
+			});
+
+
 			
 			//
 			
