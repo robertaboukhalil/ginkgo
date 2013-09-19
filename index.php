@@ -69,15 +69,59 @@ if(file_exists(DIR_UPLOADS . '/' . $GINKGO_USER_ID . '/status.xml'))
 			</div>
 PANEL;
 
+
 ## -- Submit analysis ----------------------------------------------------------
 if(isset($_POST['analyze'])) {
 	// Create user directory if doesn't exist
-	@mkdir(DIR_UPLOADS . '/' . $GINKGO_USER_ID);
-		
+	$userDir = DIR_UPLOADS . '/' . $GINKGO_USER_ID;
+	@mkdir($userDir);
+
 	// Sanitize user input (see bootstrap.php)
 	array_walk_recursive($_POST, 'sanitize');
 	$user = $GINKGO_USER_ID;
 	sanitize($user);
+
+	// Defaults for new analysis
+	$init = 1;
+	$process = 1;
+	$fix = 0;
+
+	// Did the user change the analysis parameters from the last time?
+	// Load previous configuration
+	$configFile = $userDir . "/config";
+	if(file_exists($configFile)) {
+		$f = file($configFile);
+		$oldParams = array();
+		foreach($f as $index => $val) {
+			$values = explode("=", $val, 2);
+			$oldParams[$values[0]] = str_replace("", "", trim($values[1]));
+		}
+
+		// Defaults for old analysis (do nothing)
+		$init = 0;
+		$process = 0;
+		$fix = 0;
+
+		// Do we need to remap? This sets init to 1 if yes, 0 if not
+		$newBinParams = ($oldParams['binMeth'] != $_POST['binMeth']) || 
+											($oldParams['binList'] != $_POST['binList']) ||
+											($oldParams['facs'] != $_POST['facs']);
+		$newSegParams = ($oldParams['segMeth']   != $_POST['segMeth']);
+		$newClustering= ($oldParams['clustMeth'] != $_POST['clustMeth']);
+		$newDistance  = ($oldParams['distMeth']  != $_POST['distMeth']);
+
+		// Set new variable values
+		#
+		if($newBinParams)
+			$init = 1;
+		#
+		if($newBinParams || $newSegParams)
+			$process = 1;
+		# Only need to run fix when not running process
+		if(!$process && ($newClustering || $newDistance))
+			$fix = 1;
+	}
+
 
 	// Make sure have enough cells for analysis
 	if(count($_POST['cells']) < $GINKGO_MIN_NB_CELLS)
@@ -87,7 +131,7 @@ if(isset($_POST['analyze'])) {
 	$cells = '';
 	foreach($_POST['cells'] as $cell)
 		$cells .= str_replace("'", "", $cell) . "\n";
-	file_put_contents(DIR_UPLOADS . '/' . $GINKGO_USER_ID . '/list', $cells);
+	file_put_contents($userDir . '/list', $cells);
 
 	// Create config file
 	$config = '#!/bin/bash' . "\n";
@@ -108,12 +152,14 @@ if(isset($_POST['analyze'])) {
 	$config.= 'geneList=' . $_POST['geneList'] . "\n";
 	$config.= 'chosen_genome=' . $_POST['chosen_genome'] . "\n";
 
-	$config.= 'init=1' . "\n";
-	$config.= 'process=1' . "\n";
-	$config.= 'fix=0' . "\n";
+	$config.= 'init=' . $init . "\n";
+	$config.= 'process=' . $process . "\n";
+	$config.= 'fix=' . $fix . "\n";
 
-	file_put_contents(DIR_UPLOADS . '/' . $GINKGO_USER_ID . '/config', $config);
+	file_put_contents($userDir . '/config', $config);
 
+	#echo "OK";
+	#exit;
 	// Start analysis
 	$cmd = "./scripts/analyze $GINKGO_USER_ID &";
 	session_regenerate_id(TRUE);	
