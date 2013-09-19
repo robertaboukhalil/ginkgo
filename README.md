@@ -7,8 +7,6 @@ Ginkgo: Single-cell copy-number analysis
 - If add files to analysis, only run analysis on new files
 - Show QA stats
 - Show stats per cell
-- Upload custom bin list
-- Upload FACS file
 - Upload gene list
 
 ###### Next release
