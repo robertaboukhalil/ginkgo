@@ -4,19 +4,18 @@
 #user=sample
 #
 #segMeth=0
-#binMeth=orig
+#binMeth=variable_50000
 #clustMeth=single
 #distMeth=euclidian
 #
 #init=1
 #process=1
 #fix=0
-#b=0
-#binList=binQuery
-#f=1
+#f=0
 #facs=ploidy.txt
-#g=1
-#geneList=geneQuery
+#q=1
+#query=query.txt
+#ref=refFile
 #chosen_genome="hg18"
 #
 #email="raboukha@cshl.edu"
@@ -33,61 +32,87 @@ genome=${home}/genomes/${chosen_genome}
 
 ## == Analysis ===========================================
 
+
+############################################################
+########## Error Check and Reformat User Files #############
+############################################################
+
+if [ $f -eq 0 ]; then
+  touch ${dir}/ploidyDummy.txt
+  facs=ploidyDummy.txt
+else 
+  sed "s/.bed//g" ${dir}/${facs} | sort -k1,1 | awk '{print $1"\t"$2}' > quickTemp 
+  mv quickTemp ${dir}/${facs}
+fi
+
+
+############################################################
+####### Map Reads & Prepare Samples For Processing #########
+############################################################
+
 total=`wc -l < ${dir}/${inFile}`
 
 if [ $init -eq 1 ]; then
 
   cnt=0;
+  
+  #Clean directory
+  rm -f ${dir}/*_mapped ${dir}/*.jpeg ${dir}/*.newick
 
   #Map user bed files to appropriate bins
   while read file; do
-    ${home}/scripts/status ${dir}/${statFile} 1 $file $cnt $total
-    ${home}/scripts/binUnsorted ${genome}/${binMeth} `wc -l < ${genome}/${binMeth}` ${dir}/${file} `echo ${file} | sed "s/.bed//g"` ${dir}/${file}_mapped
+    ${home}/status ${dir}/${statFile} 1 $file $cnt $total 
+    ${home}/binUnsorted ${genome}/${binMeth} `wc -l < ${genome}/${binMeth}` ${dir}/${file} `echo ${file} | sed "s/.bed//g"` ${dir}/${file}_mapped
+    #${home}/binUnsorted ${genome}/fixed_1000 `wc -l < ${genome}/fixed_1000` ${dir}/${file} `echo ${file} | sed "s/.bed//g"` ${dir}/${file}_binned
     cnt=$(($cnt+1));
   done < ${dir}/${inFile}
 
-  #Concatenate binned reads to central file and clean directory
-  paste ${genome}/${binMeth} ${dir}/*_mapped > ${dir}/data
-  rm -f ${dir}/*jpeg ${dir}/*_mapped ${dir}/hist* ${dir}/Seg*
+  #Concatenate binned reads to central file  
+  paste ${dir}/*_mapped > ${dir}/data
 
-  #Generate Statistics
-  ${home}/scripts/stats.R $dir statFile ${dir}/data
+  #Generate statistics
+  ${home}/stats.R $dir $statFile ${dir}/data
+  rm -f ${dir}/*_mapped ${dir}/*_binned
+
+  #Map reference sample (if provided by user)
+  if [ $segMeth -eq 2 ]; then
+    ${home}/binUnsorted ${genome}/${binMeth} `wc -l < ${genome}/${binMeth}` ${dir}/${ref} Reference ${dir}/${ref}_mapped
+  else
+    ref=refDummy.bed
+    touch ${dir}/${ref}_mapped
+  fi
 
 fi
+
+
+############################################################
+######### Run Mapped Data Through Primary Pipeline #########
+############################################################
 
 if [ $process -eq 1 ]; then
-
-  ${home}/scripts/status ${dir}/${statFile} 2 Initializing 0 1
-
-  #Process binned data
-  if [ $f -eq 1 ]; then
-    ${home}/scripts/facs.R $genome $dir $statFile data $binMeth $segMeth $clustMeth $distMeth $facs
-  else
-    ${home}/scripts/finish.R $genome $dir $statFile data $binMeth $segMeth $clustMeth $distMeth
-  fi
-
+  ${home}/status ${dir}/${statFile} 3 Initializing 0 1
+  ${home}/interval ${genome}/genes ${dir}/query.txt ${dir}/intervals.bed
+  ${home}/process.R $genome $dir $statFile data $segMeth $binMeth $clustMeth $distMet query.txt ${ref}_mapped $f $facs
 fi
 
-#Replot histogram when user changes clustering method or distance metric
+
+############################################################
+#### Recreate Clusters/Heat Maps (With New Parameters) #####
+############################################################
+
 if [ $fix -eq 1 ]; then
-  ${home}/scripts/fix.R $dir $statFile SegFile $clustMeth $distMeth $f
+  ${home}/reclust.R $dir $statFile SegFile $clustMeth $distMet $f $facs
 fi
 
-#Plot queried genes
-if [ $g -eq 1 ]; then
-  if [ $f -eq 1 ]; then
-    ${home}/scripts/facs2.R $genome $dir $statFile data $binMeth $geneList
-  else
-    ${home}/scripts/finish2.R $genome $dir $statFile data $binMeth $geneList
-  fi
-fi
 
-#Write genes in queried bins to bed file
-if [ $b -eq 1 ]; then
-  ${home}/scripts/bin2Genes ${genome}/$binMeth ${genome}/genes ${dir}/$binList ${dir}/bin2Genes.bed
+############################################################
+#### Recreate CN Profile (With New Gene/Interval Query) ####
+############################################################
+
+if [ $q -eq 1 ]; then
+  ${home}/interval ${genome}/genes ${dir}/query.txt ${dir}/intervals.bed
+  ${home}/queryAll.R $genome $dir $statFile $binMeth $query $f
 fi
 
 echo -e "Your analysis on Ginkgo is complete! Check out your results at $permalink" | mail -s "Your Analysis Results" $email -- -F "Ginkgo"
-
-
 
