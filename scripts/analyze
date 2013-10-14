@@ -16,12 +16,12 @@ genome=${home}/genomes/${chosen_genome}
 ########## Error Check and Reformat User Files #############
 ############################################################
 
-if [ $f -eq 0 ]; then
+if [ "$f" == "0" ]; then
   touch ${dir}/ploidyDummy.txt
   facs=ploidyDummy.txt
 else 
-  sed "s/.bed//g" ${dir}/${facs} | sort -k1,1 | awk '{print $1"\t"$2}' > quickTemp 
-  mv quickTemp ${dir}/${facs}
+  sed "s/.bed//g" ${dir}/${facs} | sort -k1,1 | awk '{print $1"\t"$2}' > ${dir}/quickTemp 
+  mv ${dir}/quickTemp ${dir}/${facs}
 fi
 
 
@@ -31,7 +31,7 @@ fi
 
 total=`wc -l < ${dir}/${inFile}`
 
-if [ $init -eq 1 ]; then
+if [ "$init" == "1" ]; then
 
   cnt=0;
   
@@ -54,7 +54,7 @@ if [ $init -eq 1 ]; then
   rm -f ${dir}/*_mapped ${dir}/*_binned
 
   #Map reference sample (if provided by user)
-  if [ $segMeth -eq 2 ]; then
+  if [ "$segMeth" == "2" ]; then
     ${home}/scripts/binUnsorted ${genome}/${binMeth} `wc -l < ${genome}/${binMeth}` ${dir}/${ref} Reference ${dir}/${ref}_mapped
   else
     ref=refDummy.bed
@@ -68,7 +68,7 @@ fi
 ######### Run Mapped Data Through Primary Pipeline #########
 ############################################################
 
-if [ $process -eq 1 ]; then
+if [ "$process" == "1" ]; then
   ${home}/scripts/status ${dir}/${statFile} 3 Initializing 0 1
   ${home}/scripts/interval ${genome}/genes ${dir}/query.txt ${dir}/intervals.bed
   ${home}/scripts/process.R $genome $dir $statFile data $segMeth $binMeth $clustMeth $distMet query.txt ${ref}_mapped $f $facs
@@ -79,7 +79,7 @@ fi
 #### Recreate Clusters/Heat Maps (With New Parameters) #####
 ############################################################
 
-if [ $fix -eq 1 ]; then
+if [ "$fix" == "1" ]; then
   ${home}/scripts/reclust.R $dir $statFile SegFile $clustMeth $distMet $f $facs
 fi
 
@@ -88,7 +88,7 @@ fi
 #### Recreate CN Profile (With New Gene/Interval Query) ####
 ############################################################
 
-if [ $q -eq 1 ]; then
+if [ "$q" == "1" ]; then
   ${home}/scripts/interval ${genome}/genes ${dir}/query.txt ${dir}/intervals.bed
   ${home}/scripts/queryAll.R $genome $dir $statFile $binMeth $query $f
 fi

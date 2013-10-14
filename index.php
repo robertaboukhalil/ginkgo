@@ -79,8 +79,9 @@ if($GINKGO_PAGE == 'admin-upload') {
 	@mkdir($userDir);
 
 	// Error: invalid file type => return error
-	if($_FILES['params-facs-file']['type'] != "text/plain" || $_FILES['params-binning-file']['type'] != "text/plain")
-		die("error");
+	if($_FILES['params-facs-file']['name'] != "" || $_FILES['params-binning-file']['name'] != "")
+		if($_FILES['params-facs-file']['type'] != "text/plain" || $_FILES['params-binning-file']['type'] != "text/plain")
+			die("error");
 
 	$result = "";
 
