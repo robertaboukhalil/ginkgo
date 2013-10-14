@@ -1,27 +1,6 @@
 #!/bin/bash
 
-## == Sample Variables ===================================
-#user=sample
-#
-#segMeth=0
-#binMeth=variable_50000
-#clustMeth=single
-#distMeth=euclidian
-#
-#init=1
-#process=1
-#fix=0
-#f=0
-#facs=ploidy.txt
-#q=1
-#query=query.txt
-#ref=refFile
-#chosen_genome="hg18"
-#
-#email="raboukha@cshl.edu"
-#permalink="http://qb.cshl.edu/ginkgo?q=dashboard/robert"
-
-## == Setup more variables ===============================
+## == Setup variables ===============================
 home=/mnt/data/ginkgo
 dir=${home}/uploads/${1}
 source ${dir}/config
@@ -61,8 +40,8 @@ if [ $init -eq 1 ]; then
 
   #Map user bed files to appropriate bins
   while read file; do
-    ${home}/status ${dir}/${statFile} 1 $file $cnt $total 
-    ${home}/binUnsorted ${genome}/${binMeth} `wc -l < ${genome}/${binMeth}` ${dir}/${file} `echo ${file} | sed "s/.bed//g"` ${dir}/${file}_mapped
+    ${home}/scripts/status ${dir}/${statFile} 1 $file $cnt $total 
+    ${home}/scripts/binUnsorted ${genome}/${binMeth} `wc -l < ${genome}/${binMeth}` ${dir}/${file} `echo ${file} | sed "s/.bed//g"` ${dir}/${file}_mapped
     #${home}/binUnsorted ${genome}/fixed_1000 `wc -l < ${genome}/fixed_1000` ${dir}/${file} `echo ${file} | sed "s/.bed//g"` ${dir}/${file}_binned
     cnt=$(($cnt+1));
   done < ${dir}/${inFile}
@@ -71,12 +50,12 @@ if [ $init -eq 1 ]; then
   paste ${dir}/*_mapped > ${dir}/data
 
   #Generate statistics
-  ${home}/stats.R $dir $statFile ${dir}/data
+  ${home}/scripts/stats.R $dir $statFile ${dir}/data
   rm -f ${dir}/*_mapped ${dir}/*_binned
 
   #Map reference sample (if provided by user)
   if [ $segMeth -eq 2 ]; then
-    ${home}/binUnsorted ${genome}/${binMeth} `wc -l < ${genome}/${binMeth}` ${dir}/${ref} Reference ${dir}/${ref}_mapped
+    ${home}/scripts/binUnsorted ${genome}/${binMeth} `wc -l < ${genome}/${binMeth}` ${dir}/${ref} Reference ${dir}/${ref}_mapped
   else
     ref=refDummy.bed
     touch ${dir}/${ref}_mapped
@@ -90,9 +69,9 @@ fi
 ############################################################
 
 if [ $process -eq 1 ]; then
-  ${home}/status ${dir}/${statFile} 3 Initializing 0 1
-  ${home}/interval ${genome}/genes ${dir}/query.txt ${dir}/intervals.bed
-  ${home}/process.R $genome $dir $statFile data $segMeth $binMeth $clustMeth $distMet query.txt ${ref}_mapped $f $facs
+  ${home}/scripts/status ${dir}/${statFile} 3 Initializing 0 1
+  ${home}/scripts/interval ${genome}/genes ${dir}/query.txt ${dir}/intervals.bed
+  ${home}/scripts/process.R $genome $dir $statFile data $segMeth $binMeth $clustMeth $distMet query.txt ${ref}_mapped $f $facs
 fi
 
 
@@ -101,7 +80,7 @@ fi
 ############################################################
 
 if [ $fix -eq 1 ]; then
-  ${home}/reclust.R $dir $statFile SegFile $clustMeth $distMet $f $facs
+  ${home}/scripts/reclust.R $dir $statFile SegFile $clustMeth $distMet $f $facs
 fi
 
 
@@ -110,8 +89,8 @@ fi
 ############################################################
 
 if [ $q -eq 1 ]; then
-  ${home}/interval ${genome}/genes ${dir}/query.txt ${dir}/intervals.bed
-  ${home}/queryAll.R $genome $dir $statFile $binMeth $query $f
+  ${home}/scripts/interval ${genome}/genes ${dir}/query.txt ${dir}/intervals.bed
+  ${home}/scripts/queryAll.R $genome $dir $statFile $binMeth $query $f
 fi
 
 echo -e "Your analysis on Ginkgo is complete! Check out your results at $permalink" | mail -s "Your Analysis Results" $email -- -F "Ginkgo"
