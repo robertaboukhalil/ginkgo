@@ -808,16 +808,16 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 				else if(step == "3")
 					desc = "Clustering";
 
+				overallDone = Math.round(100*(step-1+percentdone/100)/3);
+				$("#results-progress").width(overallDone + "%");
+				Tinycon.setBubble(overallDone);
+
 				processingMsg = "(" + processing.replace("_", " ") + ")";
-				$("#results-status-text").html("Step " + step + ": " + percentdone + "%" + " <small style='color:#999'>" + desc + "... " + processingMsg + "<small>");
+				$("#results-status-text").html(overallDone + "% complete.<br/><small style='color:#999'>Step " + step + ": " + percentdone + "%" + " " + desc + "... " + processingMsg + "<small>");
 
 				// Update progress bar % completed
 				if(percentdone > 100)
 					percentdone = 100;
-
-				overallDone = (100*(step-1+percentdone/100)/3);
-				$("#results-progress").width(overallDone + "%");
-				Tinycon.setBubble(overallDone);
 
 				// When we're done with the analysis, stop getting progress continually
 				if((step == 3 && percentdone >= 100) || typeof step == 'undefined')
