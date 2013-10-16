@@ -44,6 +44,7 @@ raw <- read.table(dat, header=TRUE, sep="\t")
 if (f == 1) { ploidy <- read.table(facs, header=FALSE, sep="\t", as.is=TRUE) }
 
 type=try(dim(read.table(query, header=FALSE, sep="\t"))[2])
+
 if(type == 3 ) {
   #Intervals queried by user
   q <- read.table(query, header=FALSE, sep="\t", as.is=TRUE)
