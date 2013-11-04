@@ -27,8 +27,8 @@ lab=colnames(raw) #Sample labels
 
 allStats=matrix(0, w+1, 12)
 allStats[1,1]="Sample"
-allStats[1,2]="Total Reads"
-allStats[1,3]="Total Bins"
+allStats[1,2]="TotalReads"
+allStats[1,3]="TotalBins"
 allStats[1,4]="Mean"
 allStats[1,5]="Variance"
 allStats[1,6]="Disp"
@@ -76,12 +76,12 @@ for(k in 1:w){
   allStats[(k+1),10]=quantile(raw[,k], c(.75))[[1]]
   allStats[(k+1),11]=max(raw[,k])
 
-  if ( (sum(raw[,k])/l < 10) || (VAR >= 2*MEAN) ) {
-    allStats[k,12]=2
-  } else if ( (mean(raw[,k]) < 50) || (VAR >= MEAN) ) {
-    allStats[k,12]=1
+  if ( (sum(raw[,k])/l < 10) || (VAR >= 1.5*MEAN) ) {
+    allStats[(k+1),12]=2
+  } else if ( (mean(raw[,k]) < 25) || (VAR >= MEAN) ) {
+    allStats[(k+1),12]=1
   } else {
-    allStats[k,12]=0
+    allStats[(k+1),12]=0
   }
 
 
@@ -155,7 +155,7 @@ for(k in 1:w){
 ##################  Save Processed Data  ###################
 ############################################################
 
-write.table(allStats, file=paste(user_dir, "/SegStats", sep=""), row.names=FALSE, col.names=c("Sample", "Total Reads", "Total Bins", "Mean", "Variance", "Disp", "Min", "25th", "Median", "75th", "Max", "Flag"), sep="\t")
+write.table(allStats, file=paste(user_dir, "/SegStats", sep=""), row.names=FALSE, col.names=FALSE, sep="\t")
 
 statusFile<-file( paste(user_dir, "/", status, sep="") )
 writeLines(c("<?xml version='1.0'?>", "<status>", "<step>2</step>", paste("<processingfile>Finished</processingfile>", sep=""), paste("<percentdone>100</percentdone>", sep=""), "<tree>clust.xml</tree>", "</status>"), statusFile)
