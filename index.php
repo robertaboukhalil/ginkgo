@@ -548,9 +548,36 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 			<div class="row">
 				<div id="results" class="col-lg-8">
 					<h3 style="margin-top:-5px;"><span class="badge">STEP 3</span> View results</h3>
+					<p>Click on individual cells for details of the copy-number analysis.</p>
 					<div id="svgCanvas" class="row-fluid">
 						Analyzing your data...
 					</div>
+
+					<!-- <h3 style="margin-top:-5px;"><span class="badge">QA</span> Quality Assessment</h3> -->
+					<h3>&nbsp;</h3>
+					<!-- Panel: Quality Assessment -->
+					<div class="panel panel-default">
+						<div class="panel-heading"><span class="glyphicon glyphicon-stats"></span> Quality Assessment</div>
+						<div class="panel-body" id="results-QA-loadingTxt">
+							<p>Verifying that your files are adequate for copy-number analysis...</p>
+						</div>
+						<!-- Table -->
+						<table class="table" id="results-QA-table" style="display:none;">
+							<tr class="active">
+								<td>Cell 1</td>
+								<td>Good</td>
+							</tr>
+							<tr class="warning">
+								<td>Cell 1</td>
+								<td>Good</td>
+							</tr>
+							<tr class="active">
+								<td>Cell 1</td>
+								<td>Good</td>
+							</tr>
+						</table>
+					</div>
+
 
 					<!-- Buttons: back or next -->
 					<div id="results-navigation">
@@ -683,6 +710,7 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 		// Dashboard: Toggle b/w select all cells and select none
 		$('#dashboard-toggle-cells').click(function() {
 			$('#params-cells input[type="checkbox"]').prop('checked',!$('input[type="checkbox"]').prop('checked'));
+			return false;
 		});
 
 		// -------------------------------------------------------------------------
@@ -813,7 +841,7 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 				Tinycon.setBubble(overallDone);
 
 				processingMsg = "(" + processing.replace("_", " ") + ")";
-				$("#results-status-text").html(overallDone + "% complete.<br/><small style='color:#999'>Step " + step + ": " + percentdone + "%" + " " + desc + "... " + processingMsg + "<small>");
+				$("#results-status-text").html(overallDone + "% complete.<br><small style='color:#999'>Step " + step + ": " + percentdone + "%" + " " + desc + "... " + processingMsg + "</small>");
 
 				// Update progress bar % completed
 				if(percentdone > 100)
@@ -835,6 +863,45 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 					
 					// TODO: Output other results
 				}
+			});
+
+			// Load Quality Assessment file (only runs if file exists)
+			$.get("<?php echo URL_UPLOADS; ?>/" + ginkgo_user_id + "/SegStats", function(qaFile)
+			{
+				// Turn string into array of lines
+				lineNb = 0;
+				table  = "";
+				allLines = qaFile.split("\n");
+				for(var line in allLines)
+				{
+					lineNb++;
+					if(lineNb == 1)
+						continue;
+
+					arrLine = allLines[line].split("\t");
+					if(arrLine.length < 12)
+						continue;
+
+					cell  = arrLine[0].replace(/"/g, '');
+					score = arrLine[11].replace(/"/g, '');
+					scoreClass = "active"
+					if(score == 0) {
+						scoreClass = "danger";
+						scoreMessage = "Bad";
+					} else if(score == 1) {
+						scoreClass = "warning";
+						scoreMessage = "OK but could be better";
+					} else if(score == 2) {
+						scoreClass = "success";
+						scoreMessage = "No QA issues detected";
+					}
+					table += '<tr class="' + scoreClass + '"><td>' + cell + '</td><td>' + scoreMessage + '</td></tr>';
+				}
+
+				// Hide loading text; show table
+				$("#results-QA-loadingTxt").hide();
+				$("#results-QA-table").show();
+				$("#results-QA-table").html(table);
 			});
 		}
 		
@@ -872,7 +939,7 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 					annotationNode	= currElement.parentNode.appendChild(xmlFile.createElement("annotation"));
 					annotationNode
 						.appendChild(xmlFile.createElement("desc"))
-						.appendChild(xmlFile.createTextNode("<img width='500' src='<?php echo URL_UPLOADS; ?>/" + ginkgo_user_id + "/" + cellId + ".jpeg'>" + cellId));
+						.appendChild(xmlFile.createTextNode("<img width='290' src='<?php echo URL_UPLOADS; ?>/" + ginkgo_user_id + "/" + cellId + "_result.jpeg'>" + cellId));
 					annotationNode
 						.appendChild(xmlFile.createElement("uri"))
 						.appendChild(xmlFile.createTextNode("javascript:showProfile('" + cellId + "')"));
