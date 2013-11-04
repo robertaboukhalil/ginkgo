@@ -1,4 +1,4 @@
-Ginkgo: Single-cell cloud-based CNV analysis
+Ginkgo: Single-cell CNV analysis
 =========
 
 ### Todo
