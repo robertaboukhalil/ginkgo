@@ -39,6 +39,9 @@ if(!$GINKGO_USER_ID)
 if($GINKGO_PAGE == "dashboard")
   $MY_CELLS = getMyFiles($GINKGO_USER_ID);
 
+if($GINKGO_PAGE == "results")
+  $CURR_CELL = $query[2];
+
 ## -- Session management -------------------------------------------------------
 $_SESSION["user_id"] = $GINKGO_USER_ID;
 
@@ -438,8 +441,6 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 					</div>
 					<br/><br/>
 
-
-
 				<!-- buttons -->
 
 					<!-- Set parameters -->
@@ -539,22 +540,40 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 					<?php echo $PANEL_LATER; ?>
 				</div>
 			</div>
-			<?php // ================================================================ ?>
-			<?php // == Dashboard: Analysis settings ================================ ?>
-			<?php // ================================================================ ?>
-			<?php elseif($GINKGO_PAGE == 'results'): ?>
 
+
+			<?php // ================================================================ ?>
+			<?php // == Dashboard: Results/Main ===================================== ?>
+			<?php // ================================================================ ?>
+			<?php elseif($GINKGO_PAGE == 'results' && $CURR_CELL == ""): ?>
 			<!-- Results -->
 			<div class="row">
 				<div id="results" class="col-lg-8">
 					<h3 style="margin-top:-5px;"><span class="badge">STEP 3</span> View results</h3>
 					<p>Click on individual cells for details of the copy-number analysis.</p>
+
 					<div id="svgCanvas" class="row-fluid">
 						Analyzing your data...
 					</div>
 
-					<!-- <h3 style="margin-top:-5px;"><span class="badge">QA</span> Quality Assessment</h3> -->
 					<h3>&nbsp;</h3>
+
+					<!-- Panel: Download results -->
+					<div id="results-download" class="panel panel-default">
+						<div class="panel-heading"><span class="glyphicon glyphicon-tree-deciduous"></span> Download tree</div>
+						<!-- Table -->
+						<table class="table">
+							<tr class="active">
+								<td><a target="_blank" href="<?php echo URL_UPLOADS . '/' . $GINKGO_USER_ID . '/clust.newick'; ?>">.newick</a></td>
+							</tr>
+							<tr class="active">
+								<td><a target="_blank" href="<?php echo URL_UPLOADS . '/' . $GINKGO_USER_ID . '/clust.xml'; ?>">.xml</a></td>
+							</tr>
+						</table>
+					</div>
+
+					<br/>
+					<!-- <h3 style="margin-top:-5px;"><span class="badge">QA</span> Quality Assessment</h3> -->
 					<!-- Panel: Quality Assessment -->
 					<div class="panel panel-default">
 						<div class="panel-heading"><span class="glyphicon glyphicon-stats"></span> Quality Assessment</div>
@@ -563,18 +582,6 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 						</div>
 						<!-- Table -->
 						<table class="table" id="results-QA-table" style="display:none;">
-							<tr class="active">
-								<td>Cell 1</td>
-								<td>Good</td>
-							</tr>
-							<tr class="warning">
-								<td>Cell 1</td>
-								<td>Good</td>
-							</tr>
-							<tr class="active">
-								<td>Cell 1</td>
-								<td>Good</td>
-							</tr>
 						</table>
 					</div>
 
@@ -591,6 +598,71 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 					<?php echo $PANEL_LATER; ?>
 				</div>
 			</div>
+
+
+
+
+			<?php // ================================================================ ?>
+			<?php // == Dashboard: Results/Cell ==================================== ?>
+			<?php // ================================================================ ?>
+			<?php elseif($GINKGO_PAGE == 'results' && $CURR_CELL != ""): ?>
+			<!-- Results -->
+			<div class="row">
+				<div id="results" class="col-lg-8">
+					<h3 style="margin-top:-5px;">Viewing cell <?php echo $CURR_CELL; ?></h3><br/>
+
+
+					<!-- Panel: Copy-number profile -->
+					<div class="panel panel-default">
+						<div class="panel-heading"><span class="glyphicon glyphicon-align-center"></span> Copy-number profile</div>
+						<!-- Table -->
+						<table class="table">
+							<tr>
+								<td><a href="<?php echo URL_UPLOADS . "/" . $GINKGO_USER_ID . "/" . $CURR_CELL . "_result.jpeg";?>"><img style="width:100%;" src="<?php echo URL_UPLOADS . "/" . $GINKGO_USER_ID . "/" . $CURR_CELL . "_result.jpeg";?>"></a></td>
+							</tr>
+						</table>
+					</div>
+
+
+
+					<!-- Panel: Histogram of read counts freq. -->
+					<div class="panel panel-default">
+						<div class="panel-heading"><span class="glyphicon glyphicon-stats"></span> Statistics</div>
+						<div class="panel-body">
+							<a href="<?php echo URL_UPLOADS . "/" . $GINKGO_USER_ID . "/" . $CURR_CELL . "_stats.jpeg";?>"><img style="width:100%;" src="<?php echo URL_UPLOADS . "/" . $GINKGO_USER_ID . "/" . $CURR_CELL . "_stats.jpeg";?>"></a>
+						</div>
+						<!-- Table -->
+						<table class="table">
+							<tr>
+								<td>
+							<b>Genome-wide read distribution</b>
+							<p>This gives a quick look at the binned read count distribution across the genome and allows easy identification of cells with strange read coverage.</p>
+							<b>Histogram of read count frequency</b>
+							<p>Single cell data should fit a negative binomial distribution with narrower histograms representing higher quality data. Wide histograms without a distinct peak are representative of a high degree of amplification bias. Histograms with a mode near zero have a high degree of “read dropout” and are generally the result of poor library preparation or technical sequencing error.</p>
+							<b>Lorenz Curve</b>
+							<p>The Lorenz curve gives the cumulative fraction of reads as a function of the cumulative fraction of the genome.  Perfect coverage uniformity results in a straight line with slope 1.  The wider the curve below the line of “perfect uniformity” the lower the coverage uniformity of a sample.</p>
+								</td>
+							</tr>
+						</table>
+					</div>
+
+
+
+
+					<!-- Buttons: back or next -->
+					<div id="results-navigation">
+						<hr style="height:5px;border:none;background-color:#CCC;" /><br/>
+						<div style="float:left"><a class="btn btn-lg btn-primary" href="?q=results/<?php echo $GINKGO_USER_ID; ?>"><span class="glyphicon glyphicon-chevron-left"></span> Back to tree </a></div>
+					</div>
+				</div>
+
+				<div class="col-lg-4">
+					<?php echo $PANEL_LATER; ?>
+				</div>
+			</div>
+
+
+
 
 			<?php endif; ?>
 
@@ -870,7 +942,7 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 			{
 				// Turn string into array of lines
 				lineNb = 0;
-				table  = "";
+				table  = ""; //<th><td>Cell name</td><td>Assessment</td></th>
 				allLines = qaFile.split("\n");
 				for(var line in allLines)
 				{
