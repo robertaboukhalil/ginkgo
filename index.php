@@ -558,21 +558,6 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 
 					<h3>&nbsp;</h3>
 
-					<!-- Panel: Download results -->
-					<div id="results-download" class="panel panel-default" style="display:none;">
-						<div class="panel-heading"><span class="glyphicon glyphicon-tree-deciduous"></span> Download tree</div>
-						<!-- Table -->
-						<table class="table">
-							<tr class="active">
-								<td><a target="_blank" href="<?php echo URL_UPLOADS . '/' . $GINKGO_USER_ID . '/clust.newick'; ?>">.newick</a></td>
-							</tr>
-							<tr class="active">
-								<td><a target="_blank" href="<?php echo URL_UPLOADS . '/' . $GINKGO_USER_ID . '/clust.xml'; ?>">.xml</a></td>
-							</tr>
-						</table>
-					</div>
-
-					<br/>
 					<!-- <h3 style="margin-top:-5px;"><span class="badge">QA</span> Quality Assessment</h3> -->
 					<!-- Panel: Quality Assessment -->
 					<div class="panel panel-default">
@@ -584,6 +569,20 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 						<table class="table" id="results-QA-table" style="display:none;">
 						</table>
 					</div>
+
+					<br/>
+
+					<!-- Panel: Download results -->
+					<div id="results-download" class="panel panel-default" style="display:none;">
+						<div class="panel-heading"><span class="glyphicon glyphicon-tree-deciduous"></span> Download tree</div>
+						<!-- Table -->
+						<table class="table">
+							<tr class="active"><td><strong>Tree built using normalized read counts</strong>: <a target="_blank" href="<?php echo URL_UPLOADS . '/' . $GINKGO_USER_ID . '/clust.newick'; ?>">.newick</a> | <a target="_blank" href="<?php echo URL_UPLOADS . '/' . $GINKGO_USER_ID . '/clust.xml'; ?>">.xml</a>&nbsp;&nbsp;&nbsp;<em>(plotted above)</em></td></tr>
+
+							<tr class="active"><td><strong>Tree built using copy-number values</strong>: <a target="_blank" href="<?php echo URL_UPLOADS . '/' . $GINKGO_USER_ID . '/clust2.newick'; ?>">.newick</a> | <a target="_blank" href="<?php echo URL_UPLOADS . '/' . $GINKGO_USER_ID . '/clust2.xml'; ?>">.xml</a></td></tr>
+						</table>
+					</div>
+
 
 
 					<!-- Buttons: back or next -->
