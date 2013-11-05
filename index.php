@@ -559,7 +559,7 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 					<h3>&nbsp;</h3>
 
 					<!-- Panel: Download results -->
-					<div id="results-download" class="panel panel-default">
+					<div id="results-download" class="panel panel-default" style="display:none;">
 						<div class="panel-heading"><span class="glyphicon glyphicon-tree-deciduous"></span> Download tree</div>
 						<!-- Table -->
 						<table class="table">
@@ -576,7 +576,7 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 					<!-- <h3 style="margin-top:-5px;"><span class="badge">QA</span> Quality Assessment</h3> -->
 					<!-- Panel: Quality Assessment -->
 					<div class="panel panel-default">
-						<div class="panel-heading"><span class="glyphicon glyphicon-stats"></span> Quality Assessment</div>
+						<div class="panel-heading"><span class="glyphicon glyphicon-certificate"></span> Quality Assessment</div>
 						<div class="panel-body" id="results-QA-loadingTxt">
 							<p>Verifying that your files are adequate for copy-number analysis...</p>
 						</div>
@@ -932,8 +932,7 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 					$(".progress").hide();
 					$("#results-status-text").html("Analysis complete!");
 					$("#results-navigation").show();
-					
-					// TODO: Output other results
+					$("#results-download").show();
 				}
 			});
 
@@ -942,7 +941,7 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 			{
 				// Turn string into array of lines
 				lineNb = 0;
-				table  = ""; //<th><td>Cell name</td><td>Assessment</td></th>
+				table  = '<thead><tr><th>&nbsp;</th><th style="text-align:center">Cell</th><th style="text-align:center">Bin Count<br/>Too Low</th><th style="text-align:center">Index of Dispersion<br/>Too High</th><th>Recommendation</th></tr></thead><tbody>'; //<th><td>Cell name</td><td>Assessment</td></th>
 				allLines = qaFile.split("\n");
 				for(var line in allLines)
 				{
@@ -956,19 +955,33 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 
 					cell  = arrLine[0].replace(/"/g, '');
 					score = arrLine[11].replace(/"/g, '');
+
+					meanBinCount = ""
+					if(arrLine[3].replace(/"/g, '') < 25)
+						meanBinCount = '<span class="glyphicon glyphicon-remove-circle"></span>'
+
+					indexOfDispersion = ""
+					if(arrLine[5].replace(/"/g, '') > 1)
+						indexOfDispersion = '<span class="glyphicon glyphicon-remove-circle"></span>'
+
 					scoreClass = "active"
-					if(score == 0) {
+					icon  = ""
+					if(score == 2) {
 						scoreClass = "danger";
-						scoreMessage = "Bad";
+						icon = "glyphicon-exclamation-sign"
+						scoreMessage = "It is recommended you do not use this file";
 					} else if(score == 1) {
 						scoreClass = "warning";
-						scoreMessage = "OK but could be better";
-					} else if(score == 2) {
+						icon = "glyphicon-info-sign"
+						scoreMessage = "This file should be inspected before proceeding";
+					} else if(score == 0) {
 						scoreClass = "success";
+						icon = "glyphicon-ok-sign"
 						scoreMessage = "No QA issues detected";
 					}
-					table += '<tr class="' + scoreClass + '"><td>' + cell + '</td><td>' + scoreMessage + '</td></tr>';
+					table += '<tr class="' + scoreClass + '"><td class="active" style="text-align:center"><span class="glyphicon ' + icon + '"></span></td><td>' + cell + '</td><td style="text-align:center">' + meanBinCount + '</td><td style="text-align:center">' + indexOfDispersion + '</td><td>' + scoreMessage + '</td></tr>';
 				}
+				table += "</tbody>";
 
 				// Hide loading text; show table
 				$("#results-QA-loadingTxt").hide();
