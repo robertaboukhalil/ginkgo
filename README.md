@@ -1,29 +1,26 @@
-Ginkgo: Single-cell CNV analysis
+Ginkgo
 =========
 
 #### Ginkgo is a cloud-based single-cell copy-number variation analysis tool.
 
 ### Todo
 
+###### v0.6
+###### v0.7
 ###### v0.8
-- clust.xml: find max value and normalize by it
-
-- If add files to analysis, only run analysis on new files
-- If change parameters and re-run, only do necessary analysis
-- Show stats per cell
-- Rename intervals.bed to intervals.txt
-
-- Upload gene list [${dir}/query.txt]
-- analyze: ./process.R ....... query.txt ....... ---> change that to ${dir}/query.txt
-
-- Line 476 (process.R): clust.xml -> clust2.xml
-
-- Don't plot trees to jpeg, should be faster
-- Don't plot [CELL].jpeg files with such high resolution
+- Gene search: Users can plot the locations of (up to 10) specific genes on top of the segmentation plots.
 
 ###### v0.9
+- Display heat maps? Which ones? Where?
+- If change parameters and re-run, only do necessary analysis
+- If add files to analysis, only run analysis on new files
+- clust.xml: find max value and normalize by it
 - Check that binning file works
 - Check that FACS file works
+
+**Changes made:**
+- Updated analyze: ./process.R ....... query.txt ....... ---> change that to ${dir}/query.txt
+- Renamed intervals.bed to intervals.txt
 
 ###### v1.0
 - Add link to sample data set
@@ -33,6 +30,9 @@ Ginkgo: Single-cell CNV analysis
 - FAQ page
 - Paper citations:
 	-> Smits SA, Ouverney CC, 2010 jsPhyloSVG: A Javascript Library for Visualizing Interactive and Vector-Based Phylogenetic Trees on the Web.
+- Don't plot trees to jpeg, should be faster
+- Don't plot [CELL].jpeg files with such high resolution
+- Get domain name (ginkgo.io)
 
 ###### v2.0
 - Have "Cancel" button to stop an analysis (but how? store pid?)
