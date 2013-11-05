@@ -558,6 +558,21 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 
 					<h3>&nbsp;</h3>
 
+					<!-- Panel: Search for genes -->
+					<div id="results-search-genes" class="panel panel-default" style="display:none;">
+						<div class="panel-heading"><span class="glyphicon glyphicon-search"></span> Annotate copy-number profile</div>
+						<div class="panel-body">
+							Label the following genes or chromosome positions (one entry per line):<br/><br/>
+							<textarea class="form-control" rows="3" placeholder="TP53"></textarea>
+						</div>
+						<!-- Table -->
+						<table class="table">
+							<tr><td style="text-align:right"> <button type="button" class="btn btn-info">Save</button> </td></tr>
+						</table>
+					</div>
+
+					<br/>
+
 					<!-- <h3 style="margin-top:-5px;"><span class="badge">QA</span> Quality Assessment</h3> -->
 					<!-- Panel: Quality Assessment -->
 					<div class="panel panel-default">
@@ -932,6 +947,7 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 					$("#results-status-text").html("Analysis complete!");
 					$("#results-navigation").show();
 					$("#results-download").show();
+					$("#results-search-genes").show();
 				}
 			});
 
