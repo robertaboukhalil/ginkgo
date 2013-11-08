@@ -598,6 +598,25 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 						</table>
 					</div>
 
+					<br/>
+
+					<!-- Panel: More results -->
+					<div id="results-heatmaps" class="panel panel-default" style="display:none;">
+						<div class="panel-heading"><span class="glyphicon glyphicon-barcode"></span> Heatmaps</div>
+						<!-- Table -->
+						<table class="table">
+							<tr>
+								<td><a href="<?php echo URL_UPLOADS . "/" . $GINKGO_USER_ID . "/heatCN.jpeg"; ?>"><img style="width:100%;" src="<?php echo URL_UPLOADS . "/" . $GINKGO_USER_ID . "/heatCN.jpeg"; ?>"></a><br/>[to add: what on earth this is]</td>
+							</tr>
+							<tr>
+								<td><a href="<?php echo URL_UPLOADS . "/" . $GINKGO_USER_ID . "/heatRaw.jpeg"; ?>"><img style="width:100%;" src="<?php echo URL_UPLOADS . "/" . $GINKGO_USER_ID . "/heatRaw.jpeg"; ?>"></a><br/>[to add: what on earth this is]</td>
+							</tr>
+							<tr>
+								<td><a href="<?php echo URL_UPLOADS . "/" . $GINKGO_USER_ID . "/heatNorm.jpeg"; ?>"><img style="width:100%;" src="<?php echo URL_UPLOADS . "/" . $GINKGO_USER_ID . "/heatNorm.jpeg"; ?>"></a><br/>[to add: what on earth this is]</td>
+							</tr>
+						</table>
+					</div>
+
 
 
 					<!-- Buttons: back or next -->
@@ -623,7 +642,15 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 			<!-- Results -->
 			<div class="row">
 				<div id="results" class="col-lg-8">
+
 					<h3 style="margin-top:-5px;">Viewing cell <?php echo $CURR_CELL; ?></h3><br/>
+
+					<!-- Buttons: back or next -->
+					<div id="results-navigation">
+						<div style="float:left"><a class="btn btn-lg btn-primary" href="?q=results/<?php echo $GINKGO_USER_ID; ?>"><span class="glyphicon glyphicon-chevron-left"></span> Back to tree </a></div>
+					</div>
+<br style="clear:both"/>
+						<hr style="height:5px;border:none;background-color:#CCC;" /><br/>
 
 
 					<!-- Panel: Copy-number profile -->
@@ -664,7 +691,7 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 
 
 					<!-- Buttons: back or next -->
-					<div id="results-navigation">
+					<div id="results-navigation2">
 						<hr style="height:5px;border:none;background-color:#CCC;" /><br/>
 						<div style="float:left"><a class="btn btn-lg btn-primary" href="?q=results/<?php echo $GINKGO_USER_ID; ?>"><span class="glyphicon glyphicon-chevron-left"></span> Back to tree </a></div>
 					</div>
@@ -947,6 +974,7 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 					$("#results-status-text").html("Analysis complete!");
 					$("#results-navigation").show();
 					$("#results-download").show();
+					$("#results-heatmaps").show();
 					$("#results-search-genes").show();
 				}
 			});
@@ -1042,7 +1070,7 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 						.appendChild(xmlFile.createTextNode("<img width='290' src='<?php echo URL_UPLOADS; ?>/" + ginkgo_user_id + "/" + cellId + "_result.jpeg'>" + cellId));
 					annotationNode
 						.appendChild(xmlFile.createElement("uri"))
-						.appendChild(xmlFile.createTextNode("javascript:showProfile('" + cellId + "')"));
+						.appendChild(xmlFile.createTextNode("?q=results/" + ginkgo_user_id + "/" + cellId));
 				});
 
 				$("#svgCanvas").html("");
