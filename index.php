@@ -986,6 +986,8 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 				lineNb = 0;
 				table  = '<thead><tr><th>&nbsp;</th><th style="text-align:center">Cell</th><th style="text-align:center">Bin Count<br/>Too Low</th><th style="text-align:center">Index of Dispersion<br/>Too High</th><th>Recommendation</th></tr></thead><tbody>'; //<th><td>Cell name</td><td>Assessment</td></th>
 				allLines = qaFile.split("\n");
+
+				omg = [[], [], []];
 				for(var line in allLines)
 				{
 					lineNb++;
@@ -1022,8 +1024,18 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 						icon = "glyphicon-ok-sign"
 						scoreMessage = "No QA issues detected";
 					}
-					table += '<tr class="' + scoreClass + '"><td class="active" style="text-align:center"><span class="glyphicon ' + icon + '"></span></td><td>' + cell + '</td><td style="text-align:center">' + meanBinCount + '</td><td style="text-align:center">' + indexOfDispersion + '</td><td>' + scoreMessage + '</td></tr>';
+					newLine = '<tr class="' + scoreClass + '"><td class="active" style="text-align:center"><span class="glyphicon ' + icon + '"></span></td><td>' + cell + '</td><td style="text-align:center">' + meanBinCount + '</td><td style="text-align:center">' + indexOfDispersion + '</td><td>' + scoreMessage + '</td></tr>';
+					//table += newLine;
+					
+					
+					omg[score].push(newLine);
 				}
+				
+				console.log( omg )
+				for(i in omg)
+					for(j in omg[i])
+						table += omg[i][j];
+
 				table += "</tbody>";
 
 				// Hide loading text; show table
