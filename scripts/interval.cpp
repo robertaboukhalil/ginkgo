@@ -39,6 +39,8 @@ int main(int argc, char *argv[]){
   int tabs = 0;
 
   interval = getline(&line, &buffer, intervals);
+
+  printf("file = %s\nline=%s\ninterval=%d\n", argv[2], line, interval);
   for (int i=0; i<interval; i++)
   {
     if (line[i] == '\t')
@@ -46,9 +48,13 @@ int main(int argc, char *argv[]){
   }
   tabs++;
 
-  if (tabs == 1) {
-    exit(0);
-  }
+  printf("tabs=%d", tabs);
+
+  //if (tabs == 1) {
+  //  exit(0);
+  //}
+
+  printf("tabs=%d", tabs);
 
   rewind(intervals);
 

@@ -94,7 +94,8 @@ fi
 
 if [ "$q" == "1" ] && [ "$process" == "0" ]; then
   ${home}/scripts/interval ${genome}/genes ${dir}/query.txt ${dir}/intervals.txt
-  ${home}/scripts/queryAll.R $genome $dir $statFile $binMeth $query $f
+  ${home}/scripts/queryAll.R $genome $dir $statFile $binMeth ${dir}/intervals.txt $f
+  #$query
 fi
 
 if [ "$email" != "" ]; then

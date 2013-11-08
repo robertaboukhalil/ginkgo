@@ -76,8 +76,8 @@ PANEL;
 $userDir = DIR_UPLOADS . '/' . $GINKGO_USER_ID;
 
 ## -- Upload facs / binning file -----------------------------------------------
-if($GINKGO_PAGE == 'admin-upload') {
-
+if($GINKGO_PAGE == 'admin-upload')
+{
 	// Create user directory if doesn't exist
 	@mkdir($userDir);
 
@@ -112,6 +112,30 @@ if($GINKGO_PAGE == 'admin-upload') {
 
 	die($result);
 }
+
+## -- Upload facs / binning file -----------------------------------------------
+if($GINKGO_PAGE == 'admin-annotate')
+{
+	// Sanitize user input (see bootstrap.php)
+	array_walk_recursive($_POST, 'sanitize');
+	$genes = str_replace("'", "", $_POST['genes']);
+
+	// Two notes about changing config:
+	// 	-> Don't want to send email to users when it's done => set email to empty
+	//	-> Change gene list file name (query.txt -- see scripts/analyze)
+	file_put_contents( $userDir . "/config", "email=\"\"\ngeneList=\"query.txt\"\ninit=0\nprocess=0\nfix=0\nq=1\n", FILE_APPEND );
+	file_put_contents( $userDir . "/query.txt", $genes );
+
+	// Start analysis
+	$cmd = "./scripts/analyze $GINKGO_USER_ID &";
+	session_regenerate_id(TRUE);	
+	$handle = popen($cmd, 'r');
+	//$out = stream_get_contents($handle);
+	pclose($handle);
+
+	exit;
+}
+
 
 
 ## -- Submit analysis ----------------------------------------------------------
@@ -191,7 +215,7 @@ if(isset($_POST['analyze'])) {
 	$config.= 'binList=' . $_POST['binList'] . "\n";
 	$config.= 'f=' . $_POST['f'] . "\n";
 	$config.= 'facs=' . $_POST['facs'] . "\n";
-	$config.= 'g=' . $_POST['g'] . "\n";
+	$config.= 'q=' . $_POST['g'] . "\n";
 	$config.= 'geneList=' . $_POST['geneList'] . "\n";
 	$config.= 'chosen_genome=' . $_POST['chosen_genome'] . "\n";
 
@@ -562,12 +586,12 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 					<div id="results-search-genes" class="panel panel-default" style="display:none;">
 						<div class="panel-heading"><span class="glyphicon glyphicon-search"></span> Annotate copy-number profile</div>
 						<div class="panel-body">
-							Label the following genes or chromosome positions (one entry per line):<br/><br/>
-							<textarea class="form-control" rows="3" placeholder="TP53"></textarea>
+							Label copy-number profiles with the following chromosome positions:<br/><small>Format: chrName startPos endPos<br/>Specify one range per line.</small><br/><br/>
+							<textarea id="results-search-txt" class="form-control" rows="3" placeholder="chr1 10000 2392392"><?php echo @file_get_contents($userDir . "/query.txt"); ?></textarea>
 						</div>
 						<!-- Table -->
 						<table class="table">
-							<tr><td style="text-align:right"> <button type="button" class="btn btn-info">Save</button> </td></tr>
+							<tr><td style="text-align:right"> <button type="button" class="btn btn-info" id="results-search-btn">Save</button> </td></tr>
 						</table>
 					</div>
 
@@ -747,6 +771,23 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 		
 		// When click inside permalink box, select all
 		$(".permalink").focus(function() { $(this).select(); } );
+		
+		// Search button: query 
+		$("#results-search-btn").click(function(){
+
+			$.post("?q=admin-annotate/" + ginkgo_user_id, {
+					// 
+					'genes': $('#results-search-txt').val(),
+				},
+				// If get response, refresh page
+				function(data) {
+					alert("Click OK to start annotating your graphs");
+					window.location = "<?php echo URL_ROOT . "/?q=results/"; ?>" + ginkgo_user_id;
+				}
+			);
+
+
+		});
 		</script>
 
 
@@ -948,8 +989,14 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 					desc = "Computing statistics for segmentation";
 				else if(step == "3")
 					desc = "Clustering";
+				else if(step > 3)
+					desc = "Annotating specified genes";
 
-				overallDone = Math.round(100*(step-1+percentdone/100)/3);
+				denominator = 3;
+				// Keep in mind: step > 3 is for drawing genes on plots
+				if(step > denominator)
+					denominator = step;
+				overallDone = Math.round(100*(step-1+percentdone/100)/denominator);
 				$("#results-progress").width(overallDone + "%");
 				Tinycon.setBubble(overallDone);
 
@@ -961,8 +1008,10 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 					percentdone = 100;
 
 				// When we're done with the analysis, stop getting progress continually
-				if((step == 3 && percentdone >= 100) || typeof step == 'undefined')
+				if((step > 3 && percentdone >= 100) || typeof step == 'undefined')
 				{
+					
+
 					// Remove auto-update timer
 					clearInterval(ginkgo_progress);
 					// Load tree
@@ -977,6 +1026,7 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 					$("#results-heatmaps").show();
 					$("#results-search-genes").show();
 				}
+
 			});
 
 			// Load Quality Assessment file (only runs if file exists)
@@ -1031,7 +1081,6 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 					omg[score].push(newLine);
 				}
 				
-				console.log( omg )
 				for(i in omg)
 					for(j in omg[i])
 						table += omg[i][j];

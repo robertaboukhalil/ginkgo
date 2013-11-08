@@ -14,7 +14,7 @@ library(scales)
 library(plyr)
 
 statusFile<-file( paste(user_dir, "/", status, sep="") )
-writeLines(c("<?xml version='1.0'?>", "<status>", "<step>5</step>", "<processingfile>Initializings</processingfile>", "<percentdone>0</percentdone>", "<tree>clust.xml</tree>", "</status>"), statusFile)
+writeLines(c("<?xml version='1.0'?>", "<status>", "<step>5</step>", "<processingfile>Initializing</processingfile>", "<percentdone>0</percentdone>", "<tree>clust.xml</tree>", "</status>"), statusFile)
 close(statusFile)
 
 ############################################################
