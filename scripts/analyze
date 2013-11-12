@@ -40,7 +40,7 @@ if [ "$init" == "1" ]; then
   cnt=0;
   
   #Clean directory
-  rm -f ${dir}/*_mapped ${dir}/*.jpeg ${dir}/*.newick
+  rm -f ${dir}/*_mapped ${dir}/*.jpeg ${dir}/*.newick ${dir}/Seg*
 
   #Map user bed files to appropriate bins
   while read file; do

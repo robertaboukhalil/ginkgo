@@ -100,7 +100,7 @@ int main(int argc, char *argv[]){
   char * line = NULL;
   size_t buffer = 1000;
   ssize_t read;
-  int tabs;
+  int tabs = 0;
   
   read = getline(&line, &buffer, reads_file);
   for (int i=0; i<read; i++)
@@ -109,7 +109,6 @@ int main(int argc, char *argv[]){
       tabs++;
   }
   tabs --;
-  
   rewind(reads_file);
   
   int pos, low, mid, high;
@@ -121,7 +120,6 @@ int main(int argc, char *argv[]){
   {
    
     for (int i=0; i<tabs; i++) {
-      cout << "WTF" << endl;
       fscanf(reads_file, "%201s", &dump);
     }
    
@@ -147,8 +145,6 @@ int main(int argc, char *argv[]){
   fprintf(outfile, "%s\n", argv[4]);
   for(int i=0; i < len; i++)
     fprintf(outfile, "%i\n", bins[i]);
-
-  cout << difftime( time(0), start) << endl;
 
   return 0;
 }
