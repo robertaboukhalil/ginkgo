@@ -404,6 +404,17 @@ for(k in 1:w){
     clust <- hclust(d, method = cm)
     clust$labels <- lab
     write(hc2Newick(clust), file=paste(user_dir, "/clust.newick", sep=""))
+
+
+	###
+	main_dir="/mnt/data/ginkgo/scripts"
+	command=paste("java -cp ", main_dir, "/forester_1025.jar org.forester.application.phyloxml_converter -f=nn ", user_dir, "/clust.newick ", user_dir, "/clust.xml", sep="");
+	unlink( paste(user_dir, "/clust.xml", sep="") );
+	system(command);
+	###
+
+
+
   }
 
 }
