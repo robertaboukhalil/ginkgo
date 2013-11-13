@@ -8,31 +8,24 @@ Ginkgo
 ###### v0.6
 ###### v0.7
 ###### v0.8
-- Gene search: Users can plot the locations of (up to 10) specific genes on top of the segmentation plots.
-
 ###### v0.9
-- Display heat maps? Which ones? Where?
-- If change parameters and re-run, only do necessary analysis
-- If add files to analysis, only run analysis on new files
-- clust.xml: find max value and normalize by it
-- Check that binning file works
-- Check that FACS file works
-
-**Changes made:**
-- Updated analyze: ./process.R ....... query.txt ....... ---> change that to ${dir}/query.txt
-- Renamed intervals.bed to intervals.txt
+- Gene search: Users can plot the locations of (up to 10) specific genes on top of the segmentation plots.
+- Test:
+	- If change parameters and re-run, only do necessary analysis
+	- If add files to analysis, only run analysis on new files
+	- Check that segmentation file works
+	- Check that FACS file works
 
 ###### v1.0
 - Add link to sample data set
-- Add support for other species in dashboard
-- Have better QA descriptions
+- Add support for other species in dashboard?
+- Add description for heatmaps
 - About page
 - FAQ page
 - Paper citations:
 	-> Smits SA, Ouverney CC, 2010 jsPhyloSVG: A Javascript Library for Visualizing Interactive and Vector-Based Phylogenetic Trees on the Web.
 - Don't plot trees to jpeg, should be faster
 - Don't plot [CELL].jpeg files with such high resolution
-- Get domain name (ginkgo.io)
 
 ###### v2.0
 - Have "Cancel" button to stop an analysis (but how? store pid?)
