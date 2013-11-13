@@ -605,8 +605,13 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 							<p>Verifying that your files are adequate for copy-number analysis...</p>
 						</div>
 						<!-- Table -->
-						<table class="table" id="results-QA-table" style="display:none;">
-						</table>
+							<table class="table">
+								<thead><tr><th width="5%">&nbsp;</th><th style="text-align:center" width="20%">Cell</th><th style="text-align:center" width="20%">Bin Count<br/>Too Low</th><th style="text-align:center" width="20%">Index of Dispersion<br/>Too High</th><th width="55%">Recommendation</th></tr></thead><tbody>
+							</table>
+						<div style="height:300px; overflow:auto;">
+							<table class="table" id="results-QA-table" style="display:none;">
+							</table>
+						</div>
 					</div>
 
 					<br/>
@@ -631,9 +636,6 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 						<table class="table">
 							<tr>
 								<td><a href="<?php echo URL_UPLOADS . "/" . $GINKGO_USER_ID . "/heatCN.jpeg"; ?>"><img style="width:100%;" src="<?php echo URL_UPLOADS . "/" . $GINKGO_USER_ID . "/heatCN.jpeg"; ?>"></a><br/>[to add: what on earth this is]</td>
-							</tr>
-							<tr>
-								<td><a href="<?php echo URL_UPLOADS . "/" . $GINKGO_USER_ID . "/heatRaw.jpeg"; ?>"><img style="width:100%;" src="<?php echo URL_UPLOADS . "/" . $GINKGO_USER_ID . "/heatRaw.jpeg"; ?>"></a><br/>[to add: what on earth this is]</td>
 							</tr>
 							<tr>
 								<td><a href="<?php echo URL_UPLOADS . "/" . $GINKGO_USER_ID . "/heatNorm.jpeg"; ?>"><img style="width:100%;" src="<?php echo URL_UPLOADS . "/" . $GINKGO_USER_ID . "/heatNorm.jpeg"; ?>"></a><br/>[to add: what on earth this is]</td>
@@ -986,9 +988,9 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 				if(step == "1")
 					desc = "Mapping reads to bins";
 				else if(step == "2")
-					desc = "Computing statistics for segmentation";
+					desc = "Computing quality control statistics";
 				else if(step == "3")
-					desc = "Clustering";
+					desc = "Processing and clustering samples";
 				else if(step > 3)
 					desc = "Annotating specified genes";
 
@@ -1008,10 +1010,8 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 					percentdone = 100;
 
 				// When we're done with the analysis, stop getting progress continually
-				if((step > 3 && percentdone >= 100) || typeof step == 'undefined')
+				if((step >= 3 && percentdone >= 100) || typeof step == 'undefined')
 				{
-					
-
 					// Remove auto-update timer
 					clearInterval(ginkgo_progress);
 					// Load tree
@@ -1034,7 +1034,7 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 			{
 				// Turn string into array of lines
 				lineNb = 0;
-				table  = '<thead><tr><th>&nbsp;</th><th style="text-align:center">Cell</th><th style="text-align:center">Bin Count<br/>Too Low</th><th style="text-align:center">Index of Dispersion<br/>Too High</th><th>Recommendation</th></tr></thead><tbody>'; //<th><td>Cell name</td><td>Assessment</td></th>
+				table  = '';
 				allLines = qaFile.split("\n");
 
 				omg = [[], [], []];
@@ -1064,17 +1064,17 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 					if(score == 2) {
 						scoreClass = "danger";
 						icon = "glyphicon-exclamation-sign"
-						scoreMessage = "It is recommended you do not use this file";
+						scoreMessage = "This file should be inspected before proceeding";
 					} else if(score == 1) {
 						scoreClass = "warning";
 						icon = "glyphicon-info-sign"
-						scoreMessage = "This file should be inspected before proceeding";
+						scoreMessage = "This file suffers from moderately low coverage. Proceed carefully.";
 					} else if(score == 0) {
 						scoreClass = "success";
 						icon = "glyphicon-ok-sign"
 						scoreMessage = "No QA issues detected";
 					}
-					newLine = '<tr class="' + scoreClass + '"><td class="active" style="text-align:center"><span class="glyphicon ' + icon + '"></span></td><td>' + cell + '</td><td style="text-align:center">' + meanBinCount + '</td><td style="text-align:center">' + indexOfDispersion + '</td><td>' + scoreMessage + '</td></tr>';
+					newLine = '<tr class="' + scoreClass + '"><td width="5%" class="active" style="text-align:center"><span class="glyphicon ' + icon + '"></span></td><td width="20%" style="text-align:center">' + cell + '</td><td width="20%" style="text-align:center">' + meanBinCount + '</td><td width="20%" style="text-align:center">' + indexOfDispersion + '</td><td width="55%">' + scoreMessage + '</td></tr>';
 					//table += newLine;
 					
 					
