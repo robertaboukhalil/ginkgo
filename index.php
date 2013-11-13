@@ -81,9 +81,11 @@ if($GINKGO_PAGE == 'admin-upload')
 	// Create user directory if doesn't exist
 	@mkdir($userDir);
 
+	// Removed params-binning-file but have params-segmentation-file
+
 	// Error: invalid file type => return error
-	if($_FILES['params-facs-file']['name'] != "" || $_FILES['params-binning-file']['name'] != "")
-		if($_FILES['params-facs-file']['type'] != "text/plain" || $_FILES['params-binning-file']['type'] != "text/plain")
+	if($_FILES['params-facs-file']['name'] != "" || $_FILES['params-segmentation-file']['name'] != "")
+		if($_FILES['params-facs-file']['type'] != "text/plain" || $_FILES['params-segmentation-file']['type'] != "text/plain")
 			die("error");
 
 	$result = "";
@@ -99,14 +101,14 @@ if($GINKGO_PAGE == 'admin-upload')
 		}
 	}
 
-	// Binning file
-	if(!empty($_FILES['params-binning-file']))
+	// Segmentation file
+	if(!empty($_FILES['params-segmentation-file']))
 	{
 		// Upload binning file
-		if(is_uploaded_file($_FILES['params-binning-file']['tmp_name']))
+		if(is_uploaded_file($_FILES['params-segmentation-file']['tmp_name']))
 		{
-			move_uploaded_file($_FILES['params-binning-file']['tmp_name'], $userDir . "/user-bins.txt");
-			$result .= "bins";
+			move_uploaded_file($_FILES['params-segmentation-file']['tmp_name'], $userDir . "/user-segmentation.txt");
+			$result .= "segmentation";
 		}
 	}
 
@@ -127,7 +129,7 @@ if($GINKGO_PAGE == 'admin-annotate')
 	file_put_contents( $userDir . "/query.txt", $genes );
 
 	// Start analysis
-	$cmd = "./scripts/analyze $GINKGO_USER_ID &";
+	$cmd = "./scripts/analyze $GINKGO_USER_ID >> $userDir/ginkgo.out 2>&1  &";
 	session_regenerate_id(TRUE);	
 	$handle = popen($cmd, 'r');
 	//$out = stream_get_contents($handle);
@@ -222,11 +224,13 @@ if(isset($_POST['analyze'])) {
 	$config.= 'init=' . $init . "\n";
 	$config.= 'process=' . $process . "\n";
 	$config.= 'fix=' . $fix . "\n";
+	
+	$config.= 'ref=' . $_POST['segMethCustom'] . "\n";
 
 	file_put_contents($userDir . '/config', $config);
 
 	// Start analysis
-	$cmd = "./scripts/analyze $GINKGO_USER_ID &";
+	$cmd = "./scripts/analyze $GINKGO_USER_ID >> $userDir/ginkgo.out 2>&1  &";
 	session_regenerate_id(TRUE);	
 	$handle = popen($cmd, 'r');
 	#$out = stream_get_contents($handle);
@@ -475,21 +479,19 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 								<td>General Binning Options</td>
 								<td>
 									Use a <select id="param-bins-type" class="input-mini" style="margin-top:8px; font-size:11px; padding-top:3px; padding-bottom:0; height:25px; ">
-									<option value="fixed_">fixed</option>
 									<option value="variable_">variable</option>
+									<option value="fixed_">fixed</option>
 									</select> bin size of <select id="param-bins-value" class="input-mini" style="margin-top:8px; font-size:11px; padding-top:3px; padding-bottom:0; height:25px; ">
-									<option value="10000">10kb</option>
-									<option value="25000">25kb</option>
-									<option value="40000">40kb</option>
 									<option value="50000">50kb</option>
+									<option value="40000">40kb</option>
+									<option value="25000">25kb</option>
+									<option value="10000">10kb</option>
 									</select> size.
 								</td>
 							</tr>
-							<tr>
+							<!--<tr>
 								<td>Custom binning file (format?)</td>
 								<td style="height:45px;">
-									
-										<!-- <form enctype='multipart/form-data'> -->
 										<div class="fileupload fileupload-new" data-provides="fileupload">
 											<div class="input-append">
 												<div class="uneditable-input span3">
@@ -510,13 +512,35 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 									
 									This will overwrite the general binning options.
 								</td>
-							</tr>
+							</tr>-->
 							<tr>
 								<td>Segmentation</td>
 								<td>Use <select id="param-segmentation" class="input-medium" style="margin-top:8px; font-size:11px; padding-top:3px; padding-bottom:0; height:25px; ">
-								<option value="0">bin count variability</option>
-								<option value="1">GC content per bin</option>
-								</select> to segment.</td>
+								<option value="0">Independent (normalized read counts)</option>
+								<option value="1">Global (sample with lowest IOD)</option>
+								<option value="2">Custom (using uploaded reference sample)</option>
+								</select> method to segment.</td>
+							</tr>
+							<tr style="display:none" id="param-segmentation-custom">
+								<td>Custom segmentation</td>
+								<td style="height:45px;">
+										<div class="fileupload fileupload-new" data-provides="fileupload">
+											<div class="input-append">
+												<div class="uneditable-input span3">
+													<i class="glyphicon glyphicon-upload"></i>
+													<span class="fileupload-preview"></span>
+												</div>
+
+												<span class="btn btn-file">
+													<span class="fileupload-new btn btn-success">Select .bed file</span>
+													<span class="fileupload-exists btn btn-success">Change</span>
+													<input type="file" name="params-segmentation-file" />
+												</span>
+
+												<a href="#" class="btn btn-danger fileupload-exists" data-dismiss="fileupload">Remove</a>
+											</div>
+										</div>
+								</td>
 							</tr>
 							<tr>
 								<td>Clustering</td>
@@ -715,6 +739,14 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 
 
 
+					<!-- Panel: Analysis JPEG -->
+					<div class="panel panel-default">
+						<div class="panel-heading"><span class="glyphicon glyphicon-sort-by-attributes"></span> Analysis details</div>
+						<div class="panel-body">
+							<a href="<?php echo URL_UPLOADS . "/" . $GINKGO_USER_ID . "/" . $CURR_CELL . "_analysis.jpeg";?>"><img style="width:100%;" src="<?php echo URL_UPLOADS . "/" . $GINKGO_USER_ID . "/" . $CURR_CELL . "_analysis.jpeg";?>"></a>
+						</div>
+					</div>
+
 
 					<!-- Buttons: back or next -->
 					<div id="results-navigation2">
@@ -787,9 +819,15 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 					window.location = "<?php echo URL_ROOT . "/?q=results/"; ?>" + ginkgo_user_id;
 				}
 			);
-
-
 		});
+		$("#param-segmentation").change(function() {
+			// If custom upload, show upload form
+			if( $("#param-segmentation").val() == 2 )
+				$("#param-segmentation-custom").show();
+			else
+				$("#param-segmentation-custom").hide();
+		});
+
 		</script>
 
 
@@ -905,14 +943,15 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 			  success: function(data){
 
 					if(data == "error")
-						alert("Error: Please use a .txt extension for FACS files/custom bin files")
+						//alert("Error: Please use a .txt extension for FACS files/custom bin files")
+						alert("Error: please use the correct extension for custom parameter files.")
 					else
 					{
-						facs = ""; bins = ""; genes = "";
-						if(data == "facs" || data == "facsbins")
+						facs = ""; bins = ""; genes = ""; segmentation = "";
+						if(data == "facs" || data == "facssegmentation")
 							facs = "user-facs.txt"
-						if(data == "bins" || data == "facsbins")
-							bins = "user-bins.txt"
+						if(data == "segmentation" || data == "facssegmentation")
+							segmentation = "user-segmentation.txt"
 
 						f = 0; b = 0; g = 0;
 						if(facs != "")
@@ -945,6 +984,9 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 								// User-specified bin file
 								'b':				b,
 								'binList':	bins,
+								
+								// User specified binning segmentation file
+								'segMethCustom': segmentation,
 								
 								// Genome
 								'chosen_genome': $('#param-genome').val(),
@@ -1009,14 +1051,15 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 				if(percentdone > 100)
 					percentdone = 100;
 
+				// Load tree
+				if(typeof tree != 'undefined')
+					drawTree(tree);
+
 				// When we're done with the analysis, stop getting progress continually
 				if((step >= 3 && percentdone >= 100) || typeof step == 'undefined')
 				{
 					// Remove auto-update timer
 					clearInterval(ginkgo_progress);
-					// Load tree
-					if(typeof tree != 'undefined')
-						drawTree(tree);
 
 					// Fix UI
 					$(".progress").hide();
@@ -1064,11 +1107,11 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 					if(score == 2) {
 						scoreClass = "danger";
 						icon = "glyphicon-exclamation-sign"
-						scoreMessage = "This file should be inspected before proceeding";
+						scoreMessage = "This file suffers from extreme coverage issues.  Proceed carefully or consider removing file from the analysis.";
 					} else if(score == 1) {
 						scoreClass = "warning";
 						icon = "glyphicon-info-sign"
-						scoreMessage = "This file suffers from moderately low coverage. Proceed carefully.";
+						scoreMessage = "This file suffers from moderate coverage issues. Proceed carefully.";
 					} else if(score == 0) {
 						scoreClass = "success";
 						icon = "glyphicon-ok-sign"
@@ -1140,10 +1183,22 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 
 				// Define tree and size (based on current window size!)
 				var dataObject = { xml: xmlFile, fileSource: true };
+
+				// Show tree
 				treeHeight = 500;
 				treeWidth  = 500;
-				// Show tree
 				ginkgo_phylocanvas = new Smits.PhyloCanvas(dataObject, 'svgCanvas', treeWidth, treeHeight); //, 'circular'
+
+				// Resize SVG to fit
+			    var c = document.getElementsByTagName("svg");
+				var rec = c[0].getBoundingClientRect();
+				console.log("width: "+rec.width);
+				console.log("height: "+rec.height);
+				if(treeHeight < rec.height)
+					$("svg").css("height", rec.height + "px");
+
+
+				//alert( $("svg").getAttribute("height") )
 
 				// Init unitip (see unitip.css to change tip size)
 				init();
