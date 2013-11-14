@@ -74,8 +74,8 @@ fi
 
 if [ "$process" == "1" ]; then
   ${home}/scripts/status ${dir}/${statFile} 3 Initializing 0 1
-  ${home}/scripts/interval ${genome}/genes ${dir}/query.txt ${dir}/intervals.txt
-  ${home}/scripts/process.R $genome $dir $statFile data $segMeth $binMeth $clustMeth $distMet ${dir}/query.txt ${ref}_mapped $f $facs
+  ${home}/scripts/interval ${genome}/genes ${dir}/${query} ${dir}/intervals.txt
+  ${home}/scripts/process.R $genome $dir $statFile data $segMeth $binMeth $clustMeth $distMet ${dir}/${query} ${ref}_mapped $f $facs
 fi
 
 
@@ -93,9 +93,8 @@ fi
 ############################################################
 
 if [ "$q" == "1" ] && [ "$process" == "0" ]; then
-  ${home}/scripts/interval ${genome}/genes ${dir}/query.txt ${dir}/intervals.txt
-  ${home}/scripts/queryAll.R $genome $dir $statFile $binMeth ${dir}/intervals.txt $f
-  #$query
+  ${home}/scripts/interval ${genome}/genes ${dir}/${query} ${dir}/intervals.txt
+  ${home}/scripts/queryAll.R $genome $dir $statFile $binMeth ${dir}/${query} $f
 fi
 
 if [ "$email" != "" ]; then
