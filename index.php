@@ -425,6 +425,9 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 											<optgroup label="Latest genomes">
 												<option value="hg19">Human (hg19)</option>
 												<option value="panTro4">Chimpanzee (panTro4)</option>
+												<option value="mm10">Mus musculus (mm10)</option>
+												<option value="rn5">R. norvegicus (rn5)</option>
+												<option value="dm3">D. Melanogaster (dm3)</option>
 											</optgroup>
 											<optgroup label="Older genomes">
 												<option value="hg18">Human (hg18)</option>
