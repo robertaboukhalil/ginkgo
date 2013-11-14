@@ -9,7 +9,6 @@ Ginkgo
 ###### v0.7
 ###### v0.8
 ###### v0.9
-- Gene search: Users can plot the locations of (up to 10) specific genes on top of the segmentation plots.
 - Test:
 	- If change parameters and re-run, only do necessary analysis
 	- If add files to analysis, only run analysis on new files

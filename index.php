@@ -121,11 +121,12 @@ if($GINKGO_PAGE == 'admin-annotate')
 	// Sanitize user input (see bootstrap.php)
 	array_walk_recursive($_POST, 'sanitize');
 	$genes = str_replace("'", "", $_POST['genes']);
+	$genes = str_replace(" ", "\t", $genes);
 
 	// Two notes about changing config:
 	// 	-> Don't want to send email to users when it's done => set email to empty
 	//	-> Change gene list file name (query.txt -- see scripts/analyze)
-	file_put_contents( $userDir . "/config", "email=\"\"\ngeneList=\"query.txt\"\ninit=0\nprocess=0\nfix=0\nq=1\n", FILE_APPEND );
+	file_put_contents( $userDir . "/config", "email=\"\"\nquery=\"query.txt\"\ninit=0\nprocess=0\nfix=0\nq=1\n", FILE_APPEND );
 	file_put_contents( $userDir . "/query.txt", $genes );
 
 	// Start analysis
@@ -218,7 +219,7 @@ if(isset($_POST['analyze'])) {
 	$config.= 'f=' . $_POST['f'] . "\n";
 	$config.= 'facs=' . $_POST['facs'] . "\n";
 	$config.= 'q=' . $_POST['g'] . "\n";
-	$config.= 'geneList=' . $_POST['geneList'] . "\n";
+	$config.= 'query=' . $_POST['query'] . "\n";
 	$config.= 'chosen_genome=' . $_POST['chosen_genome'] . "\n";
 
 	$config.= 'init=' . $init . "\n";
@@ -979,7 +980,7 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 
 								// Plot gene locations
 								'g':				0,
-								'geneList':	'',
+								'query':	'',
 
 								// User-specified bin file
 								'b':				b,
