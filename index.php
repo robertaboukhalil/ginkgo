@@ -621,6 +621,14 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 						<table class="table">
 							<tr><td style="text-align:right"> <button type="button" class="btn btn-info" id="results-search-btn">Save</button> </td></tr>
 						</table>
+						<!-- Table -->
+						<?php if(file_exists($userDir . "/query.txt")): ?>
+						<table class="table">
+							<tr><td><b>Intervals plotted:</b> 
+								<a target="_blank" href="<?php echo URL_UPLOADS . '/' . $GINKGO_USER_ID . '/intervals.txt'; ?>">.txt</a>							
+							</td></tr>
+						</table>
+						<?php endif; ?>
 					</div>
 
 					<br/>
@@ -633,7 +641,7 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 							<p>Verifying that your files are adequate for copy-number analysis...</p>
 						</div>
 						<!-- Table -->
-							<table class="table">
+							<table class="table" style="min-height:0px;">
 								<thead><tr><th width="5%">&nbsp;</th><th style="text-align:center" width="20%">Cell</th><th style="text-align:center" width="20%">Bin Count<br/>Too Low</th><th style="text-align:center" width="20%">Index of Dispersion<br/>Too High</th><th width="55%">Recommendation</th></tr></thead><tbody>
 							</table>
 						<div style="height:300px; overflow:auto;">
@@ -1128,7 +1136,8 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 					omg[score].push(newLine);
 				}
 				
-				for(i in omg)
+				//for(i in omg)
+				for(i=2;i>=0;i--)
 					for(j in omg[i])
 						table += omg[i][j];
 
@@ -1146,8 +1155,9 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 		// -------------------------------------------------------------------------
 		function drawTree(treeFile, outputXML)
 		{
-			Tinycon.setBubble(0);
-			$.get("<?php echo URL_UPLOADS; ?>/" + ginkgo_user_id + "/" + treeFile, function(xmlFile)
+			//Tinycon.setBubble(0);
+			rndNb = Math.round(Math.random()*10000); // to prevent browser from caching xml file!
+			$.get("<?php echo URL_UPLOADS; ?>/" + ginkgo_user_id + "/" + treeFile + '?uniq=' + rndNb, function(xmlFile)
 			{
 				// Debug
 				if(outputXML == true)
@@ -1190,7 +1200,7 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 
 				// Show tree
 				treeHeight = 500;
-				treeWidth  = 500;
+				treeWidth  = 1000;
 				ginkgo_phylocanvas = new Smits.PhyloCanvas(dataObject, 'svgCanvas', treeWidth, treeHeight); //, 'circular'
 
 				// Resize SVG to fit
