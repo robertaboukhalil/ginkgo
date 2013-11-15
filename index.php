@@ -604,8 +604,13 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 					<h3 style="margin-top:-5px;"><span class="badge">STEP 3</span> View results</h3>
 					<p>Click on individual cells for details of the copy-number analysis.</p>
 
-					<div id="svgCanvas" class="row-fluid">
-						Analyzing your data...
+					<div class="panel panel-info">
+						<div class="panel-heading"><h3 class="panel-title"><span class="glyphicon glyphicon-tree-deciduous"></span> Tree</h3></div>
+						<div class="panel-body">
+							<div id="svgCanvas" class="row-fluid" style="border:0px solid red; ">
+								Analyzing your data...
+							</div>
+						</div>
 					</div>
 
 					<h3>&nbsp;</h3>
@@ -1200,19 +1205,13 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 
 				// Show tree
 				treeHeight = 500;
-				treeWidth  = 1000;
+				treeWidth  = $("#svgCanvas").width();//500
 				ginkgo_phylocanvas = new Smits.PhyloCanvas(dataObject, 'svgCanvas', treeWidth, treeHeight); //, 'circular'
 
-				// Resize SVG to fit
+				// Resize SVG to fit by height
 			    var c = document.getElementsByTagName("svg");
 				var rec = c[0].getBoundingClientRect();
-				console.log("width: "+rec.width);
-				console.log("height: "+rec.height);
-				if(treeHeight < rec.height)
-					$("svg").css("height", rec.height + "px");
-
-
-				//alert( $("svg").getAttribute("height") )
+				$("svg").css("height", rec.height+50 + "px");
 
 				// Init unitip (see unitip.css to change tip size)
 				init();
