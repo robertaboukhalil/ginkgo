@@ -8,6 +8,7 @@ home=/mnt/data/ginkgo
 dir=${home}/uploads/${1}
 source ${dir}/config
 distMet=$distMeth
+touch $dir/index.html
 
 inFile=list
 statFile=status.xml
