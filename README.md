@@ -14,8 +14,11 @@ Ginkgo
 	- If add files to analysis, only run analysis on new files
 	- Check that segmentation file works
 	- Check that FACS file works
+	- Check that "Bin Count Too Low" / "Index of Dispersion Too High" works
 
 ###### v1.0
+- Make screenshots + pipeline
+- Fix file permissions before submitting
 - Add link to sample data set
 - Add support for other species in dashboard?
 - Add description for heatmaps
