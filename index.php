@@ -236,9 +236,17 @@ if(isset($_POST['analyze'])) {
 	$handle = popen($cmd, 'r');
 	#$out = stream_get_contents($handle);
 	pclose($handle);
+	
+	// Save to cookie
+	setcookie("ginkgo[$GINKGO_USER_ID]", $_POST['job_name'], time()+36000000);
 	echo "OK";
 	exit;
 }
+
+#setcookie("ginkgo[thesis.prostate]", 'Prostate  cells', time()+36000000);
+#setcookie("ginkgo[thesis.breast]", 'Breast cells', time()+36000000);
+#print_r($_COOKIE);
+#exit;
 
 // Load status.xml if exists and check if analysis under way
 if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
@@ -296,11 +304,38 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 						<span class="icon-bar"></span>
 						<span class="icon-bar"></span>
 				  </button>
-					<a class="navbar-brand" href="?q=home/<?php echo $GINKGO_USER_ID; ?>"><span class="glyphicon glyphicon-tree-deciduous"></span> Ginkgo</a>
+					<!-- <a class="navbar-brand" href="?q=home/<?php echo $GINKGO_USER_ID; ?>"><span class="glyphicon glyphicon-tree-deciduous"></span> Ginkgo</a>
 
 					<ul class="nav navbar-nav">
 						<li><a data-toggle="modal" href="#modal-new-analysis"><strong>New analysis</strong></a></li>
-					</ul>
+						<li>
+							<a class="dropdown-toggle" data-toggle="dropdown" href="#"><strong>File</strong> <span class="caret"></span></a>
+							<ul class="dropdown-menu" role="menu">
+								<li><a data-toggle="modal" href="#modal-new-analysis">New analysis</a></li>
+								<li class="divider">Test</li>
+								<li><a href="#">Another action</a></li>
+								<li><a href="#">Something else here</a></li>
+								<li><a href="#">Separated link</a></li>
+							</ul>
+						</li>
+					</ul>-->
+
+				<ul class="nav navbar-nav">
+					<li>
+						<a class="navbar-brand dropdown-toggle" data-toggle="dropdown" href="#"><span class="glyphicon glyphicon-tree-deciduous"></span> Ginkgo <span class="caret" style="border-top-color:#ccc !important; border-bottom-color:#ccc !important;"></span></a>
+						<ul class="dropdown-menu" role="menu">
+							<li><a data-toggle="modal" href="#modal-new-analysis">New analysis</a></li>
+							
+							<?php if(count($_COOKIE['ginkgo']) > 0): ?>
+							<li class="divider"></li>
+							<?php endif; ?>
+							
+							<?php foreach($_COOKIE['ginkgo'] as $id => $name): ?>
+							<li><a href="?q=dashboard/<?php echo $id;?>"><?php echo $name;?></a></li>
+							<?php endforeach; ?>
+						</ul>
+					</li>
+				</ul>
 
 
 				</div>
@@ -396,8 +431,10 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 				<form id="form-dashboard">
 					<!-- Choose cells of interest -->
 					<h3 style="margin-top:-5px;"><span class="badge">STEP 1</span> Choose cells for analysis</h3>
-					
-					<div id="params-cells">
+
+					<button id="dashboard-toggle-cells" class="btn btn-info" style="margin:20px;">Select all cells</button>
+					<br/>
+					<div id="params-cells" style="max-height:200px; overflow:auto">
 						<?php $previouslySelected = file(DIR_UPLOADS . '/' . $GINKGO_USER_ID . '/list', FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES); ?>
 						<?php $selected = array(); ?>
 						<?php foreach($MY_CELLS as $currCell): ?>
@@ -409,8 +446,7 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 						?>
 				    <label><div class="input-group" style="margin:20px;"><span class="input-group-addon"><input type="checkbox" name="dashboard_cells[]" value="<?php echo $currCell; ?>"<?php echo $selected[$currCell];?>></span><span class="form-control"><?php echo $currCell; ?></span></div></label>
 						<?php endforeach; ?>
-						<br/>
-						<button id="dashboard-toggle-cells" class="btn btn-info" style="margin:20px;">Select all cells</button>
+
 					</div>
 
 					<!-- Which genome? -->
@@ -418,6 +454,13 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 					<div id="params-genome" style="margin:20px;">
 						<table class="table table-striped">
 							<tbody>
+								<tr>
+									<td width="20%">Job name:</td>
+									<td>
+										<input id="param-job-name" class="form-control" type="text" placeholder="Single-cells from tissue X" value="<?php echo $_COOKIE['ginkgo'][$GINKGO_USER_ID]; ?>">
+									</td>
+								</tr>
+
 								<tr>
 									<td width="20%">Genome:</td>
 									<td>
@@ -486,7 +529,9 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 									<option value="variable_">variable</option>
 									<option value="fixed_">fixed</option>
 									</select> bin size of <select id="param-bins-value" class="input-mini" style="margin-top:8px; font-size:11px; padding-top:3px; padding-bottom:0; height:25px; ">
-									<option value="50000">50kb</option>
+									<option value="250000">250kb</option>
+									<option value="100000">100kb</option>
+									<option value="50000" selected="selected">50kb</option>
 									<option value="40000">40kb</option>
 									<option value="25000">25kb</option>
 									<option value="10000">10kb</option>
@@ -629,7 +674,7 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 						<!-- Table -->
 						<?php if(file_exists($userDir . "/query.txt")): ?>
 						<table class="table">
-							<tr><td><b>Intervals plotted:</b> 
+							<tr><td><b>Download intervals plotted:</b> 
 								<a target="_blank" href="<?php echo URL_UPLOADS . '/' . $GINKGO_USER_ID . '/intervals.txt'; ?>">.txt</a>							
 							</td></tr>
 						</table>
@@ -647,12 +692,28 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 						</div>
 						<!-- Table -->
 							<table class="table" style="min-height:0px;">
-								<thead><tr><th width="5%">&nbsp;</th><th style="text-align:center" width="20%">Cell</th><th style="text-align:center" width="20%">Bin Count<br/>Too Low</th><th style="text-align:center" width="20%">Index of Dispersion<br/>Too High</th><th width="55%">Recommendation</th></tr></thead><tbody>
+								<thead>
+									<tr>
+										<th width="5%">&nbsp;</th>
+										<th style="text-align:center" width="10%">Cell</th>
+										<th style="text-align:center" width="20%">Bin Count<br/>Too Low</th>
+										<th style="text-align:center" width="20%">Index of Dispersion<br/>Too High</th>
+										<th width="40%">Recommendation</th>
+										<th style="text-align:center; padding-right:17px;" width="5%">Info</th>
+									</tr>
+								</thead>
 							</table>
 						<div style="height:300px; overflow:auto;">
 							<table class="table" id="results-QA-table" style="display:none;">
 							</table>
 						</div>
+
+						<table class="table">
+							<tr><td><b>Download detailed quality assessment:</b> 
+								<a target="_blank" href="<?php echo URL_UPLOADS . '/' . $GINKGO_USER_ID . '/SegStats'; ?>">.txt</a>							
+							</td></tr>
+						</table>
+
 					</div>
 
 					<br/>
@@ -1007,6 +1068,9 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 								
 								// Genome
 								'chosen_genome': $('#param-genome').val(),
+								
+								// Job name
+								'job_name'	   : $('#param-job-name').val,
 							},
 							// If get response
 							function(data) {
@@ -1094,7 +1158,7 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 			{
 				// Turn string into array of lines
 				lineNb = 0;
-				table  = '';
+				table  = '<tbody>';
 				allLines = qaFile.split("\n");
 
 				omg = [[], [], []];
@@ -1134,10 +1198,37 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 						icon = "glyphicon-ok-sign"
 						scoreMessage = "No QA issues detected";
 					}
-					newLine = '<tr class="' + scoreClass + '"><td width="5%" class="active" style="text-align:center"><span class="glyphicon ' + icon + '"></span></td><td width="20%" style="text-align:center">' + cell + '</td><td width="20%" style="text-align:center">' + meanBinCount + '</td><td width="20%" style="text-align:center">' + indexOfDispersion + '</td><td width="55%">' + scoreMessage + '</td></tr>';
-					//table += newLine;
-					
-					
+					newLine =	'<tr class="' + scoreClass + '">' + 
+									'<td width="5%" class="active" style="text-align:center">' + 
+										'<span class="glyphicon ' + icon + '"></span>' + 
+									'</td>' + 
+									'<td width="10%" style="text-align:center">' + 
+										'<a href="?q=results/<?php echo $GINKGO_USER_ID; ?>/' + cell + '">' + cell + '</a>' + 
+									'</td>' + 
+									'<td width="20%" style="text-align:center">' +
+										meanBinCount +
+									'</td>' + 
+									'<td width="20%" style="text-align:center">' + 
+										indexOfDispersion +
+									'</td>' + 
+									'<td width="40%">' +
+										scoreMessage +
+									'</td>' + 
+									'<td width="4%" style="text-align:center;">' + 
+										'<a href="javascript:void(0);" onClick=\'javascript:$("#results-info-' + cell + '").slideToggle("slow");\'><span class="glyphicon glyphicon-info-sign"></span></a>' +
+									'</td>' +
+								'</tr>';
+
+					newLine +=	'<tr class="table-condensed active" id="results-info-' + cell + '" style="display:none">' +
+									'<td colspan="6" width="100%" class="active" style="text-align:left; padding-left:55px;">' +
+										"<code><br>" +
+											"<strong>Number of reads&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</strong>: " + arrLine[1].replace(/"/g, '') + "<br>" +
+											"<strong>Reads/bin&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</strong>: " + arrLine[3].replace(/"/g, '') + " reads/bin <em>(variance: " + arrLine[4].replace(/"/g, '') + ")</em><br>" +
+											"<strong>Index of dispersion</strong>&nbsp;:&nbsp;" + arrLine[5].replace(/"/g, '') + "<br>" +
+										"<br></code>" +
+									'</td>' +
+								'</tr>';
+
 					omg[score].push(newLine);
 				}
 				
