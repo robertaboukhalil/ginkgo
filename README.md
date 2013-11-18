@@ -9,29 +9,21 @@ Ginkgo
 ###### v0.7
 ###### v0.8
 ###### v0.9
-- Test:
-	- If change parameters and re-run, only do necessary analysis
-	- If add files to analysis, only run analysis on new files
-	- Check that segmentation file works
-	- Check that FACS file works
-	- Check that "Bin Count Too Low" / "Index of Dispersion Too High" works
+###### v0.95
+- If add files to analysis, only run analysis on new files
 
 ###### v1.0
-- Make screenshots + pipeline
-- Fix file permissions before submitting
-- Add link to sample data set
-- Add support for other species in dashboard?
-- Add description for heatmaps
-- About page
-- FAQ page
+- Fix file permissions of ginkgo/uploads/ before submitting
 - Paper citations:
 	-> Smits SA, Ouverney CC, 2010 jsPhyloSVG: A Javascript Library for Visualizing Interactive and Vector-Based Phylogenetic Trees on the Web.
-- Don't plot trees to jpeg, should be faster
-- Don't plot [CELL].jpeg files with such high resolution
+- About page
+- FAQ page
 
 ###### v2.0
 - Have "Cancel" button to stop an analysis (but how? store pid?)
 - Using the same dataset, run parallel analyses with different settings
+- Don't plot trees to jpeg, should be faster
+- Don't plot [CELL].jpeg files with such high resolution
 
 ---
 

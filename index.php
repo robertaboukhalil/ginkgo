@@ -44,36 +44,76 @@ if($GINKGO_PAGE == "results")
 
 ## -- Session management -------------------------------------------------------
 $_SESSION["user_id"] = $GINKGO_USER_ID;
+// Define user directory
+$userDir = DIR_UPLOADS . '/' . $GINKGO_USER_ID;
+$userUrl = URL_ROOT . '/uploads/' . $GINKGO_USER_ID;
 
 ## -- Template configuration -----
 // Panel for permalink
 $permalink = URL_ROOT . '?q=results/' . $GINKGO_USER_ID;
 $PANEL_LATER = <<<PANEL
-			<!-- Panel: Save for later -->
-			<div class="panel panel-primary">
-				<div class="panel-heading"><h3 class="panel-title"><span class="glyphicon glyphicon-time"></span> View analysis later</h3></div>
-				<div class="panel-body">
-					Access your results later at the following address:<br/><br/>
-					<textarea class="input-sm permalink">{$permalink}</textarea>
-				</div>
-			</div>
+	<!-- Panel: Save for later -->
+	<div class="panel panel-primary">
+		<div class="panel-heading"><h3 class="panel-title"><span class="glyphicon glyphicon-time"></span> View analysis later</h3></div>
+		<div class="panel-body">
+			Access your results later at the following address:<br/><br/>
+			<textarea class="input-sm permalink">{$permalink}</textarea>
+		</div>
+	</div>
 PANEL;
 
 // Panel to show user's last analysis, if any
 if(file_exists(DIR_UPLOADS . '/' . $GINKGO_USER_ID . '/status.xml'))
 	$PANEL_PREVIOUS = <<<PANEL
-			<!-- Panel: View previous analysis results -->
-			<div class="panel panel-primary">
-				<div class="panel-heading"><h3 class="panel-title"><span class="glyphicon glyphicon-stats"></span> Previous analysis results</h3></div>
-				<div class="panel-body">
-					See your <a href="?q=results/$GINKGO_USER_ID">previous analysis results</a>.<br/><br/>
-					<strong>Note</strong>: Running another analysis will overwrite previous results.
-				</div>
-			</div>
+	<!-- Panel: View previous analysis results -->
+	<div class="panel panel-primary">
+		<div class="panel-heading"><h3 class="panel-title"><span class="glyphicon glyphicon-stats"></span> Previous analysis results</h3></div>
+		<div class="panel-body">
+			See your <a href="?q=results/$GINKGO_USER_ID">previous analysis results</a>.<br/><br/>
+			<strong>Note</strong>: Running another analysis will overwrite previous results.
+		</div>
+	</div>
 PANEL;
 
-// Define user directory
-$userDir = DIR_UPLOADS . '/' . $GINKGO_USER_ID;
+// Panel for annotating genes
+$tmp_query = @file_get_contents($userDir . "/query.txt");
+if(file_exists($userDir . "/query.txt")) {
+	$tmp_table = '<table class="table">'."\n\t" .
+					'<tr><td><b>Download intervals plotted:</b>'."\n\t" . 
+					//''."\n\t".
+					'<a target="_blank" href="' . URL_UPLOADS . '/' . $GINKGO_USER_ID . '/intervals.txt' .'">.txt</a>'."\n".
+					'</td></tr>'."\n".
+					'</table>';
+}
+$PANEL_ANNOTATE = <<<PANEL
+	<!-- Panel: Search for genes -->
+	<div id="results-search-genes" class="panel panel-default" style="display:none;">
+		<div class="panel-heading"><span class="glyphicon glyphicon-search"></span> Annotate copy-number profile</div>
+		<div class="panel-body">
+			Label copy-number profiles with the following chromosome positions:<br/><small>Format: chrName startPos endPos<br/>Specify one range per line.</small><br/><br/>
+			<textarea id="results-search-txt" class="form-control" rows="3" placeholder="chr1 10000 2392392">{$tmp_query}</textarea>
+		</div>
+		<table class="table">
+			<tr><td style="text-align:right"> <button type="button" class="btn btn-info" id="results-search-btn">Save</button> </td></tr>
+		</table>
+		<!-- Table -->
+		${tmp_table}
+	</div>
+PANEL;
+
+// Panel for downloading tree
+$PANEL_DOWNLOAD = <<<PANEL
+	<!-- Panel: Download results -->
+	<div id="results-download" class="panel panel-default" style="display:none;">
+		<div class="panel-heading"><span class="glyphicon glyphicon-tree-deciduous"></span> Download tree</div>
+		<!-- Table -->
+		<table class="table" style="font-size:13px;">
+			<tr class="active"><td><strong>Normalized read counts tree</strong>: <a target="_blank" href="{$userUrl}/clust.newick">newick</a> | <a target="_blank" href="{$userUrl}/clust.xml">xml</a>&nbsp;<em>(plotted here)</em></td></tr>
+			<tr class="active"><td><strong>Copy-number tree</strong>: <a target="_blank" href="{$userUrl}/clust2.newick">newick</a> | <a target="_blank" href="{$userUrl}/clust2.xml">xml</a></td></tr>
+		</table>
+	</div>
+PANEL;
+
 
 ## -- Upload facs / binning file -----------------------------------------------
 if($GINKGO_PAGE == 'admin-upload')
@@ -324,7 +364,9 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 					<li>
 						<a class="navbar-brand dropdown-toggle" data-toggle="dropdown" href="#"><span class="glyphicon glyphicon-tree-deciduous"></span> Ginkgo <span class="caret" style="border-top-color:#ccc !important; border-bottom-color:#ccc !important;"></span></a>
 						<ul class="dropdown-menu" role="menu">
-							<li><a data-toggle="modal" href="#modal-new-analysis">New analysis</a></li>
+							<li><a href="?q=">Home</a></li>
+							<!-- <li><a data-toggle="modal" href="#modal-new-analysis">New analysis</a></li> -->
+							<li><a href="?q=results/T10">Sample run</a></li>
 							
 							<?php if(count($_COOKIE['ginkgo']) > 0): ?>
 							<li class="divider"></li>
@@ -339,22 +381,42 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 
 
 				</div>
-				<div class="navbar-collapse collapse">
+				<!-- <div class="navbar-collapse collapse">
 					<ul class="nav navbar-nav navbar-right">
 						<li><a href="javascript:void(0);">About</a></li>
 						<li><a href="javascript:void(0);">FAQ</a></li>
 					</ul>
-				</div><!--/.navbar-collapse -->
+				</div>-->
+				<!--/.navbar-collapse -->
 			</div>
 		</div>
 
 		<!-- Welcome message -->
 		<div class="jumbotron">
 			<div class="container">
-				<h1>Ginkgo</h1>
+				<h1><a style="text-decoration:none; color:#000" href="?q=">Ginkgo</a></h1>
 				<div id="status" style="margin-top:20px;">
 					<?php if($GINKGO_PAGE == 'home'): ?>
 					A web tool for analyzing single-cell sequencing data.
+					<br>
+
+					<div class="btn-group">
+					  <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown">Load previous analysis <span class="caret"></span></button>
+					  <ul class="dropdown-menu" role="menu">
+						<li><a href="?q=results/T10">Sample run #1</a></li>
+						<li><a href="?q=results/T10">Sample run #2</a></li>
+						
+						<?php if(count($_COOKIE['ginkgo']) > 0): ?>
+							<li class="divider"></li>
+							<?php foreach($_COOKIE['ginkgo'] as $id => $name): ?>
+							<li><a href="?q=dashboard/<?php echo $id;?>"><?php echo $name;?></a></li>
+							<?php endforeach; ?>
+						<?php endif; ?>
+					  </ul>
+					</div>
+
+
+
 					<?php elseif($GINKGO_PAGE == 'dashboard'): ?>
 					<div class="status-box">Your files are uploaded. Now let's do some analysis:</div>
 					<?php elseif($GINKGO_PAGE == 'results'): ?>
@@ -660,29 +722,6 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 
 					<h3>&nbsp;</h3>
 
-					<!-- Panel: Search for genes -->
-					<div id="results-search-genes" class="panel panel-default" style="display:none;">
-						<div class="panel-heading"><span class="glyphicon glyphicon-search"></span> Annotate copy-number profile</div>
-						<div class="panel-body">
-							Label copy-number profiles with the following chromosome positions:<br/><small>Format: chrName startPos endPos<br/>Specify one range per line.</small><br/><br/>
-							<textarea id="results-search-txt" class="form-control" rows="3" placeholder="chr1 10000 2392392"><?php echo @file_get_contents($userDir . "/query.txt"); ?></textarea>
-						</div>
-						<!-- Table -->
-						<table class="table">
-							<tr><td style="text-align:right"> <button type="button" class="btn btn-info" id="results-search-btn">Save</button> </td></tr>
-						</table>
-						<!-- Table -->
-						<?php if(file_exists($userDir . "/query.txt")): ?>
-						<table class="table">
-							<tr><td><b>Download intervals plotted:</b> 
-								<a target="_blank" href="<?php echo URL_UPLOADS . '/' . $GINKGO_USER_ID . '/intervals.txt'; ?>">.txt</a>							
-							</td></tr>
-						</table>
-						<?php endif; ?>
-					</div>
-
-					<br/>
-
 					<!-- <h3 style="margin-top:-5px;"><span class="badge">QA</span> Quality Assessment</h3> -->
 					<!-- Panel: Quality Assessment -->
 					<div class="panel panel-default">
@@ -718,29 +757,19 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 
 					<br/>
 
-					<!-- Panel: Download results -->
-					<div id="results-download" class="panel panel-default" style="display:none;">
-						<div class="panel-heading"><span class="glyphicon glyphicon-tree-deciduous"></span> Download tree</div>
-						<!-- Table -->
-						<table class="table">
-							<tr class="active"><td><strong>Tree built using normalized read counts</strong>: <a target="_blank" href="<?php echo URL_UPLOADS . '/' . $GINKGO_USER_ID . '/clust.newick'; ?>">.newick</a> | <a target="_blank" href="<?php echo URL_UPLOADS . '/' . $GINKGO_USER_ID . '/clust.xml'; ?>">.xml</a>&nbsp;&nbsp;&nbsp;<em>(plotted above)</em></td></tr>
-
-							<tr class="active"><td><strong>Tree built using copy-number values</strong>: <a target="_blank" href="<?php echo URL_UPLOADS . '/' . $GINKGO_USER_ID . '/clust2.newick'; ?>">.newick</a> | <a target="_blank" href="<?php echo URL_UPLOADS . '/' . $GINKGO_USER_ID . '/clust2.xml'; ?>">.xml</a></td></tr>
-						</table>
-					</div>
-
-					<br/>
-
 					<!-- Panel: More results -->
 					<div id="results-heatmaps" class="panel panel-default" style="display:none;">
 						<div class="panel-heading"><span class="glyphicon glyphicon-barcode"></span> Heatmaps</div>
+						<div class="panel-body">
+							<p>Both heatmaps are generated using the unique breakpoints found across all samples, and their values correspond to their relative read counts or copy number as determined by their dissimilarity structure for each respective dendrogram.</p>
+						</div>
 						<!-- Table -->
-						<table class="table">
+						<table class="table" style="text-align:center;">
 							<tr>
-								<td><a href="<?php echo URL_UPLOADS . "/" . $GINKGO_USER_ID . "/heatCN.jpeg"; ?>"><img style="width:100%;" src="<?php echo URL_UPLOADS . "/" . $GINKGO_USER_ID . "/heatCN.jpeg"; ?>"></a><br/>[to add: what on earth this is]</td>
+								<td><a href="<?php echo URL_UPLOADS . "/" . $GINKGO_USER_ID . "/heatCN.jpeg"; ?>"><img style="width:100%;" src="<?php echo URL_UPLOADS . "/" . $GINKGO_USER_ID . "/heatCN.jpeg"; ?>"></a><br/>Heatmap of cells vs. bins; generated using copy-number profiles</td>
 							</tr>
 							<tr>
-								<td><a href="<?php echo URL_UPLOADS . "/" . $GINKGO_USER_ID . "/heatNorm.jpeg"; ?>"><img style="width:100%;" src="<?php echo URL_UPLOADS . "/" . $GINKGO_USER_ID . "/heatNorm.jpeg"; ?>"></a><br/>[to add: what on earth this is]</td>
+								<td><a href="<?php echo URL_UPLOADS . "/" . $GINKGO_USER_ID . "/heatNorm.jpeg"; ?>"><img style="width:100%;" src="<?php echo URL_UPLOADS . "/" . $GINKGO_USER_ID . "/heatNorm.jpeg"; ?>"></a><br/>Heatmap of cells vs. bins; generated using normalized read counts</td>
 							</tr>
 						</table>
 					</div>
@@ -752,11 +781,16 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 						<br/><br/>
 						<hr style="height:5px;border:none;background-color:#CCC;" /><br/>
 						<div style="float:left"><a class="btn btn-lg btn-primary" href="?q=dashboard/<?php echo $GINKGO_USER_ID; ?>"><span class="glyphicon glyphicon-chevron-left"></span> Analysis Options </a></div>
+						<br><br>
 					</div>
 				</div>
 
 				<div class="col-lg-4">
 					<?php echo $PANEL_LATER; ?>
+					<br>
+					<?php echo $PANEL_DOWNLOAD; ?>
+					<br>
+					<?php echo $PANEL_ANNOTATE; ?>
 				</div>
 			</div>
 
