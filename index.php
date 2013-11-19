@@ -107,7 +107,7 @@ $PANEL_DOWNLOAD = <<<PANEL
 	<div id="results-download" class="panel panel-default" style="display:none;">
 		<div class="panel-heading"><span class="glyphicon glyphicon-tree-deciduous"></span> Download tree</div>
 		<!-- Table -->
-		<table class="table" style="font-size:13px;">
+		<table class="table" style="font-size:12.5px;">
 			<tr class="active"><td><strong>Normalized read counts tree</strong>: <a target="_blank" href="{$userUrl}/clust.newick">newick</a> | <a target="_blank" href="{$userUrl}/clust.xml">xml</a>&nbsp;<em>(plotted here)</em></td></tr>
 			<tr class="active"><td><strong>Copy-number tree</strong>: <a target="_blank" href="{$userUrl}/clust2.newick">newick</a> | <a target="_blank" href="{$userUrl}/clust2.xml">xml</a></td></tr>
 		</table>
@@ -319,12 +319,13 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 			html, body	{ height:100%; }
 			td					{ vertical-align:middle !important; }
 			code input	{ border:none; color:#c7254e; background-color:#f9f2f4; width:100%; }
-			svgCanvas		{ fill: none; pointer-events: all; }
+			svgCanvas		{ fill:none; pointer-events:all; }
 			.jumbotron	{ padding:50px 30px 15px 30px; }
 			.glyphicon	{ vertical-align:top; }
 			.badge			{ vertical-align:top; margin-top:5px; }
 			.permalink	{ border:1px solid #DDD; width:100%; color:#666; background:transparent; font-family:"courier"; resize:none; height:50px; }
 			#results-navigation { display:none; }
+			/*svg { max-height:1000% !important; }*/ /* Fix for WebKit browsers */
 		</style>
 
 		<!-- Tinycon styles/javascript -->
@@ -766,10 +767,10 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 						<!-- Table -->
 						<table class="table" style="text-align:center;">
 							<tr>
-								<td><a href="<?php echo URL_UPLOADS . "/" . $GINKGO_USER_ID . "/heatCN.jpeg"; ?>"><img style="width:100%;" src="<?php echo URL_UPLOADS . "/" . $GINKGO_USER_ID . "/heatCN.jpeg"; ?>"></a><br/>Heatmap of cells vs. bins; generated using copy-number profiles</td>
+								<td><a href="<?php echo URL_UPLOADS . "/" . $GINKGO_USER_ID . "/heatCN.jpeg"; ?>"><img style="width:100%;" src="<?php echo URL_UPLOADS . "/" . $GINKGO_USER_ID . "/heatCN.jpeg"; ?>"></a><br/>Heatmap of copy number values across all segment breakpoints</td>
 							</tr>
 							<tr>
-								<td><a href="<?php echo URL_UPLOADS . "/" . $GINKGO_USER_ID . "/heatNorm.jpeg"; ?>"><img style="width:100%;" src="<?php echo URL_UPLOADS . "/" . $GINKGO_USER_ID . "/heatNorm.jpeg"; ?>"></a><br/>Heatmap of cells vs. bins; generated using normalized read counts</td>
+								<td><a href="<?php echo URL_UPLOADS . "/" . $GINKGO_USER_ID . "/heatNorm.jpeg"; ?>"><img style="width:100%;" src="<?php echo URL_UPLOADS . "/" . $GINKGO_USER_ID . "/heatNorm.jpeg"; ?>"></a><br/>Heatmap of normalized read counts across segment breakpoints</td>
 							</tr>
 						</table>
 					</div>
@@ -781,11 +782,16 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 						<br/><br/>
 						<hr style="height:5px;border:none;background-color:#CCC;" /><br/>
 						<div style="float:left"><a class="btn btn-lg btn-primary" href="?q=dashboard/<?php echo $GINKGO_USER_ID; ?>"><span class="glyphicon glyphicon-chevron-left"></span> Analysis Options </a></div>
-						<br><br>
 					</div>
+					
+					<br><br><br><br>
+					
 				</div>
+				
+				
 
 				<div class="col-lg-4">
+					<br><br><br>
 					<?php echo $PANEL_LATER; ?>
 					<br>
 					<?php echo $PANEL_DOWNLOAD; ?>
@@ -1175,6 +1181,7 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 				{
 					// Remove auto-update timer
 					clearInterval(ginkgo_progress);
+					Tinycon.setBubble(0);
 
 					// Fix UI
 					$(".progress").hide();
@@ -1335,8 +1342,12 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 
 				// Resize SVG to fit by height
 			    var c = document.getElementsByTagName("svg");
-				var rec = c[0].getBoundingClientRect();
+				//var rec = c[0].getBoundingClientRect();	// Works in FF, not in Chrome
+				var rec = c[0].getBBox();					// Works in FF, Chrome
+
 				$("svg").css("height", rec.height+50 + "px");
+				console.log(rec.height+50);
+				console.log($("svg").css("height"));
 
 				// Init unitip (see unitip.css to change tip size)
 				init();
