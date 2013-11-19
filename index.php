@@ -1,40 +1,48 @@
 <?php
 
 // =============================================================================
-// URL STRUCTURE: ?q=[page]/[userID]/[analysisID]
-// -----------------------------------------------------------------------------
-//	page =
-//		-> '' or home:	where users upload their files
-//		-> dashboard:		where users choose analysis settings or see progress of
-//											current analysis (can only run 1 analysis at a time on 1
-//											particular data set)
-//		-> analyze:			show report of previous analysis
-//
-//	userID = unique ID for the current set of files to analyze
-//
-//	analysisID = user can perform many analyses on the same data and save
-//							 analysis results. Each such analysis has a unique ID.
-// 							 (NOT YET IMPLEMENTED)
+//   _____ _       _
+//  / ____(_)     | |
+// | |  __ _ _ __ | | ____ _  ___
+// | | |_ | | '_ \| |/ / _` |/ _ \
+// | |__| | | | | |   < (_| | (_) |
+//  \_____|_|_| |_|_|\_\__, |\___/
+//                      __/ |
+//                     |___/   1.0
+// 
 // =============================================================================
 
-## -- Configuration ------------------------------------------------------------
-include "bootstrap.php";
-$GINKGO_MIN_NB_CELLS= 3;
 
-## -- Parse user query ---------------------------------------------------------
-$query				= explode("/", $_GET['q']);
+
+// =============================================================================
+// == Configuration ============================================================
+// =============================================================================
+
+include "bootstrap.php";
+$GINKGO_MIN_NB_CELLS = 3;
+
+
+// =============================================================================
+// == Parse user query =========================================================
+// =============================================================================
+
+$query = explode("/", $_GET['q']);
 
 // Extract page
-$GINKGO_PAGE			= $query[0];
+$GINKGO_PAGE = $query[0];
 if(!$GINKGO_PAGE)
-	$GINKGO_PAGE		= 'home';
+	$GINKGO_PAGE = 'home';
 
 // Extract user ID
-$GINKGO_USER_ID		= $query[1];
+$GINKGO_USER_ID	= $query[1];
 if(!$GINKGO_USER_ID)
 	$GINKGO_USER_ID	= generateID(20);
 
-## -- Page-specific configuration ----------------------------------------------
+
+// =============================================================================
+// == Page-specific configuration ==============================================
+// =============================================================================
+
 // Step 1 (choose cells) & Step 2 (specify email)
 if($GINKGO_PAGE == "dashboard")
   $MY_CELLS = getMyFiles($GINKGO_USER_ID);
@@ -42,15 +50,24 @@ if($GINKGO_PAGE == "dashboard")
 if($GINKGO_PAGE == "results")
   $CURR_CELL = $query[2];
 
-## -- Session management -------------------------------------------------------
+
+// =============================================================================
+// == Session management =======================================================
+// =============================================================================
+
 $_SESSION["user_id"] = $GINKGO_USER_ID;
-// Define user directory
+
+// Define user directories
 $userDir = DIR_UPLOADS . '/' . $GINKGO_USER_ID;
 $userUrl = URL_ROOT . '/uploads/' . $GINKGO_USER_ID;
-
-## -- Template configuration -----
-// Panel for permalink
 $permalink = URL_ROOT . '?q=results/' . $GINKGO_USER_ID;
+
+
+// =============================================================================
+// == Template configuration ===================================================
+// =============================================================================
+
+// -- Panel for permalink ------------------------------------------------------
 $PANEL_LATER = <<<PANEL
 	<!-- Panel: Save for later -->
 	<div class="panel panel-primary">
@@ -62,8 +79,9 @@ $PANEL_LATER = <<<PANEL
 	</div>
 PANEL;
 
-// Panel to show user's last analysis, if any
+// -- Panel to show user's last analysis, if any -------------------------------
 if(file_exists(DIR_UPLOADS . '/' . $GINKGO_USER_ID . '/status.xml'))
+{
 	$PANEL_PREVIOUS = <<<PANEL
 	<!-- Panel: View previous analysis results -->
 	<div class="panel panel-primary">
@@ -74,17 +92,13 @@ if(file_exists(DIR_UPLOADS . '/' . $GINKGO_USER_ID . '/status.xml'))
 		</div>
 	</div>
 PANEL;
-
-// Panel for annotating genes
-$tmp_query = @file_get_contents($userDir . "/query.txt");
-if(file_exists($userDir . "/query.txt")) {
-	$tmp_table = '<table class="table">'."\n\t" .
-					'<tr><td><b>Download intervals plotted:</b>'."\n\t" . 
-					//''."\n\t".
-					'<a target="_blank" href="' . URL_UPLOADS . '/' . $GINKGO_USER_ID . '/intervals.txt' .'">.txt</a>'."\n".
-					'</td></tr>'."\n".
-					'</table>';
 }
+
+// -- Panel for annotating genes -----------------------------------------------
+$tmp_query = @file_get_contents($userDir . "/query.txt");
+if(file_exists($userDir . "/query.txt"))
+	$tmp_table = '<table class="table"><tr>'   .   '<td><b>Download intervals plotted:</b> <a target="_blank" href="' . URL_UPLOADS . '/' . $GINKGO_USER_ID . '/intervals.txt' .'">.txt</a>'."\n".'</td>'."\n"   .   '</tr></table>';
+
 $PANEL_ANNOTATE = <<<PANEL
 	<!-- Panel: Search for genes -->
 	<div id="results-search-genes" class="panel panel-default" style="display:none;">
@@ -101,7 +115,7 @@ $PANEL_ANNOTATE = <<<PANEL
 	</div>
 PANEL;
 
-// Panel for downloading tree
+// -- Panel for downloading tree -----------------------------------------------
 $PANEL_DOWNLOAD = <<<PANEL
 	<!-- Panel: Download results -->
 	<div id="results-download" class="panel panel-default" style="display:none;">
@@ -115,7 +129,10 @@ $PANEL_DOWNLOAD = <<<PANEL
 PANEL;
 
 
-## -- Upload facs / binning file -----------------------------------------------
+// =============================================================================
+// == Upload facs / binning file ===============================================
+// =============================================================================
+
 if($GINKGO_PAGE == 'admin-upload')
 {
 	// Create user directory if doesn't exist
@@ -132,30 +149,30 @@ if($GINKGO_PAGE == 'admin-upload')
 
 	// FACS file
 	if(!empty($_FILES['params-facs-file']))
-	{
 		// Upload facs file
 		if(is_uploaded_file($_FILES['params-facs-file']['tmp_name']))
 		{
 			move_uploaded_file($_FILES['params-facs-file']['tmp_name'], $userDir . "/user-facs.txt");
 			$result .= "facs";
 		}
-	}
 
 	// Segmentation file
 	if(!empty($_FILES['params-segmentation-file']))
-	{
 		// Upload binning file
 		if(is_uploaded_file($_FILES['params-segmentation-file']['tmp_name']))
 		{
 			move_uploaded_file($_FILES['params-segmentation-file']['tmp_name'], $userDir . "/user-segmentation.txt");
 			$result .= "segmentation";
 		}
-	}
 
 	die($result);
 }
 
-## -- Upload facs / binning file -----------------------------------------------
+
+// =============================================================================
+// == Launch gene annotation ===================================================
+// =============================================================================
+
 if($GINKGO_PAGE == 'admin-annotate')
 {
 	// Sanitize user input (see bootstrap.php)
@@ -173,15 +190,16 @@ if($GINKGO_PAGE == 'admin-annotate')
 	$cmd = "./scripts/analyze $GINKGO_USER_ID >> $userDir/ginkgo.out 2>&1  &";
 	session_regenerate_id(TRUE);	
 	$handle = popen($cmd, 'r');
-	//$out = stream_get_contents($handle);
 	pclose($handle);
 
 	exit;
 }
 
 
+// =============================================================================
+// == Launch analysis ==========================================================
+// =============================================================================
 
-## -- Submit analysis ----------------------------------------------------------
 if(isset($_POST['analyze'])) {
 	// Create user directory if doesn't exist
 	@mkdir($userDir);
@@ -232,7 +250,6 @@ if(isset($_POST['analyze'])) {
 			$fix = 1;
 	}
 
-
 	// Make sure have enough cells for analysis
 	if(count($_POST['cells']) < $GINKGO_MIN_NB_CELLS)
 		die("Please select at least " . $GINKGO_MIN_NB_CELLS . " cells for your analysis.");
@@ -248,12 +265,12 @@ if(isset($_POST['analyze'])) {
 	$config.= 'user=' . $user . "\n";
 	$config.= 'email=' . $_POST['email'] . "\n";
 	$config.= 'permalink=\'' . URL_ROOT . '/?q=results/' . str_replace("'", "", $user) . "'\n";
-
+	//
 	$config.= 'segMeth=' . $_POST['segMeth'] . "\n";
 	$config.= 'binMeth=' . $_POST['binMeth'] . "\n";
 	$config.= 'clustMeth=' . $_POST['clustMeth'] . "\n";
 	$config.= 'distMeth=' . $_POST['distMeth'] . "\n";
-
+	//
 	$config.= 'b=' . $_POST['b'] . "\n";
 	$config.= 'binList=' . $_POST['binList'] . "\n";
 	$config.= 'f=' . $_POST['f'] . "\n";
@@ -261,13 +278,13 @@ if(isset($_POST['analyze'])) {
 	$config.= 'q=' . $_POST['g'] . "\n";
 	$config.= 'query=' . $_POST['query'] . "\n";
 	$config.= 'chosen_genome=' . $_POST['chosen_genome'] . "\n";
-
+	//
 	$config.= 'init=' . $init . "\n";
 	$config.= 'process=' . $process . "\n";
 	$config.= 'fix=' . $fix . "\n";
-	
+	//
 	$config.= 'ref=' . $_POST['segMethCustom'] . "\n";
-
+	//
 	file_put_contents($userDir . '/config', $config);
 
 	// Start analysis
@@ -283,23 +300,26 @@ if(isset($_POST['analyze'])) {
 	exit;
 }
 
-#setcookie("ginkgo[thesis.prostate]", 'Prostate  cells', time()+36000000);
-#setcookie("ginkgo[thesis.breast]", 'Breast cells', time()+36000000);
-#print_r($_COOKIE);
-#exit;
+// =============================================================================
+// == If analysis under way, redirect to status page ===========================
+// =============================================================================
 
 // Load status.xml if exists and check if analysis under way
 if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 	$statusFile = DIR_UPLOADS . '/' . $GINKGO_USER_ID . '/status.xml';
 	if(file_exists($statusFile)) {
 		$status = simplexml_load_file($statusFile);
-		
+
 		if($status->step < 3 && $status->percentdone < 100) {
 			header("Location: ?q=results/" . $GINKGO_USER_ID);
 			exit;
 		}
 	}
 }
+
+// =============================================================================
+// == HTML template ============================================================
+// =============================================================================
 
 ?><!DOCTYPE html>
 <html lang="en">
@@ -314,18 +334,18 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 		<!-- Bootstrap core CSS -->
 		<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css">
 		<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-theme.min.css">
+
 		<!-- Custom styles -->
 		<style>
-			html, body	{ height:100%; }
-			td					{ vertical-align:middle !important; }
-			code input	{ border:none; color:#c7254e; background-color:#f9f2f4; width:100%; }
-			svgCanvas		{ fill:none; pointer-events:all; }
-			.jumbotron	{ padding:50px 30px 15px 30px; }
-			.glyphicon	{ vertical-align:top; }
-			.badge			{ vertical-align:top; margin-top:5px; }
-			.permalink	{ border:1px solid #DDD; width:100%; color:#666; background:transparent; font-family:"courier"; resize:none; height:50px; }
+			html, body  { height:100%; }
+			td          { vertical-align:middle !important; }
+			code input  { border:none; color:#c7254e; background-color:#f9f2f4; width:100%; }
+			svgCanvas   { fill:none; pointer-events:all; }
+			.jumbotron  { padding:50px 30px 15px 30px; }
+			.glyphicon  { vertical-align:top; }
+			.badge      { vertical-align:top; margin-top:5px; }
+			.permalink  { border:1px solid #DDD; width:100%; color:#666; background:transparent; font-family:"courier"; resize:none; height:50px; }
 			#results-navigation { display:none; }
-			/*svg { max-height:1000% !important; }*/ /* Fix for WebKit browsers */
 		</style>
 
 		<!-- Tinycon styles/javascript -->
@@ -344,51 +364,26 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 						<span class="icon-bar"></span>
 						<span class="icon-bar"></span>
 						<span class="icon-bar"></span>
-				  </button>
-					<!-- <a class="navbar-brand" href="?q=home/<?php echo $GINKGO_USER_ID; ?>"><span class="glyphicon glyphicon-tree-deciduous"></span> Ginkgo</a>
+					</button>
 
 					<ul class="nav navbar-nav">
-						<li><a data-toggle="modal" href="#modal-new-analysis"><strong>New analysis</strong></a></li>
 						<li>
-							<a class="dropdown-toggle" data-toggle="dropdown" href="#"><strong>File</strong> <span class="caret"></span></a>
+							<a class="navbar-brand dropdown-toggle" data-toggle="dropdown" href="#"><span class="glyphicon glyphicon-tree-deciduous"></span> Ginkgo <span class="caret" style="border-top-color:#ccc !important; border-bottom-color:#ccc !important;"></span></a>
 							<ul class="dropdown-menu" role="menu">
-								<li><a data-toggle="modal" href="#modal-new-analysis">New analysis</a></li>
-								<li class="divider">Test</li>
-								<li><a href="#">Another action</a></li>
-								<li><a href="#">Something else here</a></li>
-								<li><a href="#">Separated link</a></li>
+								<li><a href="?q=">Home</a></li>
+								<li><a href="?q=results/T10">Sample run</a></li>
+
+								<?php if(count($_COOKIE['ginkgo']) > 0): ?>
+									<li class="divider"></li>
+							
+									<?php foreach($_COOKIE['ginkgo'] as $id => $name): ?>
+										<li><a href="?q=dashboard/<?php echo $id;?>"><?php echo $name;?></a></li>
+									<?php endforeach; ?>
+								<?php endif; ?>
 							</ul>
 						</li>
-					</ul>-->
-
-				<ul class="nav navbar-nav">
-					<li>
-						<a class="navbar-brand dropdown-toggle" data-toggle="dropdown" href="#"><span class="glyphicon glyphicon-tree-deciduous"></span> Ginkgo <span class="caret" style="border-top-color:#ccc !important; border-bottom-color:#ccc !important;"></span></a>
-						<ul class="dropdown-menu" role="menu">
-							<li><a href="?q=">Home</a></li>
-							<!-- <li><a data-toggle="modal" href="#modal-new-analysis">New analysis</a></li> -->
-							<li><a href="?q=results/T10">Sample run</a></li>
-							
-							<?php if(count($_COOKIE['ginkgo']) > 0): ?>
-							<li class="divider"></li>
-							<?php endif; ?>
-							
-							<?php foreach($_COOKIE['ginkgo'] as $id => $name): ?>
-							<li><a href="?q=dashboard/<?php echo $id;?>"><?php echo $name;?></a></li>
-							<?php endforeach; ?>
-						</ul>
-					</li>
-				</ul>
-
-
-				</div>
-				<!-- <div class="navbar-collapse collapse">
-					<ul class="nav navbar-nav navbar-right">
-						<li><a href="javascript:void(0);">About</a></li>
-						<li><a href="javascript:void(0);">FAQ</a></li>
 					</ul>
-				</div>-->
-				<!--/.navbar-collapse -->
+				</div>
 			</div>
 		</div>
 
@@ -400,23 +395,19 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 					<?php if($GINKGO_PAGE == 'home'): ?>
 					A web tool for analyzing single-cell sequencing data.
 					<br>
-
 					<div class="btn-group">
 					  <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown">Load previous analysis <span class="caret"></span></button>
 					  <ul class="dropdown-menu" role="menu">
 						<li><a href="?q=results/T10">Sample run #1</a></li>
 						<li><a href="?q=results/T10">Sample run #2</a></li>
-						
 						<?php if(count($_COOKIE['ginkgo']) > 0): ?>
 							<li class="divider"></li>
 							<?php foreach($_COOKIE['ginkgo'] as $id => $name): ?>
-							<li><a href="?q=dashboard/<?php echo $id;?>"><?php echo $name;?></a></li>
+								<li><a href="?q=dashboard/<?php echo $id;?>"><?php echo $name;?></a></li>
 							<?php endforeach; ?>
 						<?php endif; ?>
 					  </ul>
 					</div>
-
-
 
 					<?php elseif($GINKGO_PAGE == 'dashboard'): ?>
 					<div class="status-box">Your files are uploaded. Now let's do some analysis:</div>
@@ -601,30 +592,6 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 									</select> size.
 								</td>
 							</tr>
-							<!--<tr>
-								<td>Custom binning file (format?)</td>
-								<td style="height:45px;">
-										<div class="fileupload fileupload-new" data-provides="fileupload">
-											<div class="input-append">
-												<div class="uneditable-input span3">
-													<i class="glyphicon glyphicon-upload"></i>
-													<span class="fileupload-preview"></span>
-												</div>
-
-												<span class="btn btn-file">
-													<span class="fileupload-new btn btn-success">Select .txt file</span>
-													<span class="fileupload-exists btn btn-success">Change</span>
-													<input type="file" name="params-binning-file" />
-												</span>
-
-												<a href="#" class="btn btn-danger fileupload-exists" data-dismiss="fileupload">Remove</a>
-											</div>
-										</div>
-
-									
-									This will overwrite the general binning options.
-								</td>
-							</tr>-->
 							<tr>
 								<td>Segmentation</td>
 								<td>Use <select id="param-segmentation" class="input-medium" style="margin-top:8px; font-size:11px; padding-top:3px; padding-bottom:0; height:25px; ">
@@ -682,9 +649,6 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 					</table>
 					<br/>
 					<a name="parameters"></a>
-					
-					
-					
 
 					<!-- Buttons: back or next -->
 					<hr style="height:5px;border:none;background-color:#CCC;" /><br/>
@@ -723,7 +687,6 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 
 					<h3>&nbsp;</h3>
 
-					<!-- <h3 style="margin-top:-5px;"><span class="badge">QA</span> Quality Assessment</h3> -->
 					<!-- Panel: Quality Assessment -->
 					<div class="panel panel-default">
 						<div class="panel-heading"><span class="glyphicon glyphicon-certificate"></span> Quality Assessment</div>
@@ -747,13 +710,11 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 							<table class="table" id="results-QA-table" style="display:none;">
 							</table>
 						</div>
-
 						<table class="table">
 							<tr><td><b>Download detailed quality assessment:</b> 
 								<a target="_blank" href="<?php echo URL_UPLOADS . '/' . $GINKGO_USER_ID . '/SegStats'; ?>">.txt</a>							
 							</td></tr>
 						</table>
-
 					</div>
 
 					<br/>
@@ -775,20 +736,14 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 						</table>
 					</div>
 
-
-
 					<!-- Buttons: back or next -->
 					<div id="results-navigation">
 						<br/><br/>
 						<hr style="height:5px;border:none;background-color:#CCC;" /><br/>
 						<div style="float:left"><a class="btn btn-lg btn-primary" href="?q=dashboard/<?php echo $GINKGO_USER_ID; ?>"><span class="glyphicon glyphicon-chevron-left"></span> Analysis Options </a></div>
 					</div>
-					
 					<br><br><br><br>
-					
 				</div>
-				
-				
 
 				<div class="col-lg-4">
 					<br><br><br>
@@ -817,9 +772,8 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 					<div id="results-navigation">
 						<div style="float:left"><a class="btn btn-lg btn-primary" href="?q=results/<?php echo $GINKGO_USER_ID; ?>"><span class="glyphicon glyphicon-chevron-left"></span> Back to tree </a></div>
 					</div>
-<br style="clear:both"/>
-						<hr style="height:5px;border:none;background-color:#CCC;" /><br/>
-
+					<br style="clear:both"/>
+					<hr style="height:5px;border:none;background-color:#CCC;" /><br/>
 
 					<!-- Panel: Copy-number profile -->
 					<div class="panel panel-default">
@@ -832,8 +786,6 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 						</table>
 					</div>
 
-
-
 					<!-- Panel: Histogram of read counts freq. -->
 					<div class="panel panel-default">
 						<div class="panel-heading"><span class="glyphicon glyphicon-stats"></span> Statistics</div>
@@ -844,18 +796,16 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 						<table class="table">
 							<tr>
 								<td>
-							<b>Genome-wide read distribution</b>
-							<p>This gives a quick look at the binned read count distribution across the genome and allows easy identification of cells with strange read coverage.</p>
-							<b>Histogram of read count frequency</b>
-							<p>Single cell data should fit a negative binomial distribution with narrower histograms representing higher quality data. Wide histograms without a distinct peak are representative of a high degree of amplification bias. Histograms with a mode near zero have a high degree of “read dropout” and are generally the result of poor library preparation or technical sequencing error.</p>
-							<b>Lorenz Curve</b>
-							<p>The Lorenz curve gives the cumulative fraction of reads as a function of the cumulative fraction of the genome.  Perfect coverage uniformity results in a straight line with slope 1.  The wider the curve below the line of “perfect uniformity” the lower the coverage uniformity of a sample.</p>
+									<b>Genome-wide read distribution</b>
+									<p>This gives a quick look at the binned read count distribution across the genome and allows easy identification of cells with strange read coverage.</p>
+									<b>Histogram of read count frequency</b>
+									<p>Single cell data should fit a negative binomial distribution with narrower histograms representing higher quality data. Wide histograms without a distinct peak are representative of a high degree of amplification bias. Histograms with a mode near zero have a high degree of “read dropout” and are generally the result of poor library preparation or technical sequencing error.</p>
+									<b>Lorenz Curve</b>
+									<p>The Lorenz curve gives the cumulative fraction of reads as a function of the cumulative fraction of the genome.  Perfect coverage uniformity results in a straight line with slope 1.  The wider the curve below the line of “perfect uniformity” the lower the coverage uniformity of a sample.</p>
 								</td>
 							</tr>
 						</table>
 					</div>
-
-
 
 					<!-- Panel: Analysis JPEG -->
 					<div class="panel panel-default">
@@ -864,7 +814,6 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 							<a href="<?php echo URL_UPLOADS . "/" . $GINKGO_USER_ID . "/" . $CURR_CELL . "_analysis.jpeg";?>"><img style="width:100%;" src="<?php echo URL_UPLOADS . "/" . $GINKGO_USER_ID . "/" . $CURR_CELL . "_analysis.jpeg";?>"></a>
 						</div>
 					</div>
-
 
 					<!-- Buttons: back or next -->
 					<div id="results-navigation2">
@@ -877,9 +826,6 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 					<?php echo $PANEL_LATER; ?>
 				</div>
 			</div>
-
-
-
 
 			<?php endif; ?>
 
@@ -894,10 +840,10 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 		        <h4 class="modal-title">Start a new analysis</h4>
 		      </div>
 		      <div class="modal-body">
-						<h4>Are you sure? This will require uploading new files.</h4><br/>
+				<h4>Are you sure? This will require uploading new files.</h4><br/>
 		        <p>
-		        	<strong>Note</strong>: You can always come back to this analysis later:<br/><br/>
-		        	<textarea class="input-sm permalink"><?php echo $permalink; ?></textarea>
+					<strong>Note</strong>: You can always come back to this analysis later:<br/><br/>
+					<textarea class="input-sm permalink"><?php echo $permalink; ?></textarea>
 		        </p>
 		      </div>
 		      <div class="modal-footer">
@@ -914,8 +860,8 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 		<script src="http://code.jquery.com/jquery-2.0.3.min.js"></script>
 		<script src="//netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.min.js"></script>
 
-	  <!-- JQuery/Bootstrap customization
-	  ================================================== -->
+		<!-- JQuery/Bootstrap customization
+		================================================== -->
 		<script language="javascript">
 		// Transform dropdown menu forms into dialog boxes
 		$('.dropdown-toggle').dropdown();
@@ -949,8 +895,8 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 		</script>
 
 
-	  <!-- .js files for upload functionality
-	  ================================================== -->
+		<!-- .js files for upload functionality
+		================================================== -->
 		<script src="includes/fileupload/js/vendor/jquery.ui.widget.js"></script>
 		<script src="includes/fileupload/js/jquery.iframe-transport.js"></script>
 		<script src="includes/fileupload/js/jquery.fileupload.js"></script>
@@ -969,19 +915,18 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 		<script src="includes/jasny/bootstrap-fileupload.min.js"></script>
 		<link rel="stylesheet" type="text/css" href="includes/jasny/bootstrap-fileupload.min.css">
 
-	  <!-- jsPhyloSVG
-	  ================================================== -->
+		<!-- jsPhyloSVG
+		================================================== -->
 		<script type="text/javascript" src="includes/jsphylosvg/raphael-min.js" ></script>
 		<script type="text/javascript" src="includes/jsphylosvg/jsphylosvg.js"></script>
 
-	  <!-- uniTip
-	  ================================================== -->
+		<!-- uniTip
+		================================================== -->
 		<link rel="stylesheet" type="text/css" href="includes/unitip/unitip.css">
 		<script type="text/javascript" src="includes/unitip/unitip.js"></script>
 
-
-	  <!-- Ginkgo
-	  ================================================== -->
+		<!-- Ginkgo
+		================================================== -->
 		<script language="javascript">
 		var ginkgo_user_id = "<?php echo $GINKGO_USER_ID; ?>";
 
@@ -1061,7 +1006,6 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 			  success: function(data){
 
 					if(data == "error")
-						//alert("Error: Please use a .txt extension for FACS files/custom bin files")
 						alert("Error: please use the correct extension for custom parameter files.")
 					else
 					{
@@ -1084,31 +1028,24 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 								'analyze':	1,
 								'cells[]':	arrCells,
 								'email':		email,
-
 								// Methods
 								'binMeth':	$('#param-bins-type').val() + $('#param-bins-value').val(),
 								'segMeth':	$('#param-segmentation').val(),
 								'clustMeth':$('#param-clustering').val(),
 								'distMeth':	$('#param-distance').val(),
-
 								// FACS file
 								'f':				f,
 								'facs':			facs,
-
 								// Plot gene locations
 								'g':				0,
 								'query':	'',
-
 								// User-specified bin file
 								'b':				b,
 								'binList':	bins,
-								
 								// User specified binning segmentation file
 								'segMethCustom': segmentation,
-								
 								// Genome
 								'chosen_genome': $('#param-genome').val(),
-								
 								// Job name
 								'job_name'	   : $('#param-job-name').val,
 							},
@@ -1123,11 +1060,6 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 					}
 			  }
 			});
-
-
-			
-			//
-			
 		});
 
 		// -------------------------------------------------------------------------
@@ -1286,7 +1218,7 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 				$("#results-QA-table").html(table);
 			});
 		}
-		
+
 		// -------------------------------------------------------------------------
 		// -- Load a tree ----------------------------------------------------------
 		// -------------------------------------------------------------------------
