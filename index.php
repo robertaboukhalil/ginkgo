@@ -61,6 +61,8 @@ $userDir = DIR_UPLOADS . '/' . $GINKGO_USER_ID;
 $userUrl = URL_ROOT . '/uploads/' . $GINKGO_USER_ID;
 $permalink = URL_ROOT . '?q=results/' . $GINKGO_USER_ID;
 
+if(file_exists($descFile = $userDir . '/description.txt'))
+	setcookie("ginkgo[$GINKGO_USER_ID]", file_get_contents($descFile), time()+36000000);
 
 // =============================================================================
 // == Template configuration ===================================================
@@ -293,8 +295,12 @@ if(isset($_POST['analyze'])) {
 	#$out = stream_get_contents($handle);
 	pclose($handle);
 	
-	// Save to cookie
+	// Save to cookie and file
 	setcookie("ginkgo[$GINKGO_USER_ID]", $_POST['job_name'], time()+36000000);
+	// 
+	file_put_contents($userDir . '/description.txt', $_POST['job_name']);
+
+	// Return OK status
 	echo "OK";
 	exit;
 }
@@ -370,13 +376,15 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 							<a class="navbar-brand dropdown-toggle" data-toggle="dropdown" href="#"><span class="glyphicon glyphicon-tree-deciduous"></span> Ginkgo <span class="caret" style="border-top-color:#ccc !important; border-bottom-color:#ccc !important;"></span></a>
 							<ul class="dropdown-menu" role="menu">
 								<li><a href="?q=">Home</a></li>
-								<li><a href="?q=results/T10">Sample run</a></li>
+								<li><a href="?q=results/sample">Sample run <small>(Polygenomic breast tumor)</small></a></li>
 
 								<?php if(count($_COOKIE['ginkgo']) > 0): ?>
 									<li class="divider"></li>
 							
 									<?php foreach($_COOKIE['ginkgo'] as $id => $name): ?>
+										<?php if($id != "sample"): ?>
 										<li><a href="?q=dashboard/<?php echo $id;?>"><?php echo $name;?></a></li>
+										<?php endif; ?>
 									<?php endforeach; ?>
 								<?php endif; ?>
 							</ul>
@@ -389,7 +397,7 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 		<!-- Welcome message -->
 		<div class="jumbotron">
 			<div class="container">
-				<h1><a style="text-decoration:none; color:#000" href="?q=">Ginkgo</a></h1>
+				<h1><a style="text-decoration:none; color:#000" href="?q=">Ginkgo</a> <small><?php echo @file_get_contents($userDir.'/description.txt'); ?></small></h1>
 				<div id="status" style="margin-top:20px;">
 					<?php if($GINKGO_PAGE == 'home'): ?>
 					A web tool for analyzing single-cell sequencing data.
@@ -397,12 +405,13 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 					<div class="btn-group">
 					  <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown">Load previous analysis <span class="caret"></span></button>
 					  <ul class="dropdown-menu" role="menu">
-						<li><a href="?q=results/T10">Sample run #1</a></li>
-						<li><a href="?q=results/T10">Sample run #2</a></li>
+						<li><a href="?q=results/sample">Sample run: Polygenomic breast tumor</a></li>
 						<?php if(count($_COOKIE['ginkgo']) > 0): ?>
 							<li class="divider"></li>
 							<?php foreach($_COOKIE['ginkgo'] as $id => $name): ?>
+								<?php if($id != "sample"): ?>
 								<li><a href="?q=dashboard/<?php echo $id;?>"><?php echo $name;?></a></li>
+								<?php endif; ?>
 							<?php endforeach; ?>
 						<?php endif; ?>
 					  </ul>
@@ -510,7 +519,7 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 								<tr>
 									<td width="20%">Job name:</td>
 									<td>
-										<input id="param-job-name" class="form-control" type="text" placeholder="Single-cells from tissue X" value="<?php echo $_COOKIE['ginkgo'][$GINKGO_USER_ID]; ?>">
+										<input id="param-job-name" class="form-control" type="text" placeholder="Single-cells from tissue X" value="<?php echo file_get_contents($userDir . '/description.txt'); ?>">
 									</td>
 								</tr>
 
@@ -1046,7 +1055,7 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 								// Genome
 								'chosen_genome': $('#param-genome').val(),
 								// Job name
-								'job_name'	   : $('#param-job-name').val,
+								'job_name'	   : $('#param-job-name').val(),
 							},
 							// If get response
 							function(data) {
