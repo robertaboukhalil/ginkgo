@@ -1051,17 +1051,18 @@ Smits.PhyloCanvas.NexmlParse.prototype = {
 	
 	/* Rectangular Phylogram */
 	Rectangular : {
-		bufferX			: 200, 			// Reduces the available canvas space for tree branches, allowing
+		bufferX			: 130, 			// Reduces the available canvas space for tree branches, allowing
 										// for more space for the textual/charting components
-		paddingX		: 10,
-		paddingY		: 20,
-		bufferInnerLabels : 10, 		// Pixels
-		bufferOuterLabels : 5, 			// Pixels
-		minHeightBetweenLeaves : 10,  	// Should probably set pretty low, as clipping may occur if it needs to be implemented		
+		paddingX		: 10,//10
+		paddingY		: 10,//20
 		
-		alignPadding	: 0,			// Pixels to push the labels out by - this extension should be 
+		bufferInnerLabels : 5, 		// Pixels
+		bufferOuterLabels : 0, 			// Pixels
+		minHeightBetweenLeaves : 17,  	// Should probably set pretty low, as clipping may occur if it needs to be implemented		
+		
+		alignPadding	: 100,			// Pixels to push the labels out by - this extension should be 
 										// compensated by an increase in bufferX too
-		alignRight		: false,
+		alignRight		: true,
 		
 		showScaleBar	: false			// (STRING,  e.g. "0.05") Shows a scale bar at the bottom of the tree
 	},
@@ -1097,7 +1098,7 @@ Smits.PhyloCanvas.NexmlParse.prototype = {
 		barChartHeight : 50,
 		barChartWidth : 0.5,	// If > 1, it is in pixels
 								// If < 1, it is a percentage of the node width 
-						
+
 		/* 
 			Rollover Events 
 				At minimum, the params object has the following properties:
@@ -1383,6 +1384,7 @@ Smits.PhyloCanvas.Render.SVG.prototype = {
 					new Smits.PhyloCanvas.Render.Path(
 						["M", x2, y1, "L", sParams.alignPadding + maxBranch, y2],
 						{ attr : Smits.PhyloCanvas.Render.Style.connectedDash }
+						//{ attr : Smits.PhyloCanvas.Render.Style.line }
 					)
 				);			
 			}

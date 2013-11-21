@@ -1250,6 +1250,16 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 				if(xmlFile == "")
 					return;
 
+				$( xmlFile.getElementsByTagName("branch_length") ).each(function(index, value)
+				{
+					currElement = xmlFile.getElementsByTagName("branch_length")[index];
+					currVal = parseInt(value.childNodes[0].nodeValue)
+					//
+					if(currVal < 1)
+						currElement.childNodes[0].nodeValue = '2';
+
+				});
+
 				// Annotate the phyloXML file
 				$( xmlFile.getElementsByTagName("name") ).each(function(index, value)
 				{
