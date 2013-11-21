@@ -383,7 +383,7 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 							
 									<?php foreach($_COOKIE['ginkgo'] as $id => $name): ?>
 										<?php if($id != "sample"): ?>
-										<li><a href="?q=dashboard/<?php echo $id;?>"><?php echo $name;?></a></li>
+										<li><a href="?q=dashboard/<?php echo $id;?>"><?php echo str_replace("'", "", $name);?></a></li>
 										<?php endif; ?>
 									<?php endforeach; ?>
 								<?php endif; ?>
@@ -397,7 +397,7 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 		<!-- Welcome message -->
 		<div class="jumbotron">
 			<div class="container">
-				<h1><a style="text-decoration:none; color:#000" href="?q=">Ginkgo</a> <small><?php echo @file_get_contents($userDir.'/description.txt'); ?></small></h1>
+				<h1><a style="text-decoration:none; color:#000" href="?q=/<?php echo $GINKGO_USER_ID; ?>">Ginkgo</a> <small><?php echo str_replace("'", "", @file_get_contents($userDir.'/description.txt')); ?></small></h1>
 				<div id="status" style="margin-top:20px;">
 					<?php if($GINKGO_PAGE == 'home'): ?>
 					A web tool for analyzing single-cell sequencing data.
@@ -410,7 +410,7 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 							<li class="divider"></li>
 							<?php foreach($_COOKIE['ginkgo'] as $id => $name): ?>
 								<?php if($id != "sample"): ?>
-								<li><a href="?q=dashboard/<?php echo $id;?>"><?php echo $name;?></a></li>
+								<li><a href="?q=dashboard/<?php echo $id;?>"><?php echo str_replace("'", "", $name);?></a></li>
 								<?php endif; ?>
 							<?php endforeach; ?>
 						<?php endif; ?>
@@ -519,7 +519,7 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 								<tr>
 									<td width="20%">Job name:</td>
 									<td>
-										<input id="param-job-name" class="form-control" type="text" placeholder="Single-cells from tissue X" value="<?php echo file_get_contents($userDir . '/description.txt'); ?>">
+										<input id="param-job-name" class="form-control" type="text" placeholder="Single-cells from tissue X" value="<?php echo str_replace("'", "", file_get_contents($userDir . '/description.txt')); ?>">
 									</td>
 								</tr>
 
@@ -736,10 +736,16 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 						<!-- Table -->
 						<table class="table" style="text-align:center;">
 							<tr>
-								<td><a href="<?php echo URL_UPLOADS . "/" . $GINKGO_USER_ID . "/heatCN.jpeg"; ?>"><img style="width:100%;" src="<?php echo URL_UPLOADS . "/" . $GINKGO_USER_ID . "/heatCN.jpeg"; ?>"></a><br/>Heatmap of copy number values across all segment breakpoints</td>
+								<td>
+									<strong>Heatmap of copy number values across all segment breakpoints</strong><br/>
+									<a href="<?php echo URL_UPLOADS . "/" . $GINKGO_USER_ID . "/heatCN.jpeg"; ?>"><img style="width:100%;" src="<?php echo URL_UPLOADS . "/" . $GINKGO_USER_ID . "/heatCN.jpeg"; ?>"></a>
+								</td>
 							</tr>
 							<tr>
-								<td><a href="<?php echo URL_UPLOADS . "/" . $GINKGO_USER_ID . "/heatNorm.jpeg"; ?>"><img style="width:100%;" src="<?php echo URL_UPLOADS . "/" . $GINKGO_USER_ID . "/heatNorm.jpeg"; ?>"></a><br/>Heatmap of normalized read counts across segment breakpoints</td>
+								<td>
+									<strong>Heatmap of normalized read counts across segment breakpoints</strong><br/>
+									<a href="<?php echo URL_UPLOADS . "/" . $GINKGO_USER_ID . "/heatNorm.jpeg"; ?>"><img style="width:100%;" src="<?php echo URL_UPLOADS . "/" . $GINKGO_USER_ID . "/heatNorm.jpeg"; ?>"></a>
+								</td>
 							</tr>
 						</table>
 					</div>
@@ -1158,21 +1164,21 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 
 					meanBinCount = ""
 					if(arrLine[3].replace(/"/g, '') < 25)
-						meanBinCount = '<span class="glyphicon glyphicon-remove-circle"></span>'
+						meanBinCount = '<span class="glyphicon glyphicon-remove"></span>'
 
 					indexOfDispersion = ""
 					if(arrLine[5].replace(/"/g, '') > 1)
-						indexOfDispersion = '<span class="glyphicon glyphicon-remove-circle"></span>'
+						indexOfDispersion = '<span class="glyphicon glyphicon-remove"></span>'
 
 					scoreClass = "active"
 					icon  = ""
 					if(score == 2) {
 						scoreClass = "danger";
 						icon = "glyphicon-exclamation-sign"
-						scoreMessage = "This file suffers from extreme coverage issues.  Proceed carefully or consider removing file from the analysis.";
+						scoreMessage = "This file suffers from extreme coverage issues.  Proceed carefully or consider removing the file from your analysis.";
 					} else if(score == 1) {
 						scoreClass = "warning";
-						icon = "glyphicon-info-sign"
+						icon = "glyphicon-question-sign"
 						scoreMessage = "This file suffers from moderate coverage issues. Proceed carefully.";
 					} else if(score == 0) {
 						scoreClass = "success";
@@ -1181,7 +1187,7 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 					}
 					newLine =	'<tr class="' + scoreClass + '">' + 
 									'<td width="5%" class="active" style="text-align:center">' + 
-										'<span class="glyphicon ' + icon + '"></span>' + 
+										'<span style="font-size:17px;" class="glyphicon ' + icon + '"></span>' + 
 									'</td>' + 
 									'<td width="10%" style="text-align:center">' + 
 										'<a href="?q=results/<?php echo $GINKGO_USER_ID; ?>/' + cell + '">' + cell + '</a>' + 

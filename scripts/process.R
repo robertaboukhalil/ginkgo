@@ -403,7 +403,7 @@ for(k in 1:w){
     d <- dist(mat, method = dm)
     clust <- hclust(d, method = cm)
     clust$labels <- lab
-    write(hc2Newick(clust), file=paste(user_dir, "/clust.newick", sep=""))
+    write(hc2Newick(as.dendrogram(clust)), file=paste(user_dir, "/clust.newick", sep=""))
 
 
 	###
@@ -454,7 +454,7 @@ mat=matrix(0,nrow=w,ncol=w)
 d <- dist(mat, method = dm)
 clust <- hclust(d, method = cm)
 clust$labels <- lab
-write(hc2Newick(clust), file=paste(user_dir, "/clust.newick", sep=""))
+write(hc2Newick(as.dendrogram(clust)), file=paste(user_dir, "/clust.newick", sep=""))
 
 ###
 main_dir="/mnt/data/ginkgo/scripts"
@@ -484,7 +484,7 @@ mat2=matrix(0,nrow=w,ncol=w)
 d2 <- dist(mat2, method = dm)
 clust2 <- hclust(d2, method = cm)
 clust2$labels <- lab
-write(hc2Newick(clust2), file=paste(user_dir, "/clust2.newick", sep=""))
+write(hc2Newick(as.dendrogram(clust2)), file=paste(user_dir, "/clust2.newick", sep=""))
 
 ###
 main_dir="/mnt/data/ginkgo/scripts"
