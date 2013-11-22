@@ -2,18 +2,36 @@ Ginkgo
 =========
 
 #### Ginkgo is a cloud-based single-cell copy-number variation analysis tool.
+#### Launch Ginkgo: [qb.cshl.edu/ginkgo](http://qb.cshl.edu/ginkgo)
 
 ### Usage
 
+**Step 0: Upload files**
+
+![Alt text](http://qb.cshl.edu/ginkgo/screenshots/step0.png)
+
+**Step 1: Choose analysis parameters**
+
+![Alt text](http://qb.cshl.edu/ginkgo/screenshots/step1.png)
+
+**Step 2: Phylogenetic Tree**
+
+![Alt text](http://qb.cshl.edu/ginkgo/screenshots/step2.png)
+
+**Step 3: Analyse Individual Cells**
+
+
 ### Setup Ginkgo on your own server
 
-**Requirements**
+**Requirements:**
+
 PHP >=5.2, R >=2.15.2
 
-**Install Ginkgo**
+**Install Ginkgo:**
+
 Type ```make``` in the ginkgo/ directory
 
-**Server Configurations**
+**Server Configuration:**
 
 - /etc/php.ini
 	- ```upload_tmp_dir```: make sure this directory has write permission
