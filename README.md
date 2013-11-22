@@ -4,28 +4,40 @@ Ginkgo
 #### Ginkgo is a cloud-based single-cell copy-number variation analysis tool.
 #### Launch Ginkgo: [qb.cshl.edu/ginkgo](http://qb.cshl.edu/ginkgo)
 
-### Usage
+Usage
+=========
 
-**Step 0: Upload files**
+**Step 0: Upload .bed files**
 
-![Alt text](http://qb.cshl.edu/ginkgo/screenshots/step0.png)
+<img src="http://qb.cshl.edu/ginkgo/screenshots/0.png" width="400" />
 
 **Step 1: Choose analysis parameters**
 
-![Alt text](http://qb.cshl.edu/ginkgo/screenshots/step1.png)
+<img src="http://qb.cshl.edu/ginkgo/screenshots/1.png" width="400" />
 
 **Step 2: Phylogenetic Tree**
 
-![Alt text](http://qb.cshl.edu/ginkgo/screenshots/step2.png)
+<img src="http://qb.cshl.edu/ginkgo/screenshots/2.png" width="400" />
 
 **Step 3: Analyse Individual Cells**
 
+<img src="http://qb.cshl.edu/ginkgo/screenshots/3.png" width="400" />
 
-### Setup Ginkgo on your own server
+
+Setup Ginkgo on your own server
+=========
 
 **Requirements:**
 
-PHP >=5.2, R >=2.15.2
+- PHP >=5.2
+- R >=2.15.2
+- R Packages:
+	- ctc
+	- DNAcopy
+	- inline
+	- gplots
+	- scales
+	- plyr
 
 **Install Ginkgo:**
 
@@ -43,9 +55,11 @@ Type ```make``` in the ginkgo/ directory
 		- ```upload_url = [FULL_URL_TO_UPLOADS_DIR]  . $_SESSION["user_id"] . '/'```
 
 - ginkgo/bootstrap.php
-	- Change DIR_ROOT, DIR_UPLOADS and URL_ROOT
+	- Change ```DIR_ROOT```, ```DIR_UPLOADS``` and ```URL_ROOT```
 
-- scripts/*.R [TO CHANGE]
-	- Add main_dir as var defined somewhere else
-	- Install packages: ctc
+- ginkgo/scripts/analyze
+	- Change ```home``` variable to where the ginkgo/ folder is located
+
+- ginkgo/scripts/process.R
+	- Change ```main_dir``` variable to the folder where ginkgo/scripts is located
 
