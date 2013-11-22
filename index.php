@@ -1210,7 +1210,8 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 									'<td colspan="6" width="100%" class="active" style="text-align:left; padding-left:55px;">' +
 										"<code><br>" +
 											"<strong>Number of reads&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</strong>: " + arrLine[1].replace(/"/g, '') + "<br>" +
-											"<strong>Reads/bin&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</strong>: " + arrLine[3].replace(/"/g, '') + " reads/bin <em>(variance: " + arrLine[4].replace(/"/g, '') + ")</em><br>" +
+											"<strong>Mean read count&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</strong>: " + arrLine[3].replace(/"/g, '') + " reads/bin<br>" + 
+											"<strong>Read count variance&nbsp;</strong>: " + arrLine[4].replace(/"/g, '') + " reads/bin<br>" + 
 											"<strong>Index of dispersion</strong>&nbsp;:&nbsp;" + arrLine[5].replace(/"/g, '') + "<br>" +
 										"<br></code>" +
 									'</td>' +
