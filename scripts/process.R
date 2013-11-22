@@ -469,6 +469,9 @@ system(command);
 jpeg("clust.jpeg", width=2000, height=1400)
 plot(clust)
 dev.off()
+pdf("clust.pdf", width=15, height=11)
+plot(clust)
+dev.off()
 
 statusFile<-file( paste(user_dir, "/", status, sep="") )
 writeLines(c("<?xml version='1.0'?>", "<status>", "<step>3</step>", paste("<processingfile>Computing Cluster (Copy Number)</processingfile>", sep=""), paste("<percentdone>", ((w+2)*100)%/%(w+4), "</percentdone>", sep=""), "<tree>clust.xml</tree>", "</status>"), statusFile)
@@ -497,6 +500,9 @@ system(command);
 
 #Plot copy number cluster
 jpeg("clust2.jpeg", width=2000, height=1400)
+plot(clust2)
+dev.off()
+pdf("clust2.pdf", width=15, height=11)
 plot(clust2)
 dev.off()
 

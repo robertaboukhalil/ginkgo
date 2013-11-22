@@ -68,6 +68,10 @@ system(command);
 jpeg("clust.jpeg", width=2000, height=1400)
 plot(clust)
 dev.off()
+pdf("clust.pdf", width=15, height=11)
+plot(clust)
+dev.off()
+
 
 
 ############################################################
@@ -102,6 +106,10 @@ system(command);
 jpeg("clust2.jpeg", width=2000, height=1400)
 plot(clust2)
 dev.off()
+pdf("clust2.pdf", width=15, height=11)
+plot(clust2)
+dev.off()
+
 
 
 ############################################################
