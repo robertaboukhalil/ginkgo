@@ -14,6 +14,8 @@ library('ctc')
 library(gplots)
 library(plyr)
 
+main_dir="/mnt/data/ginkgo/scripts"
+
 statusFile<-file( paste(user_dir, "/", status, sep="") )
 writeLines(c("<?xml version='1.0'?>", "<status>", "<step>4</step>", "<processingfile>Initiliazing Variables</processingfile>", "<percentdone>0</percentdone>", "<tree>clust.xml</tree>", "</status>"), statusFile)
 close(statusFile)
@@ -57,7 +59,6 @@ clust$labels = lab
 write(hc2Newick(clust), file=paste(user_dir, "/cluster.newick", sep=""))
 
 ###
-main_dir="/mnt/data/ginkgo/scripts"
 command=paste("java -cp ", main_dir, "/forester_1025.jar org.forester.application.phyloxml_converter -f=nn ", user_dir, "/clust.newick ", user_dir, "/clust.xml", sep="");
 unlink( paste(user_dir, "/clust.xml", sep="") );
 system(command);
@@ -92,7 +93,6 @@ clust2$labels = lab
 write(hc2Newick(clust2), file=paste(user_dir, "/clust2.newick", sep=""))
 
 ###
-main_dir="/mnt/data/ginkgo/scripts"
 command=paste("java -cp ", main_dir, "/forester_1025.jar org.forester.application.phyloxml_converter -f=nn ", user_dir, "/clust2.newick ", user_dir, "/clust2.xml", sep="");
 unlink( paste(user_dir, "/clust2.xml", sep="") );
 system(command);
