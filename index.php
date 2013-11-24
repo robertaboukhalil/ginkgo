@@ -377,6 +377,7 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 							<ul class="dropdown-menu" role="menu">
 								<li><a href="?q=">Home</a></li>
 								<li><a href="?q=results/sample">Sample run <small>(Polygenomic breast tumor)</small></a></li>
+								<li><a href="https://github.com/robertaboukhalil/ginkgo">Source code on Github</a></li>
 
 								<?php if(count($_COOKIE['ginkgo']) > 0): ?>
 									<li class="divider"></li>
