@@ -277,7 +277,7 @@ if(isset($_POST['analyze'])) {
 	$config.= 'f=' . $_POST['f'] . "\n";
 	$config.= 'facs=' . $_POST['facs'] . "\n";
 	$config.= 'q=' . $_POST['g'] . "\n";
-	$config.= 'query=' . $_POST['query'] . "\n";
+	//$config.= 'query=' . $_POST['query'] . "\n";
 	$config.= 'chosen_genome=' . $_POST['chosen_genome'] . "\n";
 	//
 	$config.= 'init=' . $init . "\n";
@@ -529,7 +529,7 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 									<td>
 										<select id="param-genome" class="input-mini" style="margin-top:8px; font-size:11px; padding-top:3px; padding-bottom:0; height:25px; ">
 											<optgroup label="Latest genomes">
-												<option value="hg20">Human (hg20)</option>
+												<!--<option value="hg20">Human (hg20)</option>-->
 												<option value="hg19" selected>Human (hg19)</option>
 												<option value="panTro4">Chimpanzee (panTro4)</option>
 												<option value="mm10">Mus musculus (mm10)</option>
@@ -587,19 +587,43 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 					<table class="table table-striped" id="params-table">
 						<tbody>
 							<tr>
+								<td>CNV Profile Color Scheme</td>
+								<td>
+									Use <select id="param-color-scheme" class="input-mini" style="margin-top:8px; font-size:11px; padding-top:3px; padding-bottom:0; height:25px; ">
+									<option value="1">light blue / orange</option>
+									<option value="2">magenta / gold</option>
+									<option value="3" selected="selected">dark blue / red</option>
+									</select> color scheme.
+								</td>
+							</tr>
+							<tr>
 								<td>General Binning Options</td>
 								<td>
 									Use a <select id="param-bins-type" class="input-mini" style="margin-top:8px; font-size:11px; padding-top:3px; padding-bottom:0; height:25px; ">
 									<option value="variable_">variable</option>
 									<option value="fixed_">fixed</option>
 									</select> bin size of <select id="param-bins-value" class="input-mini" style="margin-top:8px; font-size:11px; padding-top:3px; padding-bottom:0; height:25px; ">
-									<option value="250000">250kb</option>
-									<option value="100000">100kb</option>
-									<option value="50000" selected="selected">50kb</option>
-									<option value="40000">40kb</option>
-									<option value="25000">25kb</option>
-									<option value="10000">10kb</option>
+									<option value="500000_">500kb</option>
+									<option value="250000_">250kb</option>
+									<option value="100000_" selected="selected">100kb</option>
+									<option value="50000_">50kb</option>
+									<option value="40000_">40kb</option>
+									<option value="25000_">25kb</option>
+									<option value="10000_">10kb</option>
 									</select> size.
+								</td>
+							</tr>
+							<tr>
+								<td>Binning Simulation Options</td>
+								<td>
+									Define bins based on simulations of <select id="param-bins-sim-rlen" class="input-mini" style="margin-top:8px; font-size:11px; padding-top:3px; padding-bottom:0; height:25px; ">
+									<option value="101_">101</option>
+									<option value="76_">76</option>
+									<option value="48_">48</option>
+									</select> bp reads, mapped using <select id="param-bins-sim-mapper" class="input-mini" style="margin-top:8px; font-size:11px; padding-top:3px; padding-bottom:0; height:25px; ">
+									<option value="bowtie">bowtie2</option>
+									<option value="bwa">bwa</option>
+									</select>.
 								</td>
 							</tr>
 							<tr>
@@ -1045,7 +1069,7 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 								'cells[]':	arrCells,
 								'email':		email,
 								// Methods
-								'binMeth':	$('#param-bins-type').val() + $('#param-bins-value').val(),
+								'binMeth':	$('#param-bins-type').val() + $('#param-bins-value').val() + $('#param-bins-sim-rlen').val() + $('#param-bins-sim-mapper').val(),
 								'segMeth':	$('#param-segmentation').val(),
 								'clustMeth':$('#param-clustering').val(),
 								'distMeth':	$('#param-distance').val(),
@@ -1064,6 +1088,8 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 								'chosen_genome': $('#param-genome').val(),
 								// Job name
 								'job_name'	   : $('#param-job-name').val(),
+								// Color scheme
+								'color': $('#param-color-scheme').val(),
 							},
 							// If get response
 							function(data) {
@@ -1121,12 +1147,13 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 					percentdone = 100;
 
 				// Load tree
-				if(typeof tree != 'undefined')
-					drawTree(tree);
+//				if(typeof tree != 'undefined')
+//					drawTree(tree);
 
 				// When we're done with the analysis, stop getting progress continually
 				if((step >= 3 && percentdone >= 100) || typeof step == 'undefined')
 				{
+					drawTree(tree);
 					// Remove auto-update timer
 					clearInterval(ginkgo_progress);
 					Tinycon.setBubble(0);
