@@ -38,24 +38,19 @@ total=`wc -l < ${dir}/${inFile}`
 
 if [ "$init" == "1" ]; then
 
-  cnt=0;
-  
   #Clean directory
-  rm -f ${dir}/*_mapped ${dir}/*.jpeg ${dir}/*.newick ${dir}/*.xml ${dir}/Seg*
+  rm -f ${dir}/*_mapped ${dir}/*.jpeg ${dir}/*.newick ${dir}/*.xml ${dir}/Seg* ${dir}/results.txt
 
   #Map user bed files to appropriate bins
+  cnt=0
   while read file; do
-    ${home}/scripts/status ${dir}/${statFile} 1 $file $cnt $total 
+    ${home}/scripts/status ${dir}/${statFile} 1 $file $cnt $total
     ${home}/scripts/binUnsorted ${genome}/${binMeth} `wc -l < ${genome}/${binMeth}` ${dir}/${file} `echo ${file} | sed "s/.bed//g"` ${dir}/${file}_mapped
-    #${home}/binUnsorted ${genome}/fixed_1000 `wc -l < ${genome}/fixed_1000` ${dir}/${file} `echo ${file} | sed "s/.bed//g"` ${dir}/${file}_binned
-    cnt=$(($cnt+1));
+    cnt=$(($cnt+1))
   done < ${dir}/${inFile}
 
   #Concatenate binned reads to central file  
   paste ${dir}/*_mapped > ${dir}/data
-
-  #Generate statistics
-  ${home}/scripts/stats.R $dir $statFile ${dir}/data
   rm -f ${dir}/*_mapped ${dir}/*_binned
 
   #Map reference sample (if provided by user)
@@ -74,29 +69,20 @@ fi
 ############################################################
 
 if [ "$process" == "1" ]; then
-  ${home}/scripts/status ${dir}/${statFile} 3 Initializing 0 1
-  ${home}/scripts/interval ${genome}/genes ${dir}/${query} ${dir}/intervals.txt
-  ${home}/scripts/process.R $genome $dir $statFile data $segMeth $binMeth $clustMeth $distMet ${dir}/${query} ${ref}_mapped $f $facs
+  ${home}/scripts/process.R $genome $dir $statFile data $segMeth $binMeth $clustMeth $distMet $color ${dir}/${query} ${ref}_mapped $f $facs
 fi
-
 
 ############################################################
 #### Recreate Clusters/Heat Maps (With New Parameters) #####
 ############################################################
 
 if [ "$fix" == "1" ]; then
-  ${home}/scripts/reclust.R $dir $statFile SegFile $clustMeth $distMet $f $facs
+  ${home}/scripts/reclust.R $dir $statFile $clustMeth $distMet $f $facs
 fi
 
-
 ############################################################
-#### Recreate CN Profile (With New Gene/Interval Query) ####
+############# Email notification of completion #############
 ############################################################
-
-if [ "$q" == "1" ] && [ "$process" == "0" ]; then
-  ${home}/scripts/interval ${genome}/genes ${dir}/${query} ${dir}/intervals.txt
-  ${home}/scripts/queryAll.R $genome $dir $statFile $binMeth ${dir}/${query} $f
-fi
 
 if [ "$email" != "" ]; then
 	echo -e "Your analysis on Ginkgo is complete! Check out your results at $permalink" | mail -s "Your Analysis Results" $email -- -F "Ginkgo"

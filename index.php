@@ -529,7 +529,8 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 									<td>
 										<select id="param-genome" class="input-mini" style="margin-top:8px; font-size:11px; padding-top:3px; padding-bottom:0; height:25px; ">
 											<optgroup label="Latest genomes">
-												<option value="hg19">Human (hg19)</option>
+												<option value="hg20">Human (hg20)</option>
+												<option value="hg19" selected>Human (hg19)</option>
 												<option value="panTro4">Chimpanzee (panTro4)</option>
 												<option value="mm10">Mus musculus (mm10)</option>
 												<option value="rn5">R. norvegicus (rn5)</option>

@@ -37,9 +37,7 @@ struct char201
 };
 
 int main(int argc, char *argv[]){
-  
-  time_t start = time(0);
-  
+   
   FILE * bin_file;
   FILE * reads_file;
   FILE * outfile;

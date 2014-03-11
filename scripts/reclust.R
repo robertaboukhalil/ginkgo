@@ -4,17 +4,14 @@ args<-commandArgs(TRUE)
 
 user_dir <- args[[1]]
 status <- args[[2]]
-dat <- args[[3]]
-cm <- args[[4]]
-dm <- args[[5]]
-f <- as.numeric(args[[6]])
-facs <- args[[7]]
+cm <- args[[3]]
+dm <- args[[4]]
+f <- as.numeric(args[[5]])
+facs <- args[[6]]
 
 library('ctc')
 library(gplots)
 library(plyr)
-
-main_dir="/mnt/data/ginkgo/scripts"
 
 statusFile<-file( paste(user_dir, "/", status, sep="") )
 writeLines(c("<?xml version='1.0'?>", "<status>", "<step>4</step>", "<processingfile>Initiliazing Variables</processingfile>", "<percentdone>0</percentdone>", "<tree>clust.xml</tree>", "</status>"), statusFile)
@@ -30,7 +27,7 @@ lab=colnames(fixed)
 if (f == 0) {
 final=round(sweep(fixed, 2, ploidy[,4], '*'))
 } else {
-final=round(sweep(fixed, 2, ploidy[,6], '*'))
+final=round(sweep(fixed, 2, ploidy[,5], '*'))
 }
 
 l=dim(fixed)[1]
@@ -44,7 +41,7 @@ w=dim(fixed)[2]
 mat=matrix(0,nrow=w,ncol=w)
 for (i in 1:w){
   statusFile<-file( paste(user_dir, "/", status, sep="") )
-  writeLines(c("<?xml version='1.0'?>", "<status>", "<step>4</step>", "<processingfile>Recomputing Cluster (Read Count)</processingfile>", paste("<percentdone>", round(.47*i), "</percentdone>", sep=""), "<tree>clust.xml</tree>", "</status>"), statusFile)
+  writeLines(c("<?xml version='1.0'?>", "<status>", "<step>4</step>", "<processingfile>Recomputing Cluster (Read Count)</processingfile>", paste("<percentdone>", round(47*i/w), "</percentdone>", sep=""), "<tree>clust.xml</tree>", "</status>"), statusFile)
   close(statusFile)
 
   for (j in 1:w){
@@ -59,19 +56,16 @@ clust$labels = lab
 write(hc2Newick(clust), file=paste(user_dir, "/cluster.newick", sep=""))
 
 ###
-command=paste("java -cp ", main_dir, "/forester_1025.jar org.forester.application.phyloxml_converter -f=nn ", user_dir, "/clust.newick ", user_dir, "/clust.xml", sep="");
-unlink( paste(user_dir, "/clust.xml", sep="") );
-system(command);
+#main_dir="/mnt/data/ginkgo/scripts"
+#command=paste("java -cp ", main_dir, "/forester_1025.jar org.forester.application.phyloxml_converter -f=nn ", user_dir, "/clust.newick ", user_dir, "/clust.xml", sep="");
+#unlink( paste(user_dir, "/clust.xml", sep="") );
+#system(command);
 ### 
 
 #Plot read cluster
 jpeg("clust.jpeg", width=2000, height=1400)
 plot(clust)
 dev.off()
-pdf("clust.pdf", width=15, height=11)
-plot(clust)
-dev.off()
-
 
 
 ############################################################
@@ -97,19 +91,16 @@ clust2$labels = lab
 write(hc2Newick(clust2), file=paste(user_dir, "/clust2.newick", sep=""))
 
 ###
-command=paste("java -cp ", main_dir, "/forester_1025.jar org.forester.application.phyloxml_converter -f=nn ", user_dir, "/clust2.newick ", user_dir, "/clust2.xml", sep="");
-unlink( paste(user_dir, "/clust2.xml", sep="") );
-system(command);
+#main_dir="/mnt/data/ginkgo/scripts"
+#command=paste("java -cp ", main_dir, "/forester_1025.jar org.forester.application.phyloxml_converter -f=nn ", user_dir, "/clust2.newick ", user_dir, "/clust2.xml", sep="");
+#unlink( paste(user_dir, "/clust2.xml", sep="") );
+#system(command);
 ### 
 
 #Plot copy number cluster
 jpeg("clust2.jpeg", width=2000, height=1400)
 plot(clust2)
 dev.off()
-pdf("clust2.pdf", width=15, height=11)
-plot(clust2)
-dev.off()
-
 
 
 ############################################################
@@ -133,7 +124,7 @@ writeLines(c("<?xml version='1.0'?>", "<status>", "<step>4</step>", "<processing
 close(statusFile)
 
 jpeg("heatRaw.jpeg", width=2000, height=1400)
-heatmap.2(t(rawBPs), Colv=FALSE, Rowv=as.dendrogram(clust), dendrogram="row", trace="none", xlab="Bins", ylab="Samples", cex.main=2, cex.axis=1.5, cex.lab=1.5, cexCol=.001, col=bluered(3), cex.axis=2, cex.lab=1.5)
+heatmap.2(t(rawBPs), Colv=FALSE, Rowv=as.dendrogram(clust), dendrogram="row", trace="none", xlab="Bins", ylab="Samples", cex.main=2, cex.axis=1.5, cex.lab=1.5, cexCol=.001, col=bluered(2), cex.axis=2, cex.lab=1.5)
 dev.off()
 
 statusFile<-file( paste(user_dir, "/", status, sep="") )

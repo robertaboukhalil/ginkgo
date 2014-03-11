@@ -10,7 +10,7 @@ stat <- as.numeric(args[[5]])
 bm <- args[[6]]
 cm <- args[[7]]
 dm <- args[[8]]
-query <- args[[9]]
+cp <- as.numeric(args[[9]])
 ref <- args[[10]]
 f <- as.numeric(args[[11]])
 facs <- args[[12]]
@@ -22,7 +22,6 @@ library(gplots) #visual plotting of tables
 library(scales)
 library(plyr)
 
-main_dir="/mnt/data/ginkgo/scripts"
 
 ############################################################
 ########  Initialize Variables & Pre-Process Data ##########
@@ -39,42 +38,18 @@ loc <- read.table(bm, header=TRUE, sep="\t", as.is=TRUE)
 genes <- read.table("genes", header=FALSE, sep="\t", as.is=TRUE)
 bounds <- read.table(paste("bounds_", bm, sep=""), header=FALSE, sep="\t")
 
-
 #load user data
 setwd(user_dir)
 raw <- read.table(dat, header=TRUE, sep="\t")
 if (f == 1) { ploidy <- read.table(facs, header=FALSE, sep="\t", as.is=TRUE) }
 
-type=try(dim(read.table(query, header=FALSE, sep="\t"))[2])
-
-if(type == 3 ) {
-  #Intervals queried by user
-  q <- read.table(query, header=FALSE, sep="\t", as.is=TRUE)
-  intervals=matrix(0, nrow=dim(q)[1], ncol=2)
-  ints=array(0, dim(q)[1])
-  for (j in 1:dim(q)[1]) {
-    intervals[j,1]=min(which((loc[,1] == q[j,1]) & (as.numeric(loc[,2])>=q[j,2])))
-    intervals[j,2]=min(which((loc[,1] == q[j,1]) & (as.numeric(loc[,2])>=q[j,3])))+1
-  }
-  for (j in 1:dim(q)[1]) {
-    ints[j]=paste(q[j,1], ":", q[j,2], "-\n", q[j,3], "\n", sep="")
-  }
-}  else if (type == 1) {
-  #Genes queried by user
-  q <- read.table(query, header=FALSE, sep="\t", as.is=TRUE)[[1]]
-  bin=t(array(0, length(q)))
-  for (j in 1:length(q)) {
-    chr=genes[[1]][which(genes[[4]]==q[j])]
-    u=subset(loc, loc[[1]]==chr)[2] < genes[[2]][which(genes[[4]]==q[j])]
-    bin[j]=as.integer(rownames(u)[max(which(u))])
-  }
-  q=reorder(q, rank(bin))
-  bin=sort(bin)
-} else {
-  type = 2
-}
-
-colors=c("red", "gold2",  "turquoise3", "sienna1", "violetred3", "yellowgreen", "saddlebrown", "tomato3", "gold4", "springgreen4")
+#Initialize color palette
+col1=col2=matrix(0,3,2)
+col1[1,]=c('darkmagenta', 'goldenrod')
+col1[2,]=c('darkorange', 'dodgerblue')
+col1[3,]=c('blue4', 'brown2')
+col2[,1]=col1[,2]
+col2[,2]=col1[,1]
 
 #Initialize data structures
 l <- dim(raw)[1] #Number of bins
@@ -82,19 +57,25 @@ w <- dim(raw)[2] #Number of samples
 breaks <- matrix(0,l,w)
 fixed <- matrix(0,l,w)
 final <- matrix(0,l,w)
-CNpeak <- array(0,w)
+stats <- matrix(0,w,10)
 CNmult <- matrix(0,5,w)
 CNerror <- matrix(0,5,w)
+outerColsums <- matrix(0, 91, w)
 
-#normalalize samples
+#Normalize samples
 normal <- sweep(raw, 2, colMeans(raw), '/')
+normal2 <- normal
 lab <- colnames(normal)
+
+#Prepare statistics
+rownames(stats) <- lab
+colnames(stats) <- c("Reads", "Bins", "Mean", "Var", "Disp", "Min", "25th", "Median", "75th", "Max")
 
 #Correct GC biases
 matGC <- matrix(GC[,1], ncol=w, nrow=l ,byrow=TRUE)
-low <- lowess(matGC, log(as.matrix(normal+.0000001)), f=0.05)
+low <- lowess(matGC, log(as.matrix(normal+.0001)), f=0.05)
 app <- approx(low$x, low$y, matGC)
-normal <- exp(as.matrix(log(normal+.0000001)) - app$y)
+normal <- exp(as.matrix(log(normal+.0001)) - app$y)
 
 #Determine segmentation reference using:
 ##Dispersion index if stat=1
@@ -103,9 +84,9 @@ if (stat == 1) {
   F <- normal[,which.min(apply(normal, 2, sd)/apply(normal,2,mean))[1]]
 } else if (stat == 2) {
   R <- read.table(ref, header=TRUE, sep="\t", as.is=TRUE)
-  low <- lowess(GC[,1], log(R[,1]+.0000001), f=0.05)
+  low <- lowess(GC[,1], log(R[,1]+.0001), f=0.05)
   app <- approx(low$x, low$y, GC[,1])
-  F <- exp(log(R[,1]+.0000001) - app$y)
+  F <- exp(log(R[,1]+.0001) - app$y)
 }
 
 
@@ -117,18 +98,32 @@ if (stat == 1) {
 sink("results.txt")
 
 if (f == 0) {
-  out=paste("Sample", "SoSPredictedPloidy(Top5)", "ErrorInSoSApproach(Top5)", "CopyNumber(SoS)", "CopyNumber(Peaks)", sep="\t")
+  out=paste("Sample", "SoSPredictedPloidy(Top5)", "ErrorInSoSApproach(Top5)", "CopyNumber(SoS)", sep="\t")
 cat(out, "\n")
 } else {
-  out=paste("Sample", "SoSPredictedPloidy(Top5)", "ErrorInSoSApproach(Top5)", "CopyNumber(SoS)", "CopyNumber(Peaks)", "CopyNumber(Ploidy)", sep="\t")
+  out=paste("Sample", "SoSPredictedPloidy(Top5)", "ErrorInSoSApproach(Top5)", "CopyNumber(SoS)", "CopyNumber(Ploidy)", sep="\t")
 cat(out, "\n")
 }
+
+
 
 for(k in 1:w){
 
   statusFile <- file( paste(user_dir, "/", status, sep="") )
   writeLines(c("<?xml version='1.0'?>", "<status>", "<step>3</step>", paste("<processingfile>", lab[k], "</processingfile>", sep=""), paste("<percentdone>", (k*100)%/%(w+4), "</percentdone>", sep=""), "<tree>clust.xml</tree>", "</status>"), statusFile)
   close(statusFile)
+
+  #Generate basic statistics
+  stats[k,1]=sum(raw[,k])
+  stats[k,2]=l
+  stats[k,3]=round(mean(raw[,k]), digits=2)
+  stats[k,4]=round(sd(raw[,k]), digits=2)
+  stats[k,5]=round(stats[k,4]/stats[k,3], digits=2)
+  stats[k,6]=min(raw[,k])
+  stats[k,7]=quantile(raw[,k], c(.25))[[1]]
+  stats[k,8]=median(raw[,k])
+  stats[k,9]=quantile(raw[,k], c(.75))[[1]]
+  stats[k,10]=max(raw[,k])
 
   ############################################################
   #####################  Segment Sample  #####################
@@ -176,9 +171,9 @@ for(k in 1:w){
   outerRaw <- fixed[,k] %o% CNgrid
   outerRound <- round(outerRaw)
   outerDiff <- (outerRaw - outerRound) ^ 2
-  outerColsums <- colSums(outerDiff, na.rm = FALSE, dims = 1)
-  CNmult[,k] <- CNgrid[order(outerColsums)[1:5]]
-  CNerror[,k] <- round(sort(outerColsums)[1:5], digits=2)
+  outerColsums[,k] <- colSums(outerDiff, na.rm = FALSE, dims = 1)
+  CNmult[,k] <- CNgrid[order(outerColsums[,k])[1:5]]
+  CNerror[,k] <- round(sort(outerColsums[,k])[1:5], digits=2)
 
   if (f == 0) {
     final[,k] <- round(fixed[,k]*CNmult[1,k])
@@ -186,238 +181,207 @@ for(k in 1:w){
     final[,k] <- round(fixed[,k]*ploidy[which(lab[k]==ploidy[,1]),2])
   }
 
-
-  ############################################################
-  ##########  Determine Copy Number (Peaks Method)  ##########
-  ############################################################
-
-  #Determine frequency distribtion (h) of all pair-wise differences between bins
-  t <- round(fixed[,k]*mean(raw[,k]))
-  h <- rep(0,max(t)-min(t)+1)
-  sig <- signature(l="integer", t="integer", h="integer")
-  code <- "
-    for (int i=0; i<(*l)-1; i++) {
-      for (int j=(i+1); j<(*l); j++) {
-        int d = abs(t[j] - t[i]);
-        h[d]++;
-      }
-    }
-  "
-  func <- cfunction(sig, code, convention=".C")
-  h <- func(l,t,h)$h
-  
-  #Fit spline (fd) to smooth frequency distribution 
-  fd <- smooth.spline(1:length(h), h, spar=.35)
-
-  #Find the second mode of the frequency distribution (equals reads/copy number)
-  for(i in 5:(length(h)-2)){
-    if ( (fd[[2]][i-2] < fd[[2]][i-1]) && (fd[[2]][i-1] < fd[[2]][i]) && (fd[[2]][i] > fd[[2]][i+1]) && (fd[[2]][i+1] > fd[[2]][i+2]) ) {
-      break
-    }
-  }
-
-  #Estimate Copy Number from peaks
-  CNpeak[k] <- round(mean(t/i), digits=2)
-
   #Output results of CN calculations to file
   if (f == 0) {
-    out=paste(lab[k], "\t", CNmult[1,k], ",", CNmult[2,k], ",", CNmult[3,k], ",", CNmult[4,k], ",", CNmult[5,k], "\t", CNerror[1,k], ",", CNerror[2,k], ",", CNerror[3,k], ",", CNerror[4,k], ",", CNerror[5,k], "\t", CNmult[1,k], "\t", CNpeak[k], sep="")
+    out=paste(lab[k], "\t", CNmult[1,k], ",", CNmult[2,k], ",", CNmult[3,k], ",", CNmult[4,k], ",", CNmult[5,k], "\t", CNerror[1,k], ",", CNerror[2,k], ",", CNerror[3,k], ",", CNerror[4,k], ",", CNerror[5,k], "\t", CNmult[1,k], sep="")
   cat(out, "\n")
   } else {
-    out=paste(lab[k], "\t", CNmult[1,k], ",", CNmult[2,k], ",", CNmult[3,k], ",", CNmult[4,k], ",", CNmult[5,k], "\t", CNerror[1,k], ",", CNerror[2,k], ",", CNerror[3,k], ",", CNerror[4,k], ",", CNerror[5,k], "\t", CNmult[1,k], "\t", CNpeak[k], "\t", round(ploidy[which(lab[k]==ploidy[,1]),2], digits=2), sep="")
+    out=paste(lab[k], "\t", CNmult[1,k], ",", CNmult[2,k], ",", CNmult[3,k], ",", CNmult[4,k], ",", CNmult[5,k], "\t", CNerror[1,k], ",", CNerror[2,k], ",", CNerror[3,k], ",", CNerror[4,k], ",", CNerror[5,k], "\t", CNmult[1,k], "\t", round(ploidy[which(lab[k]==ploidy[,1]),2], digits=2), sep="")
   cat(out, "\n")
   }
 
-
   ############################################################
-  ################  Plot Key Analysis Steps ##################
+  ################  Generate Plots & Figures #################
   ############################################################
 
-  jpeg(filename=paste(lab[k], "_analysis.jpeg", sep=""), width=2500, height=1500)
-
+  #Plot Distribution of Read Coverage
+  jpeg(filename=paste(lab[k], "_dist.jpeg", sep=""), width=3000, height=750)
     par(mar = c(7.0, 7.0, 7.0, 3.0))
-    layout(matrix(c(1,2,3,4), 2,2, byrow=TRUE))
 
-    #Plot frequency distribution of pair-wise differences between read counts (contains peaks)
-    hold=100*fd[[2]]/(sum(fd[[2]]))
-    plot(1:round(length(hold)/2), hold[1:round(length(hold)/2)], main="Pair-Wise Differences Between Bin Counts", xlab="Pair-Wise Difference Between Bin Counts", ylab="Density (%)", type="n", cex.main=3, cex.axis=2, cex.lab=2)
+    plot(raw[,k], main=paste("Genome Wide Read Distribution for Sample \"", lab[k], "\"", sep=""), xlab="Bin", ylab="Fraction of reads", type="n", cex.main=3, cex.axis=2, cex.lab=2)
     tu <- par('usr')
     par(xpd=FALSE)
     rect(tu[1], tu[3], tu[2], tu[4], col = "gray85")
-    abline(v=unique(sort(c(axTicks(1), axTicks(1)+diff(axTicks(1))[1]/2))), col="white", lwd=2)
-    abline(h=axTicks(2), col="white", lwd=2)
-    lines(smooth.spline(1:round(length(hold)/2), hold[1:round(length(hold)/2)]), main="Pair-Wise Differences Between Bin Counts", xaxt='n', yaxt='n', xlab="", ylab="", lwd=2.5)
-    lines(c(i,i), c(tu[3], hold[i]), lty=2.5, lwd=2, col="midnightblue")
-    text(i, hold[i]+diff(tu)[3]/25, i, cex=2)
+    points(raw[,k], pch=20, col=col1[cp,2], cex=1.5)
 
-    #Plot sum of squares error for each potential copy number
-    plot(CNgrid, outerColsums, xlim=c(1,6), type= "n", xaxt="n", main="Sum of Squares Error Across Potential Copy Number States", xlab="Copy Number Multiplier", ylab="Sum of Squares Error", cex.main=3, cex.axis=2, cex.lab=2)
+  dev.off()
+
+  #Plot histogram of bin counts
+  jpeg(filename=paste(lab[k], "_counts.jpeg", sep=""), width=2500, height=1500)
+    par(mar = c(7.0, 7.0, 7.0, 3.0))
+
+    temp=sort(raw[,k])[round(l*.01) : (l-round(l*.01))] 
+    reads <- hist(temp, breaks=100, plot=FALSE)
+    plot(reads, col='black', main=paste("Frequency of Bin Counts for Sample ", lab[k], "\n(both tails trimmed 1%)", sep=""), xlab="Read Count (reads/bin)", xaxt="n", cex.main=3, cex.axis=2, cex.lab=2)
+    axis(side=1, at=seq(min(temp), round(diff(range(temp))/20)*22, round(diff(range(temp))/20)), cex.axis=2)
+    tu <- par('usr')
+    par(xpd=FALSE)
+    clip(tu[1], mean(temp)-(diff(reads$mids)/2), tu[3], tu[4])
+    plot(reads, col='gray50', add=TRUE)
+    clip(mean(temp)+(diff(reads$mids)/2), tu[2], tu[3], tu[4])
+    plot(reads, col='gray50', add=TRUE)
+    clip(tu[1], mean(temp) - sd(temp), tu[3], tu[4])
+    plot(reads, col='gray75', add=TRUE)
+    clip(mean(temp) + sd(temp), tu[2], tu[3], tu[4])
+    plot(reads, col='gray75', add=TRUE)
+    clip(tu[1], mean(temp) - 2*sd(temp), tu[3], tu[4])
+    plot(reads, col='gray90', add=TRUE)
+    clip(mean(temp) + 2*sd(temp), tu[2], tu[3], tu[4])
+    plot(reads, col='gray90', add=TRUE) 
+    legend("topright", inset=.05, legend=c("mean", "< 1σ", "> 1σ", "> 2σ"), fill=c("black", "gray50", "gray75", "gray90"), cex=2.5)
+
+  dev.off()
+
+  #Plot lorenz curves
+  jpeg(filename=paste(lab[k], "_lorenz.jpeg", sep=""), width=2500, height=1500)
+    par(mar = c(7.0, 7.0, 7.0, 3.0))
+
+    nReads=sum(raw[,k])
+    uniq=unique(sort(raw[,k]))
+  
+    lorenz=matrix(0, nrow=length(uniq), ncol=2)
+    a=c(length(which(raw[,k]==0)), tabulate(raw[,k], nbins=max(raw[,k])))
+    b=a*(0:(length(a)-1))
+    for (i in 2:length(uniq)) {
+      lorenz[i,1]=sum(a[1:uniq[i]])/l
+      lorenz[i,2]=sum(b[2:uniq[i]])/nReads
+    }
+
+    plot(lorenz, xlim=c(0,1), main=paste("Lorenz Curve of Coverage Uniformity for Sample ", lab[k], sep=""), xlab="Cumulatdiive Fraction of Genome", ylab="Cumulative Fraction of Total Reads", type="n", xaxt="n", yaxt="n", cex.main=3, cex.axis=2, cex.lab=2)
+    tu <- par('usr')
+    par(xpd=FALSE)
+    rect(tu[1], tu[3], tu[2], tu[4], col = "gray85")
+    abline(h=seq(0,1,.1), col="white", lwd=2)
+    abline(v=seq(0,1,.1), col="white", lwd=2)
+    axis(side=1, at=seq(0,1,.1), tcl=.5, cex.axis=2)
+    axis(side=2, at=seq(0,1,.1), tcl=.5, cex.axis=2)
+    axis(side=3, at=seq(0,1,.1), tcl=.5, cex.axis=2, labels=FALSE)
+    axis(side=4, at=seq(0,1,.1), tcl=.5, cex.axis=2, labels=FALSE)
+    lines(smooth.spline(lorenz), col=col1[cp,2], lwd=2.5)
+    lines(c(0,1), c(0,1), lwd=2.5)
+    tu <- par('usr')
+    par(xpd=FALSE)
+    legend("topleft", inset=.05, legend=c("Perfect Uniformity", "Sample Uniformity"), fill=c("black", col1[cp,2]), cex=2.5)
+
+  dev.off()
+
+  #Plot GC correction
+  jpeg(filename=paste(lab[k], "_GC.jpeg", sep=""), width=2500, height=1250)
+    par(mar = c(7.0, 7.0, 7.0, 3.0))
+    layout(matrix(c(1,2), 1, 2, byrow=TRUE))
+
+    low <- lowess(GC[,1], log(normal2[,k]+.0001), f=0.05)
+    app <- approx(low$x, low$y, GC[,1])
+    cor <- exp(log(normal2[,k]) - app$y)
+    
+    plot(GC[,1], log(normal2[,k]), main=paste("GC Content vs. Bin Count\nSample ", lab[k], " (Uncorrected)", sep=""), type= "n", xlim=c(min(.3, min(GC[,1])), max(.6, max(GC[,1]))), xlab="GC content", ylab="Normalized Read Counts (Log Scale)", cex.main=3, cex.axis=2, cex.lab=2)
+    tu <- par('usr')
+    par(xpd=FALSE)
+    rect(tu[1], tu[3], tu[2], tu[4], col = "gray85")
+    abline(v=axTicks(1), col="white", lwd=2)
+    abline(h=axTicks(2), col="white", lwd=2)
+    points(GC[,1], log(normal2[,k]))
+    points(app, col=col1[cp,2])
+    legend("bottomright", inset=.05, legend="Lowess Fit", fill=col1[cp,2], cex=2.5)
+
+    plot(GC[,1], log(cor), main=paste("GC Content vs. Bin Count\nSample ", lab[k], " (Corrected)", sep=""), type= "n", xlim=c(min(.3, min(GC[,1])), max(.6, max(GC[,1]))), xlab="GC content", ylab="Normalized Read Counts (log scale)", cex.main=3, cex.axis=2, cex.lab=2)
+    tu <- par('usr')
+    par(xpd=FALSE)
+    rect(tu[1], tu[3], tu[2], tu[4], col = "gray85")
+    abline(v=axTicks(1), col="white", lwd=2)
+    abline(h=axTicks(2), col="white", lwd=2)
+    points(GC[,1], log(cor))
+
+  dev.off()
+
+  #Plot Scaled/Normalized Bin Count Histogram
+  jpeg(filename=paste(lab[k], "_hist.jpeg", sep=""), width=2500, height=1500)
+    par(mar = c(7.0, 7.0, 7.0, 3.0))
+
+    if (f == 0) {
+      reads <- hist(normal[,k]*CNmult[1,k], breaks=seq(0,ceiling(max(normal[,k]*CNmult[1,k])),.05), plot=FALSE)
+      plot(reads, col='gray50', main=paste("Frequency of Bin Counts for Sample \"", lab[k], "\"\nNormalized and Scaled by Predicted CN (", CNmult[1,k], ")", sep=""), xlab="Copy Number", xlim=c(0,10), cex.main=3, cex.axis=2, cex.lab=2)
+    } 
+    else {
+      reads <- hist(normal[,k]*ploidy[which(lab[k]==ploidy[,1]),2], breaks=seq(0,ceiling(max(normal[,k]*ploidy[which(lab[k]==ploidy[,1]),2])),.05), plot=FALSE)
+      plot(reads, col='gray50', main=paste("Frequency of Bin Counts for Sample \"", lab[k], "\"\nNormalized and Scaled by Provided Ploidy (", ploidy[which(lab[k]==ploidy[,1]),2], ")", sep=""), xlab="Copy Number", xlim=c(0,10), cex.main=3, cex.axis=2, cex.lab=2) 
+     }
+
+    tu <- par('usr')
+    par(xpd=FALSE)
+    rect(tu[1], tu[3], tu[2], tu[4], col = "gray85")
+    abline(h=axTicks(2), col="white", lwd=2)
+    abline(v=seq(0,10,1), col="white", lwd=2)
+    plot(reads, col='gray50', add=TRUE) 
+    abline(v=seq(0,10,1), col=col1[cp,2], lty=2, lwd=3) 
+  
+  dev.off()
+
+  #Plot sum of squares error for each potential copy number
+  jpeg(filename=paste(lab[k], "_SoS.jpeg", sep=""), width=2500, height=1500)
+    par(mar = c(7.0, 7.0, 7.0, 3.0))
+
+    plot(CNgrid, outerColsums[,k], xlim=c(1,6), type= "n", xaxt="n", main="Sum of Squares Error Across Potential Copy Number States", xlab="Copy Number Multiplier", ylab="Sum of Squares Error", cex.main=3, cex.axis=2, cex.lab=2)
     tu <- par('usr')
     par(xpd=FALSE)
     rect(tu[1], tu[3], tu[2], tu[4], col = "gray85")
     abline(v=seq(1, 6, .25), col="white", lwd=2)
     abline(h=axTicks(2), col="white", lwd=2)
-    points(CNgrid, outerColsums, "b", xaxt="n", lwd=2.5)
-    points(CNmult[1,k], CNerror[1,k], pch=23, cex=2, lwd=2.5, col="midnightblue")
+    points(CNgrid, outerColsums[,k], "b", xaxt="n", lwd=3.5)
+    points(CNmult[1,k], CNerror[1,k], pch=23, cex=4, lwd=3.5, col=col1[cp,2])
     axis(side=1, at=1:6, cex.axis=2)
-   
-    #Plot normalized segmented read counts
-    plot(normal[,k], main="Read Counts (Normalized to a mean of 1)", xlab="Bin", ylab="Normalized Read Counts", type="n", yaxt="n", ylim=c(.25, 5), cex.main=3, cex.axis=2, cex.lab=2)
-    tu <- par('usr')
-    par(xpd=FALSE)
-    rect(tu[1], tu[3], tu[2], tu[4], col = "gray85")
-    points(normal[,k], yaxt="n", ylim=c(.25, 5), pch=20, col=alpha('gray50', .5))
-    abline(h=0:10, lwd=1.5, lty=2)
-    points(fixed[,k], pch=20, col="midnightblue")
-    if (length(which(fixed[,k] > 5)) >= 1) {
-      points(which(fixed[,k] > 5), array(5,length(which(fixed[,k] > 5))), pch=23, col='midnightblue')
-    }
-    axis(side=2, at=seq(1, 5, .5) , cex.axis=2)
-
-
-    #Plot scaled normalized segmented read counts
-    plot(normal[,k]*CNmult[1,k], main=paste("Read Counts Scaled by SoS Multiplier (", CNmult[1,k], ")", sep=""), xlab="Bin", ylab="Copy Number", type="n", yaxt="n", ylim=c(.25, 10), cex.main=3, cex.axis=2, cex.lab=2)
-    tu <- par('usr')
-    par(xpd=FALSE)
-    rect(tu[1], tu[3], tu[2], tu[4], col = "gray85")
-    points(normal[,k]*CNmult[1,k], yaxt="n", ylim=c(.25, 10), pch=20, col=alpha('gray50', .5))
-    abline(h=0:10, lwd=1.5, lty=2)
-    points(fixed[,k]*CNmult[1,k], pch=20, col="midnightblue", )
-    if (length(which(fixed[,k]*CNmult[1,k] > 10)) >= 1) {
-      points(which(fixed[,k]*CNmult[1,k] > 10), array(10,length(which(fixed[,k]*CNmult[1,k] > 10))), pch=23, col='midnightblue')
-    }
-    axis(side=2, at=1:10 , cex.axis=2)
+    legend("topright", inset=.05, legend=c("Lowest SoS Error"), fill=col1[cp,2], cex=2.5)
 
   dev.off()
 
-
-  ############################################################
-  ###############  Plot Copy Number Profile ##################
-  ############################################################
-
-  jpeg(filename=paste(lab[k], "_result.jpeg", sep=""), width=2500, height=1000)
-
+  #Plot colored CN profile
+  jpeg(filename=paste(lab[k], "_CN.jpeg", sep=""), width=3000, height=750)
     par(mar = c(7.0, 7.0, 7.0, 3.0))
 
-    if (type != 2) {
-
-     layout(matrix(c(1,1,1,1,1,2), 1,6, byrow=TRUE))
-
-      #Plot raw read distribution
-      if (f == 0) {
-        plot(normal[,k]*CNmult[1,k], main=paste("Integer Copy Number Profile (Ploidy = ", CNmult[1,k], ")\n Using Sum of Squares Approach", sep=""), ylim=c(0, min(20, max(final[,k]))), type="n", xlab="Bin", ylab="Copy Number", cex.main=2, cex.axis=2, cex.lab=2)
-      } else {
-        plot(normal[,k]*ploidy[which(lab[k]==ploidy[,1]),2], main=paste("Integer Copy Number Profile (Ploidy = ", ploidy[which(lab[k]==ploidy[,1]),2], ")\n Using Provided Sample Ploidy", sep=""), type="n", ylim=c(0, min(20, max(final[,k]))), xlab="Bin", ylab="Copy Number", cex.main=3, cex.axis=2, cex.lab=2)
-      }
+    if (f == 0) { 
+      plot(normal[,k]*CNmult[1,k], main=paste("Integer Copy Number Profile for Sample \"", lab[k], "\"\n Predicted Ploidy = ", CNmult[1,k], sep=""), ylim=c(0, 8), type="n", xlab="Bin", ylab="Copy Number", cex.main=3, cex.axis=2, cex.lab=2)
 
       tu <- par('usr')
       par(xpd=FALSE)
       rect(tu[1], tu[3], tu[2], tu[4], col = "gray85")
 
-      if (f == 0) {
-        points(normal[,k]*CNmult[1,k], ylim=c(0, min(20, max(final[,k]))), pch=20, col=alpha('gray50', .5))
-      } else {
-        points(ploidy[which(lab[k]==ploidy[,1]),2], ylim=c(0, min(20, max(final[,k]))), pch=20, col=alpha('gray50', .5))
-      }
-
+      flag=1
       abline(h=0:19, lty=2)
 
-      #Plot overlaying copy number profile
-      points(final[,k], pch=20, col="midnightblue")
-      if (length(which(final[,k] > 20)) >= 1) {
-        points(which(final[,k] > 20), array(20,length(which(final[,k] > 20))), pch=23, col='midnightblue')
+      points(normal[(0:bounds[1,2]),k]*CNmult[1,k], ylim=c(0, 6), pch=20, cex=2, col=alpha(col1[cp,flag], .2))
+      points(final[(0:bounds[1,2]),k], ylim=c(0, 8), pch=20, cex=2, col=alpha(col2[cp,flag], .2))
+      for (i in 1:(dim(bounds)[1]-1)){
+        points((bounds[i,2]:bounds[(i+1),2]), normal[(bounds[i,2]:bounds[(i+1),2]),k]*CNmult[1,k], ylim=c(0, 6), pch=20, cex=2, col=alpha(col2[cp,flag], .2))
+        points((bounds[i,2]:bounds[(i+1),2]), final[(bounds[i,2]:bounds[(i+1),2]),k], ylim=c(0, 8), pch=20, cex=2, col=alpha(col1[cp,flag], .2))
+        if (flag == 1) { flag = 2} else {flag = 1}
       }
-
-      #Plot chrom boundaries
-      abline(v=c(0,t(bounds[2]), l), lwd=1.5)
-
-      if (type == 1) {
-
-        #Plot gene locations
-        for (j in 1:min(10, length(q))) {
-          points(bin[j], final[,k][bin[j]], pch=13, cex=4, lwd=2, col=colors[j])
-        }
-        par(mar = c(2.0, 2.0, 2.0, 1.0))
-        plot(0, type="n", axes=F, xlab="", ylab="")
-        legend(.95, 0, q[1:min(c(10, length(q)))], col=colors[1:min(c(10, length(q)))], pch=13, cex=5, xjust=.45, yjust=.5, bg="gray85")
-      }  else if (type == 3) {
-
-        #Plot genomic intervals
-        for (j in 1:min(10, dim(q)[1])) {
-          points(seq(intervals[j,1], intervals[j,2]), final[seq(intervals[j,1], intervals[j,2]), k],  pch=20, cex=2, col=colors[j])
-        }
-        par(mar = c(2.0, 2.0, 2.0, 1.0))
-        plot(0, type="n", axes=F, xlab="", ylab="")
-        legend(.95, 0, ints, col=colors[1:min(c(10, dim(q)[1]))], pch=20, cex=3, xjust=.5, yjust=.5, bg="gray85")
-      }
-
+      points((bounds[(i+1),2]:l), normal[(bounds[(i+1),2]:l),k]*CNmult[1,k], ylim=c(0, 8), pch=20, cex=2, col=alpha(col2[cp,flag], .2))
+      points((bounds[(i+1),2]:l), final[(bounds[(i+1),2]:l),k], ylim=c(0, 6), pch=20, cex=2, col=alpha(col1[cp,flag], .2))
+ 
+      dev.off()
     }
-
-    #IF THE USER PROVIDED NO INTERVALS/GENES:
-    if (type == 2) {
-
-      if (f == 0) {
-        plot(normal[,k]*CNmult[1,k], main=paste("Integer Copy Number Profile (Ploidy = ", CNmult[1,k], ")\n Using Sum of Squares Approach", sep=""), ylim=c(0, min(20, max(final[,k]))), type="n", xlab="Bin", ylab="Copy Number", cex.main=3, cex.axis=2, cex.lab=2)
-      } else {
-        plot(normal[,k]*ploidy[which(lab[k]==ploidy[,1]),2], main=paste("Integer Copy Number Profile (Ploidy = ", ploidy[which(lab[k]==ploidy[,1]),2], ")\n Using Provided Sample Ploidy", sep=""), ylim=c(0, min(20, max(final[,k]))), type="n", xlab="Bin", ylab="Copy Number", cex.main=3, cex.axis=2, cex.lab=2)
-      }
+    else {
+      plot(normal[,k]*ploidy[which(lab[k]==ploidy[,1]),2], main=paste("Integer Copy Number Profile for Sample \"", lab[k], "\"\n Provided Ploidy = ", ploidy[which(lab[k]==ploidy[,1]),2], sep=""), ylim=c(0, 8), type="n", xlab="Bin", ylab="Copy Number", cex.main=3, cex.axis=2, cex.lab=2)
 
       tu <- par('usr')
       par(xpd=FALSE)
       rect(tu[1], tu[3], tu[2], tu[4], col = "gray85")
 
-      if (f == 0) {
-        points(normal[,k]*CNmult[1,k], ylim=c(0, min(20, max(final[,k]))), pch=20, col=alpha('gray50', .5))
-      } else {
-        points(normal[,k]*ploidy[which(lab[k]==ploidy[,1]),2], ylim=c(0, min(20, max(final[,k]))), pch=20, col=alpha('gray50', .5))
-      }
-
+      flag=1
       abline(h=0:19, lty=2)
 
-      #Plot overlaying copy number profile
-      points(final[,k], pch=20, col="midnightblue")
-      if (length(which(final[,k] > 20)) >= 1) {
-        points(which(final[,k] > 20), array(20,length(which(final[,k] > 20))), pch=23, col='midnightblue')
-    }
-
-      #Plot chrom boundaries
-      abline(v=c(0,t(bounds[2]), l), lwd=1.5)
-    }
-
-  dev.off()
-
-
-  ############################################################
-  ##############  Dynamically Generate Cluster  ##############
-  ############################################################
-
-
-  if ( ((k < 10) || (k%%(w%/%10) == 0)) && (k >= 3) )
-  {
-    #Calculate read distance matrix for clustering
-    mat=matrix(0,nrow=k,ncol=k)
-    for (i in 1:k){
-       for (j in 1:k){
-         mat[i,j]=dist(rbind(fixed[,i]/sum(fixed[,i]), fixed[,j]/sum(fixed[,j])), method = dm)
-        }
+      points(normal[(0:bounds[1,2]),k]*ploidy[which(lab[k]==ploidy[,1]),2], ylim=c(0, 6), pch=20, cex=2, col=alpha(col1[cp,flag], .2))
+      points(final[(0:bounds[1,2]),k], ylim=c(0, 8), pch=20, cex=2, col=alpha(col2[cp,flag], .2))
+      for (i in 1:(dim(bounds)[1]-1)){
+        points((bounds[i,2]:bounds[(i+1),2]), normal[(bounds[i,2]:bounds[(i+1),2]),k]*ploidy[which(lab[k]==ploidy[,1]),2], ylim=c(0, 6), pch=20, cex=2, col=alpha(col2[cp,flag], .2))
+        points((bounds[i,2]:bounds[(i+1),2]), final[(bounds[i,2]:bounds[(i+1),2]),k], ylim=c(0, 8), pch=20, cex=2, col=alpha(col1[cp,flag], .2))
+        if (flag == 1) { flag = 2} else {flag = 1}
       }
-    #Create cluster of samples
-    d <- dist(mat, method = dm)
-    clust <- hclust(d, method = cm)
-    clust$labels <- lab
-    write(hc2Newick((clust)), file=paste(user_dir, "/clust.newick", sep=""))
-
-
-	###
-	#main_dir="/mnt/data/ginkgo/scripts"
-	command=paste("java -cp ", main_dir, "/forester_1025.jar org.forester.application.phyloxml_converter -f=nn ", user_dir, "/clust.newick ", user_dir, "/clust.xml", sep="");
-	unlink( paste(user_dir, "/clust.xml", sep="") );
-	system(command);
-	###
-
-
-
-  }
+      points((bounds[(i+1),2]:l), normal[(bounds[(i+1),2]:l),k]*ploidy[which(lab[k]==ploidy[,1]),2], ylim=c(0, 8), pch=20, cex=2, col=alpha(col2[cp,flag], .2))
+      points((bounds[(i+1),2]:l), final[(bounds[(i+1),2]:l),k], ylim=c(0, 6), pch=20, cex=2, col=alpha(col1[cp,flag], .2))
+ 
+      dev.off()
+    }
 
 }
 
@@ -425,6 +389,10 @@ for(k in 1:w){
 ############################################################
 ##################  Save Processed Data  ###################
 ############################################################
+
+statusFile<-file( paste(user_dir, "/", status, sep="") )
+writeLines(c("<?xml version='1.0'?>", "<status>", "<step>3</step>", paste("<processingfile>Saving Data</processingfile>", sep=""), paste("<percentdone>", (w*100)%/%(w+4), "</percentdone>", sep=""), "<tree>clust.xml</tree>", "</status>"), statusFile)
+close(statusFile)
 
 #Close output stream
 sink()
@@ -434,17 +402,17 @@ write.table(normal, file=paste(user_dir, "/SegNorm", sep=""), row.names=FALSE, c
 write.table(fixed, file=paste(user_dir, "/SegFixed", sep=""), row.names=FALSE, col.names=lab, sep="\t")
 write.table(final, file=paste(user_dir, "/SegCopy", sep=""), row.names=FALSE, col.names=lab, sep="\t")
 write.table(breaks, file=paste(user_dir, "/SegBreaks", sep=""), row.names=FALSE, col.names=lab, sep="\t")
+write.table(stats, file=paste(user_dir, "/SegStats", sep=""), sep="\t")
+
+############################################################
+##################  Generate Dendrograms ###################
+############################################################
 
 statusFile <- file( paste(user_dir, "/", status, sep="") )
 writeLines(c("<?xml version='1.0'?>", "<status>", "<step>3</step>", paste("<processingfile>Computing Cluster (Read Count)</processingfile>", sep=""), paste("<percentdone>", ((w+1)*100)%/%(w+4), "</percentdone>", sep=""), "<tree>clust.xml</tree>", "</status>"), statusFile)
 close(statusFile)
 
-
-############################################################
-################  Generate Final Clusters ##################
-############################################################
-
-#Calculate read distance matrix for clusteringcat
+#Calculate read distance matrix for clustering
 mat=matrix(0,nrow=w,ncol=w)
   for (i in 1:w){
     for (j in 1:w){
@@ -456,20 +424,21 @@ mat=matrix(0,nrow=w,ncol=w)
 d <- dist(mat, method = dm)
 clust <- hclust(d, method = cm)
 clust$labels <- lab
-write(hc2Newick((clust)), file=paste(user_dir, "/clust.newick", sep=""))
+write(hc2Newick(clust), file=paste(user_dir, "/clust.newick", sep=""))
 
 ###
-
-command=paste("java -cp ", main_dir, "/forester_1025.jar org.forester.application.phyloxml_converter -f=nn ", user_dir, "/clust.newick ", user_dir, "/clust.xml", sep="");
-unlink( paste(user_dir, "/clust.xml", sep="") );
-system(command);
+#main_dir="/mnt/data/ginkgo/scripts"
+#command=paste("java -cp ", main_dir, "/forester_1025.jar org.forester.application.phyloxml_converter -f=nn ", user_dir, "/clust.newick ", user_dir, "/clust.xml", sep="");
+#unlink( paste(user_dir, "/clust.xml", sep="") );
+#system(command);
 ###
 
 #Plot read cluster
 jpeg("clust.jpeg", width=2000, height=1400)
 plot(clust)
 dev.off()
-pdf("clust.pdf", width=15, height=11)
+
+pdf("clust.pdf", width=10, height=7)
 plot(clust)
 dev.off()
 
@@ -489,21 +458,22 @@ mat2=matrix(0,nrow=w,ncol=w)
 d2 <- dist(mat2, method = dm)
 clust2 <- hclust(d2, method = cm)
 clust2$labels <- lab
-write(hc2Newick((clust2)), file=paste(user_dir, "/clust2.newick", sep=""))
+write(hc2Newick(clust2), file=paste(user_dir, "/clust.newick", sep=""))
 
 ###
 #main_dir="/mnt/data/ginkgo/scripts"
-command=paste("java -cp ", main_dir, "/forester_1025.jar org.forester.application.phyloxml_converter -f=nn ", user_dir, "/clust2.newick ", user_dir, "/clust2.xml", sep="");
-unlink( paste(user_dir, "/clust2.xml", sep="") );
-system(command);
+#command=paste("java -cp ", main_dir, "/forester_1025.jar org.forester.application.phyloxml_converter -f=nn ", user_dir, "/clust2.newick ", user_dir, "/clust2.xml", sep="");
+#unlink( paste(user_dir, "/clust2.xml", sep="") );
+#system(command);
 ### 
 
 #Plot copy number cluster
 jpeg("clust2.jpeg", width=2000, height=1400)
 plot(clust2)
 dev.off()
-pdf("clust2.pdf", width=15, height=11)
-plot(clust2)
+
+pdf("clust2.pdf", width=10, height=7)
+plot(clust)
 dev.off()
 
 
