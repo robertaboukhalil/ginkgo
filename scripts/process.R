@@ -35,7 +35,6 @@ close(statusFile)
 setwd(genome)
 GC <- read.table(paste("GC_", bm, sep=""), header=FALSE, sep="\t", as.is=TRUE)
 loc <- read.table(bm, header=TRUE, sep="\t", as.is=TRUE)
-genes <- read.table("genes", header=FALSE, sep="\t", as.is=TRUE)
 bounds <- read.table(paste("bounds_", bm, sep=""), header=FALSE, sep="\t")
 
 #load user data
@@ -427,19 +426,19 @@ clust$labels <- lab
 write(hc2Newick(clust), file=paste(user_dir, "/clust.newick", sep=""))
 
 ###
-#main_dir="/mnt/data/ginkgo/scripts"
-#command=paste("java -cp ", main_dir, "/forester_1025.jar org.forester.application.phyloxml_converter -f=nn ", user_dir, "/clust.newick ", user_dir, "/clust.xml", sep="");
-#unlink( paste(user_dir, "/clust.xml", sep="") );
-#system(command);
+main_dir="/mnt/data/ginkgo/scripts"
+command=paste("java -cp ", main_dir, "/forester_1025.jar org.forester.application.phyloxml_converter -f=nn ", user_dir, "/clust.newick ", user_dir, "/clust.xml", sep="");
+unlink( paste(user_dir, "/clust.xml", sep="") );
+system(command);
 ###
 
 #Plot read cluster
 jpeg("clust.jpeg", width=2000, height=1400)
-plot(clust)
+plot(clust, hang=-1)
 dev.off()
 
 pdf("clust.pdf", width=10, height=7)
-plot(clust)
+plot(clust, hang=-1)
 dev.off()
 
 statusFile<-file( paste(user_dir, "/", status, sep="") )
@@ -461,19 +460,19 @@ clust2$labels <- lab
 write(hc2Newick(clust2), file=paste(user_dir, "/clust.newick", sep=""))
 
 ###
-#main_dir="/mnt/data/ginkgo/scripts"
-#command=paste("java -cp ", main_dir, "/forester_1025.jar org.forester.application.phyloxml_converter -f=nn ", user_dir, "/clust2.newick ", user_dir, "/clust2.xml", sep="");
-#unlink( paste(user_dir, "/clust2.xml", sep="") );
-#system(command);
+main_dir="/mnt/data/ginkgo/scripts"
+command=paste("java -cp ", main_dir, "/forester_1025.jar org.forester.application.phyloxml_converter -f=nn ", user_dir, "/clust2.newick ", user_dir, "/clust2.xml", sep="");
+unlink( paste(user_dir, "/clust2.xml", sep="") );
+system(command);
 ### 
 
 #Plot copy number cluster
 jpeg("clust2.jpeg", width=2000, height=1400)
-plot(clust2)
+plot(clust2, hang=-1)
 dev.off()
 
 pdf("clust2.pdf", width=10, height=7)
-plot(clust)
+plot(clust, hang=-1)
 dev.off()
 
 
