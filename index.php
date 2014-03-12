@@ -218,10 +218,12 @@ if(isset($_POST['analyze'])) {
 	// Did the user change the analysis parameters from the last time?
 	// Load previous configuration
 	$configFile = $userDir . "/config";
-	if(file_exists($configFile)) {
+	if(file_exists($configFile))
+	{
 		$f = file($configFile);
 		$oldParams = array();
-		foreach($f as $index => $val) {
+		foreach($f as $index => $val)
+		{
 			$values = explode("=", $val, 2);
 			$oldParams[$values[0]] = str_replace("", "", trim($values[1]));
 		}
@@ -232,22 +234,27 @@ if(isset($_POST['analyze'])) {
 		$fix = 0;
 
 		// Do we need to remap? This sets init to 1 if yes, 0 if not
-		$newBinParams = ($oldParams['binMeth'] != $_POST['binMeth']) || 
-											($oldParams['binList'] != $_POST['binList']) ||
-											($oldParams['facs'] != $_POST['facs']);
-		$newSegParams = ($oldParams['segMeth']   != $_POST['segMeth']);
-		$newClustering= ($oldParams['clustMeth'] != $_POST['clustMeth']);
-		$newDistance  = ($oldParams['distMeth']  != $_POST['distMeth']);
+		$newBinParams	= ($oldParams['binMeth']   != $_POST['binMeth']) || 
+							($oldParams['binList'] != $_POST['binList']) ||
+							($oldParams['facs']    != $_POST['facs']);
+		$newSegParams	= ($oldParams['segMeth']   != $_POST['segMeth']);
+		$newClustering	= ($oldParams['clustMeth'] != $_POST['clustMeth']);
+		$newDistance	= ($oldParams['distMeth']  != $_POST['distMeth']);
+		$newColor		= ($oldParams['color']	   != $_POST['color']);
 
-		// Set new variable values
-		#
+		// -- Set new variable values
+		# Or new files
+		// Redo the mapping for all files
 		if($newBinParams)
 			$init = 1;
-		#
-		if($newBinParams || $newSegParams)
+
+		// Redo binning stuff
+		if($newBinParams || $newSegParams || $newColor)
 			$process = 1;
+
+		// Redraw dendrogams
 		# Only need to run fix when not running process
-		if(!$process && ($newClustering || $newDistance))
+		if(!$process && !$init && ($newClustering || $newDistance))
 			$fix = 1;
 	}
 
@@ -285,6 +292,8 @@ if(isset($_POST['analyze'])) {
 	$config.= 'fix=' . $fix . "\n";
 	//
 	$config.= 'ref=' . $_POST['segMethCustom'] . "\n";
+	//
+	$config.= 'color=' . $_POST['color'] . "\n";
 	//
 	file_put_contents($userDir . '/config', $config);
 
@@ -813,52 +822,67 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 						<div style="float:left"><a class="btn btn-lg btn-primary" href="?q=results/<?php echo $GINKGO_USER_ID; ?>"><span class="glyphicon glyphicon-chevron-left"></span> Back to tree </a></div>
 					</div>
 					<br style="clear:both"/>
-					<hr style="height:5px;border:none;background-color:#CCC;" /><br/>
+					<!-- <hr style="height:5px;border:none;background-color:#CCC;" />-->
+					<br/>
 
 					<!-- Panel: Copy-number profile -->
 					<div class="panel panel-default">
 						<div class="panel-heading"><span class="glyphicon glyphicon-align-center"></span> Copy-number profile</div>
 						<!-- Table -->
 						<table class="table">
-							<tr>
-								<td><a href="<?php echo URL_UPLOADS . "/" . $GINKGO_USER_ID . "/" . $CURR_CELL . "_result.jpeg";?>"><img style="width:100%;" src="<?php echo URL_UPLOADS . "/" . $GINKGO_USER_ID . "/" . $CURR_CELL . "_result.jpeg";?>"></a></td>
-							</tr>
+							<tr><td><a href="<?php echo URL_UPLOADS . "/" . $GINKGO_USER_ID . "/" . $CURR_CELL . "_CN.jpeg";?>"><img style="width:100%;" src="<?php echo URL_UPLOADS . "/" . $GINKGO_USER_ID . "/" . $CURR_CELL . "_CN.jpeg";?>"></a></td></tr>
+							<tr><td><a href="<?php echo URL_UPLOADS . "/" . $GINKGO_USER_ID . "/" . $CURR_CELL . "_dist.jpeg";?>"><img style="width:100%;" src="<?php echo URL_UPLOADS . "/" . $GINKGO_USER_ID . "/" . $CURR_CELL . "_dist.jpeg";?>"></a></td></tr>
 						</table>
 					</div>
 
 					<!-- Panel: Histogram of read counts freq. -->
 					<div class="panel panel-default">
-						<div class="panel-heading"><span class="glyphicon glyphicon-stats"></span> Statistics</div>
-						<div class="panel-body">
-							<a href="<?php echo URL_UPLOADS . "/" . $GINKGO_USER_ID . "/" . $CURR_CELL . "_stats.jpeg";?>"><img style="width:100%;" src="<?php echo URL_UPLOADS . "/" . $GINKGO_USER_ID . "/" . $CURR_CELL . "_stats.jpeg";?>"></a>
-						</div>
-						<!-- Table -->
-						<table class="table">
-							<tr>
-								<td>
-									<b>Genome-wide read distribution</b>
-									<p>This gives a quick look at the binned read count distribution across the genome and allows easy identification of cells with strange read coverage.</p>
+						<div class="panel-heading"><span class="glyphicon glyphicon-stats"></span> Quality Control</div>
+							<table class="table">
+								<tr><td>
+									<b>Frequency of Bin Counts</b>
+									<a href="<?php echo URL_UPLOADS . "/" . $GINKGO_USER_ID . "/" . $CURR_CELL . "_hist.jpeg";?>"><img style="width:100%;" src="<?php echo URL_UPLOADS . "/" . $GINKGO_USER_ID . "/" . $CURR_CELL . "_hist.jpeg";?>"></a>
+									<p style="text-align:center"><small>Caption</small></p>
+								</td></tr>
+
+								<tr><td>
 									<b>Histogram of read count frequency</b>
-									<p>Single cell data should fit a negative binomial distribution with narrower histograms representing higher quality data. Wide histograms without a distinct peak are representative of a high degree of amplification bias. Histograms with a mode near zero have a high degree of “read dropout” and are generally the result of poor library preparation or technical sequencing error.</p>
+									<a href="<?php echo URL_UPLOADS . "/" . $GINKGO_USER_ID . "/" . $CURR_CELL . "_counts.jpeg";?>"><img style="width:100%;" src="<?php echo URL_UPLOADS . "/" . $GINKGO_USER_ID . "/" . $CURR_CELL . "_counts.jpeg";?>"></a>
+									<p style="text-align:center"><small>Single cell data should fit a negative binomial distribution with narrower histograms representing higher quality data. Wide histograms without a distinct peak are representative of a high degree of amplification bias. Histograms with a mode near zero have a high degree of “read dropout” and are generally the result of poor library preparation or technical sequencing error.</small></p>
+								</td></tr>
+
+								<tr><td>
 									<b>Lorenz Curve</b>
-									<p>The Lorenz curve gives the cumulative fraction of reads as a function of the cumulative fraction of the genome.  Perfect coverage uniformity results in a straight line with slope 1.  The wider the curve below the line of “perfect uniformity” the lower the coverage uniformity of a sample.</p>
-								</td>
-							</tr>
-						</table>
-					</div>
+									<a href="<?php echo URL_UPLOADS . "/" . $GINKGO_USER_ID . "/" . $CURR_CELL . "_lorenz.jpeg";?>"><img style="width:100%;" src="<?php echo URL_UPLOADS . "/" . $GINKGO_USER_ID . "/" . $CURR_CELL . "_lorenz.jpeg";?>"></a>
+									<p style="text-align:center"><small>The Lorenz curve gives the cumulative fraction of reads as a function of the cumulative fraction of the genome.  Perfect coverage uniformity results in a straight line with slope 1.  The wider the curve below the line of “perfect uniformity” the lower the coverage uniformity of a sample.</small></p>
+								</td></tr>
+							</table>
+ 					</div>
 
 					<!-- Panel: Analysis JPEG -->
 					<div class="panel panel-default">
 						<div class="panel-heading"><span class="glyphicon glyphicon-sort-by-attributes"></span> Analysis details</div>
-						<div class="panel-body">
-							<a href="<?php echo URL_UPLOADS . "/" . $GINKGO_USER_ID . "/" . $CURR_CELL . "_analysis.jpeg";?>"><img style="width:100%;" src="<?php echo URL_UPLOADS . "/" . $GINKGO_USER_ID . "/" . $CURR_CELL . "_analysis.jpeg";?>"></a>
-						</div>
+							<table class="table">
+								<tr><td>
+									<b>GC Correction</b>
+									<a href="<?php echo URL_UPLOADS . "/" . $GINKGO_USER_ID . "/" . $CURR_CELL . "_GC.jpeg";?>"><img style="width:100%;" src="<?php echo URL_UPLOADS . "/" . $GINKGO_USER_ID . "/" . $CURR_CELL . "_GC.jpeg";?>"></a>
+									<!-- <span style="text-align:center"><small>Binned read count distribution across the genome; allows for identification of cells with strange read coverage.</small></span> -->
+								</td></tr>
+
+								<tr><td>
+									<b>Sum Of Squares Error</b>
+									<a href="<?php echo URL_UPLOADS . "/" . $GINKGO_USER_ID . "/" . $CURR_CELL . "_SoS.jpeg";?>"><img style="width:100%;" src="<?php echo URL_UPLOADS . "/" . $GINKGO_USER_ID . "/" . $CURR_CELL . "_SoS.jpeg";?>"></a>
+									<!-- <p style="text-align:center"><small>Single cell data should fit a negative binomial distribution with narrower histograms representing higher quality data. Wide histograms without a distinct peak are representative of a high degree of amplification bias. Histograms with a mode near zero have a high degree of “read dropout” and are generally the result of poor library preparation or technical sequencing error.</small></p> -->
+								</td></tr>
+
+							</table>
 					</div>
 
 					<!-- Buttons: back or next -->
 					<div id="results-navigation2">
-						<hr style="height:5px;border:none;background-color:#CCC;" /><br/>
+						<!-- <hr style="height:5px;border:none;background-color:#CCC;" /> --><br/>
 						<div style="float:left"><a class="btn btn-lg btn-primary" href="?q=results/<?php echo $GINKGO_USER_ID; ?>"><span class="glyphicon glyphicon-chevron-left"></span> Back to tree </a></div>
+						<br/><br/><br/><br/>
 					</div>
 				</div>
 
@@ -1114,10 +1138,10 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 			$.get("<?php echo URL_UPLOADS; ?>/" + ginkgo_user_id + "/status.xml?uniq=" + rndNb, function(xmlFile)
 			{
 				// Extract status fields from status file
-				step				= xmlFile.getElementsByTagName("step")[0].childNodes[0].nodeValue;
-				processing	= xmlFile.getElementsByTagName("processingfile")[0].childNodes[0].nodeValue;
-				percentdone	= xmlFile.getElementsByTagName("percentdone")[0].childNodes[0].nodeValue;
-				tree				= xmlFile.getElementsByTagName("tree")[0].childNodes[0];
+				step 		= xmlFile.getElementsByTagName("step")[0].childNodes[0].nodeValue;
+				processing 	= xmlFile.getElementsByTagName("processingfile")[0].childNodes[0].nodeValue;
+				percentdone = xmlFile.getElementsByTagName("percentdone")[0].childNodes[0].nodeValue;
+				tree 		= xmlFile.getElementsByTagName("tree")[0].childNodes[0];
 				if(typeof tree != 'undefined')
 					tree = tree.nodeValue;
 
@@ -1128,31 +1152,38 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 					desc = "Computing quality control statistics";
 				else if(step == "3")
 					desc = "Processing and clustering samples";
-				else if(step > 3)
-					desc = "Annotating specified genes";
+//				else if(step > 3)
+//					desc = "Annotating specified genes";
 
 				denominator = 3;
-				// Keep in mind: step > 3 is for drawing genes on plots
+				// Keep in mind: step > 3 is for reclust.R (re-draw dendrograms)
 				if(step > denominator)
 					denominator = step;
 				overallDone = Math.round(100*(step-1+percentdone/100)/denominator);
 				$("#results-progress").width(overallDone + "%");
 				Tinycon.setBubble(overallDone);
 
+				// We don't do step 2 anymore
+				stepShow = step
+				if(step > 1)
+					stepShow = step - 1
+
+				// Show status
 				processingMsg = "(" + processing.replace("_", " ") + ")";
-				$("#results-status-text").html(overallDone + "% complete.<br><small style='color:#999'>Step " + step + ": " + percentdone + "%" + " " + desc + "... " + processingMsg + "</small>");
+				$("#results-status-text").html(overallDone + "% complete.<br><small style='color:#999'>Step " + stepShow + ": " + percentdone + "%" + " " + desc + "... " + processingMsg + "</small>");
 
 				// Update progress bar % completed
 				if(percentdone > 100)
 					percentdone = 100;
 
-				// Load tree
+//				// Load tree
 //				if(typeof tree != 'undefined')
 //					drawTree(tree);
 
 				// When we're done with the analysis, stop getting progress continually
 				if((step >= 3 && percentdone >= 100) || typeof step == 'undefined')
 				{
+					// Plot tree
 					drawTree(tree);
 					// Remove auto-update timer
 					clearInterval(ginkgo_progress);
@@ -1308,7 +1339,7 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 					annotationNode	= currElement.parentNode.appendChild(xmlFile.createElement("annotation"));
 					annotationNode
 						.appendChild(xmlFile.createElement("desc"))
-						.appendChild(xmlFile.createTextNode("<img width='290' src='<?php echo URL_UPLOADS; ?>/" + ginkgo_user_id + "/" + cellId + "_result.jpeg'>" + cellId));
+						.appendChild(xmlFile.createTextNode("<img width='290' src='<?php echo URL_UPLOADS; ?>/" + ginkgo_user_id + "/" + cellId + "_CN.jpeg'>" + cellId));
 					annotationNode
 						.appendChild(xmlFile.createElement("uri"))
 						.appendChild(xmlFile.createTextNode("?q=results/" + ginkgo_user_id + "/" + cellId));
