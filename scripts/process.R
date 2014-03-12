@@ -197,11 +197,14 @@ for(k in 1:w){
   jpeg(filename=paste(lab[k], "_dist.jpeg", sep=""), width=3000, height=750)
     par(mar = c(7.0, 7.0, 7.0, 3.0))
 
-    plot(raw[,k], main=paste("Genome Wide Read Distribution for Sample \"", lab[k], "\"", sep=""), xlab="Bin", ylab="Fraction of reads", type="n", cex.main=3, cex.axis=2, cex.lab=2)
+    top=round(quantile(raw[,k], c(.999))[[1]])
+
+    plot(which(raw[,k]<top), raw[which(raw[,k]<top),k], main=paste("Genome Wide Read Distribution for Sample \"", lab[k], "\"", sep=""), xlab="Bin", ylab="Fraction of reads", type="n", ylim=c(0,top), cex.main=3, cex.axis=2, cex.lab=2)
     tu <- par('usr')
     par(xpd=FALSE)
     rect(tu[1], tu[3], tu[2], tu[4], col = "gray85")
-    points(raw[,k], pch=20, col=col1[cp,2], cex=1.5)
+    points(which(raw[,k]<top), raw[which(raw[,k]<top),k], pch=20, col=col1[cp,2], cex=1.5)
+    points(which(raw[,k]>top), array(top, length(which(raw[,k]>top))), pch=23, cex=2, col=col1[cp,2])
 
   dev.off()
 
@@ -426,19 +429,21 @@ clust$labels <- lab
 write(hc2Newick(clust), file=paste(user_dir, "/clust.newick", sep=""))
 
 ###
-main_dir="/mnt/data/ginkgo/scripts"
-command=paste("java -cp ", main_dir, "/forester_1025.jar org.forester.application.phyloxml_converter -f=nn ", user_dir, "/clust.newick ", user_dir, "/clust.xml", sep="");
-unlink( paste(user_dir, "/clust.xml", sep="") );
-system(command);
+#main_dir="/mnt/data/ginkgo/scripts"
+#command=paste("java -cp ", main_dir, "/forester_1025.jar org.forester.application.phyloxml_converter -f=nn ", user_dir, "/clust.newick ", user_dir, "/clust.xml", sep="");
+#unlink( paste(user_dir, "/clust.xml", sep="") );
+#system(command);
 ###
 
 #Plot read cluster
 jpeg("clust.jpeg", width=2000, height=1400)
-plot(clust, hang=-1)
+  op = par(bg = "gray85")
+  plot(clust, xlab="Sample", hang=-1, ylab=paste("Distance (", dm, ")", sep=""), lwd=3)
 dev.off()
 
 pdf("clust.pdf", width=10, height=7)
-plot(clust, hang=-1)
+  op = par(bg = "gray85")
+  plot(clust, xlab="Sample", hang=-1, ylab=paste("Distance (", dm, ")", sep=""), lwd=3)
 dev.off()
 
 statusFile<-file( paste(user_dir, "/", status, sep="") )
@@ -460,21 +465,22 @@ clust2$labels <- lab
 write(hc2Newick(clust2), file=paste(user_dir, "/clust.newick", sep=""))
 
 ###
-main_dir="/mnt/data/ginkgo/scripts"
-command=paste("java -cp ", main_dir, "/forester_1025.jar org.forester.application.phyloxml_converter -f=nn ", user_dir, "/clust2.newick ", user_dir, "/clust2.xml", sep="");
-unlink( paste(user_dir, "/clust2.xml", sep="") );
-system(command);
+#main_dir="/mnt/data/ginkgo/scripts"
+#command=paste("java -cp ", main_dir, "/forester_1025.jar org.forester.application.phyloxml_converter -f=nn ", user_dir, "/clust2.newick ", user_dir, "/clust2.xml", sep="");
+#unlink( paste(user_dir, "/clust2.xml", sep="") );
+#system(command);
 ### 
 
 #Plot copy number cluster
 jpeg("clust2.jpeg", width=2000, height=1400)
-plot(clust2, hang=-1)
+  op = par(bg = "gray85")
+  plot(clust2, xlab="Sample", hang=-1, ylab=paste("Distance (", dm, ")", sep=""), lwd=3)
 dev.off()
 
 pdf("clust2.pdf", width=10, height=7)
-plot(clust, hang=-1)
+  op = par(bg = "gray85")
+  plot(clust2, xlab="Sample", hang=-1, ylab=paste("Distance (", dm, ")", sep=""), lwd=3)
 dev.off()
-
 
 ############################################################
 ####################  Generate Heat Maps ###################
