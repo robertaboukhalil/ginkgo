@@ -69,7 +69,7 @@ fi
 ############################################################
 
 if [ "$process" == "1" ]; then
-  ${home}/scripts/process.R $genome $dir $statFile data $segMeth $binMeth $clustMeth $distMet $color ${dir}/${query} ${ref}_mapped $f $facs
+  ${home}/scripts/process.R $genome $dir $statFile data $segMeth $binMeth $clustMeth $distMet $color ${ref}_mapped $f $facs #${dir}/${query} 
 fi
 
 ############################################################
