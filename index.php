@@ -64,6 +64,7 @@ $permalink = URL_ROOT . '?q=results/' . $GINKGO_USER_ID;
 if(file_exists($descFile = $userDir . '/description.txt'))
 	setcookie("ginkgo[$GINKGO_USER_ID]", file_get_contents($descFile), time()+36000000);
 
+
 // =============================================================================
 // == Template configuration ===================================================
 // =============================================================================
@@ -174,27 +175,27 @@ if($GINKGO_PAGE == 'admin-upload')
 // == Launch gene annotation ===================================================
 // =============================================================================
 
-if($GINKGO_PAGE == 'admin-annotate')
-{
-	// Sanitize user input (see bootstrap.php)
-	array_walk_recursive($_POST, 'sanitize');
-	$genes = str_replace("'", "", $_POST['genes']);
-	$genes = str_replace(" ", "\t", $genes);
+// if($GINKGO_PAGE == 'admin-annotate')
+// {
+// 	// Sanitize user input (see bootstrap.php)
+// 	array_walk_recursive($_POST, 'sanitize');
+// 	$genes = str_replace("'", "", $_POST['genes']);
+// 	$genes = str_replace(" ", "\t", $genes);
 
-	// Two notes about changing config:
-	// 	-> Don't want to send email to users when it's done => set email to empty
-	//	-> Change gene list file name (query.txt -- see scripts/analyze)
-	file_put_contents( $userDir . "/config", "email=\"\"\nquery=\"query.txt\"\ninit=0\nprocess=0\nfix=0\nq=1\n", FILE_APPEND );
-	file_put_contents( $userDir . "/query.txt", $genes );
+// 	// Two notes about changing config:
+// 	// 	-> Don't want to send email to users when it's done => set email to empty
+// 	//	-> Change gene list file name (query.txt -- see scripts/analyze)
+// 	file_put_contents( $userDir . "/config", "email=\"\"\nquery=\"query.txt\"\ninit=0\nprocess=0\nfix=0\nq=1\n", FILE_APPEND );
+// 	file_put_contents( $userDir . "/query.txt", $genes );
 
-	// Start analysis
-	$cmd = "./scripts/analyze $GINKGO_USER_ID >> $userDir/ginkgo.out 2>&1  &";
-	session_regenerate_id(TRUE);	
-	$handle = popen($cmd, 'r');
-	pclose($handle);
+// 	// Start analysis
+// 	$cmd = "./scripts/analyze $GINKGO_USER_ID >> $userDir/ginkgo.out 2>&1  &";
+// 	session_regenerate_id(TRUE);	
+// 	$handle = popen($cmd, 'r');
+// 	pclose($handle);
 
-	exit;
-}
+// 	exit;
+// }
 
 
 // =============================================================================
@@ -237,13 +238,19 @@ if(isset($_POST['analyze'])) {
 		$newBinParams	= ($oldParams['binMeth']   != $_POST['binMeth']) || 
 							($oldParams['binList'] != $_POST['binList']) ||
 							($oldParams['facs']    != $_POST['facs']);
+		//
 		$newSegParams	= ($oldParams['segMeth']   != $_POST['segMeth']);
 		$newClustering	= ($oldParams['clustMeth'] != $_POST['clustMeth']);
 		$newDistance	= ($oldParams['distMeth']  != $_POST['distMeth']);
 		$newColor		= ($oldParams['color']	   != $_POST['color']);
+		// Different files than last time?
+		$cells = '';
+		foreach($_POST['cells'] as $cell)
+			$cells .= str_replace("'", "", $cell) . "\n";
+		if($cells != file_get_contents($userDir . '/list'))
+			$newBinParams = 1;
 
 		// -- Set new variable values
-		# Or new files
 		// Redo the mapping for all files
 		if($newBinParams)
 			$init = 1;
@@ -256,6 +263,13 @@ if(isset($_POST['analyze'])) {
 		# Only need to run fix when not running process
 		if(!$process && !$init && ($newClustering || $newDistance))
 			$fix = 1;
+
+		// When redirect, if status file isn't changed quickly enough, will show up as 100% completed
+		// However, only delete status file if we need to redo at least 1 part of the analysis
+		if($init || $process || $fix) {
+			$statusFile = DIR_UPLOADS . '/' . $GINKGO_USER_ID . '/status.xml';
+			unlink($statusFile);
+		}
 	}
 
 	// Make sure have enough cells for analysis
@@ -497,6 +511,17 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 			<?php // == Dashboard: Analysis settings ================================ ?>
 			<?php // ================================================================ ?>
 			<?php elseif($GINKGO_PAGE == 'dashboard'): ?>
+			<?php 
+					$configFile = $userDir . "/config";
+					if(file_exists($configFile)) {
+						$f = file($configFile);
+						$config = array();
+						foreach($f as $index => $val) {
+							$values = explode("=", $val, 2);
+							$config[$values[0]] = str_replace("'", "", trim($values[1]));
+						}
+					}
+			?>
 			<!-- Dashboard -->
 			<div class="row">
 				<div id="dashboard" class="col-lg-8">
@@ -539,15 +564,16 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 										<select id="param-genome" class="input-mini" style="margin-top:8px; font-size:11px; padding-top:3px; padding-bottom:0; height:25px; ">
 											<optgroup label="Latest genomes">
 												<!--<option value="hg20">Human (hg20)</option>-->
-												<option value="hg19" selected>Human (hg19)</option>
-												<option value="panTro4">Chimpanzee (panTro4)</option>
-												<option value="mm10">Mus musculus (mm10)</option>
-												<option value="rn5">R. norvegicus (rn5)</option>
-												<option value="dm3">D. Melanogaster (dm3)</option>
+												<?php $selected = array(); $selected[$config['chosen_genome']] = ' selected'; ?>
+												<option value="hg19"<?php echo $selected['hg19']; ?>>Human (hg19)</option>
+												<option value="panTro4"<?php echo $selected['panTro4']; ?>>Chimpanzee (panTro4)</option>
+												<option value="mm10"<?php echo $selected['mm10']; ?>>Mus musculus (mm10)</option>
+												<option value="rn5"<?php echo $selected['rn5']; ?>>R. norvegicus (rn5)</option>
+												<option value="dm3"<?php echo $selected['dm3']; ?>>D. Melanogaster (dm3)</option>
 											</optgroup>
 											<optgroup label="Older genomes">
-												<option value="hg18">Human (hg18)</option>
-												<option value="panTro3">Chimpanzee (panTro3)</option>
+												<option value="hg18"<?php echo $selected['hg18']; ?>>Human (hg18)</option>
+												<option value="panTro3"<?php echo $selected['panTro3']; ?>>Chimpanzee (panTro3)</option>
 											</optgroup>
 										</select>
 									</td>
@@ -583,8 +609,9 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 					<div id="params-email" style="margin:20px;">
 						<p>If you want to be notified once the analysis is done, enter your e-mail here:<br/></p>
 						<div class="input-group">
+							<?php $email = 'my@email.com'; if($config['email'] != '') $email = $config['email']; ?>
 							<span class="input-group-addon"><span class="glyphicon glyphicon-envelope"></span></span>
-							<input id="email" class="form-control" type="text" placeholder="my@email.com">
+							<input id="email" class="form-control" type="text" placeholder="<?php echo $email; ?>">
 						</div>
 					</div>
 					<br/><br/>
@@ -597,50 +624,63 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 						<tbody>
 							<tr>
 								<td>CNV Profile Color Scheme</td>
+								<?php $selected = array(); $selected[$config['color']] = ' selected'; ?>
 								<td>
 									Use <select id="param-color-scheme" class="input-mini" style="margin-top:8px; font-size:11px; padding-top:3px; padding-bottom:0; height:25px; ">
-									<option value="1">light blue / orange</option>
-									<option value="2">magenta / gold</option>
-									<option value="3" selected="selected">dark blue / red</option>
+									<option value="1"<?php echo $selected['1']; ?>>light blue / orange</option>
+									<option value="2"<?php echo $selected['2']; ?>>magenta / gold</option>
+									<option value="3"<?php echo $selected['3']; ?>>dark blue / red</option>
 									</select> color scheme.
 								</td>
 							</tr>
 							<tr>
 								<td>General Binning Options</td>
+								<?php
+									$binMeth = split('_', $config['binMeth']);
+								?>
 								<td>
+									<?php $selected = array(); $selected[$binMeth[0]] = ' selected'; ?>
 									Use a <select id="param-bins-type" class="input-mini" style="margin-top:8px; font-size:11px; padding-top:3px; padding-bottom:0; height:25px; ">
-									<option value="variable_">variable</option>
-									<option value="fixed_">fixed</option>
-									</select> bin size of <select id="param-bins-value" class="input-mini" style="margin-top:8px; font-size:11px; padding-top:3px; padding-bottom:0; height:25px; ">
-									<option value="500000_">500kb</option>
-									<option value="250000_">250kb</option>
-									<option value="100000_" selected="selected">100kb</option>
-									<option value="50000_">50kb</option>
-									<option value="40000_">40kb</option>
-									<option value="25000_">25kb</option>
-									<option value="10000_">10kb</option>
+									<option value="variable_"<?php echo $selected['variable']; ?>>variable</option>
+									<option value="fixed_"<?php echo $selected['fixed']; ?>>fixed</option>
+									</select> bin size of 
+
+									<?php $selected = array(); $selected[$binMeth[1]] = ' selected'; ?>
+									<select id="param-bins-value" class="input-mini" style="margin-top:8px; font-size:11px; padding-top:3px; padding-bottom:0; height:25px; ">
+									<option value="500000_"<?php echo $selected['500000']; ?>>500kb</option>
+									<option value="250000_"<?php echo $selected['250000']; ?>>250kb</option>
+									<option value="100000_"<?php echo $selected['100000']; ?>>100kb</option>
+									<option value="50000_"<?php echo $selected['50000']; ?>>50kb</option>
+									<option value="40000_"<?php echo $selected['40000']; ?>>40kb</option>
+									<option value="25000_"<?php echo $selected['25000']; ?>>25kb</option>
+									<option value="10000_"<?php echo $selected['10000']; ?>>10kb</option>
 									</select> size.
 								</td>
 							</tr>
 							<tr>
 								<td>Binning Simulation Options</td>
 								<td>
+									<?php $selected = array(); $selected[$binMeth[2]] = ' selected'; ?>
 									Define bins based on simulations of <select id="param-bins-sim-rlen" class="input-mini" style="margin-top:8px; font-size:11px; padding-top:3px; padding-bottom:0; height:25px; ">
-									<option value="101_">101</option>
-									<option value="76_">76</option>
-									<option value="48_">48</option>
-									</select> bp reads, mapped using <select id="param-bins-sim-mapper" class="input-mini" style="margin-top:8px; font-size:11px; padding-top:3px; padding-bottom:0; height:25px; ">
-									<option value="bowtie">bowtie2</option>
-									<option value="bwa">bwa</option>
+									<option value="101_"<?php echo $selected['101']; ?>>101</option>
+									<option value="76_"<?php echo $selected['76']; ?>>76</option>
+									<option value="48_"<?php echo $selected['48']; ?>>48</option>
+									</select> bp reads, mapped using
+
+									<?php $selected = array(); $selected[$binMeth[3]] = ' selected'; ?>
+									<select id="param-bins-sim-mapper" class="input-mini" style="margin-top:8px; font-size:11px; padding-top:3px; padding-bottom:0; height:25px; ">
+									<option value="bowtie"<?php echo $selected['bowtie']; ?>>bowtie2</option>
+									<option value="bwa"<?php echo $selected['bwa']; ?>>bwa</option>
 									</select>.
 								</td>
 							</tr>
 							<tr>
 								<td>Segmentation</td>
+								<?php $selected = array(); $selected[$config['segMeth']] = ' selected'; ?>
 								<td>Use <select id="param-segmentation" class="input-medium" style="margin-top:8px; font-size:11px; padding-top:3px; padding-bottom:0; height:25px; ">
-								<option value="0">Independent (normalized read counts)</option>
-								<option value="1">Global (sample with lowest IOD)</option>
-								<option value="2">Custom (using uploaded reference sample)</option>
+								<option value="0"<?php echo $selected[0]; ?>>Independent (normalized read counts)</option>
+								<option value="1"<?php echo $selected[1]; ?>>Global (sample with lowest IOD)</option>
+								<option value="2"<?php echo $selected[2]; ?>>Custom (using uploaded reference sample)</option>
 								</select> method to segment.</td>
 							</tr>
 							<tr style="display:none" id="param-segmentation-custom">
@@ -667,24 +707,26 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 							<tr>
 								<td>Clustering</td>
 								<td>
+									<?php $selected = array(); $selected[$config['clustMeth']] = ' selected'; ?>
 									Use <select id="param-clustering" class="input-small" style="margin-top:8px; font-size:11px; padding-top:3px; padding-bottom:0; height:25px; ">
-									<option value="single">single</option>
-									<option value="complete">complete</option>
-									<option value="average">average</option>
-									<option value="ward">ward</option>
+									<option value="single"<?php echo $selected['single']; ?>>single</option>
+									<option value="complete"<?php echo $selected['complete']; ?>>complete</option>
+									<option value="average"<?php echo $selected['average']; ?>>average</option>
+									<option value="ward"<?php echo $selected['ward']; ?>>ward</option>
 									</select> clustering.
 								</td>
 							</tr>
 							<tr>
 								<td>Distance metric</td>
 								<td>
+									<?php $selected = array(); $selected[$config['distMeth']] = ' selected'; ?>
 									Use <select id="param-distance" class="input-small" style="margin-top:8px; font-size:11px; padding-top:3px; padding-bottom:0; height:25px; ">
-									<option value="euclidian">Euclidean</option>
-									<option value="maximum">maximum</option>
-									<option value="manhattan">Manhattan</option>
-									<option value="canberra">Canberra</option>
-									<option value="binary">binary</option>
-									<option value="minkowski">Minkowski</option>
+									<option value="euclidian"<?php echo $selected['euclidian']; ?>>Euclidean</option>
+									<option value="maximum"<?php echo $selected['maximum']; ?>>maximum</option>
+									<option value="manhattan"<?php echo $selected['manhattan']; ?>>Manhattan</option>
+									<option value="canberra"<?php echo $selected['canberra']; ?>>Canberra</option>
+									<option value="binary"<?php echo $selected['binary']; ?>>binary</option>
+									<option value="minkowski"<?php echo $selected['minkowski']; ?>>Minkowski</option>
 									</select> distance.
 								</td>
 							</tr>
@@ -800,7 +842,7 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 					<br>
 					<?php echo $PANEL_DOWNLOAD; ?>
 					<br>
-					<?php echo $PANEL_ANNOTATE; ?>
+					<?php //echo $PANEL_ANNOTATE; ?>
 				</div>
 			</div>
 
@@ -1181,7 +1223,8 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 //					drawTree(tree);
 
 				// When we're done with the analysis, stop getting progress continually
-				if((step >= 3 && percentdone >= 100) || typeof step == 'undefined')
+				// if((step >= 3 && percentdone >= 100) || typeof step == 'undefined')
+				if( overallDone >= 100 || typeof step == 'undefined' )
 				{
 					// Plot tree
 					drawTree(tree);
@@ -1216,11 +1259,11 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 						continue;
 
 					arrLine = allLines[line].split("\t");
-					if(arrLine.length < 12)
+					if(arrLine.length < 11)
 						continue;
 
 					cell  = arrLine[0].replace(/"/g, '');
-					score = arrLine[11].replace(/"/g, '');
+					// score = arrLine[11].replace(/"/g, '');
 
 					meanBinCount = ""
 					if(arrLine[3].replace(/"/g, '') < 25)
@@ -1232,19 +1275,21 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 
 					scoreClass = "active"
 					icon  = ""
-					if(score == 2) {
-						scoreClass = "danger";
-						icon = "glyphicon-exclamation-sign"
-						scoreMessage = "This file suffers from extreme coverage issues.  Proceed carefully or consider removing the file from your analysis.";
-					} else if(score == 1) {
-						scoreClass = "warning";
-						icon = "glyphicon-question-sign"
-						scoreMessage = "This file suffers from moderate coverage issues. Proceed carefully.";
-					} else if(score == 0) {
-						scoreClass = "success";
-						icon = "glyphicon-ok-sign"
-						scoreMessage = "No QA issues detected";
-					}
+					scoreMessage = ""
+					score = 0
+					// if(score == 2) {
+					// 	scoreClass = "danger";
+					// 	icon = "glyphicon-exclamation-sign"
+					// 	scoreMessage = "This file suffers from extreme coverage issues.  Proceed carefully or consider removing the file from your analysis.";
+					// } else if(score == 1) {
+					// 	scoreClass = "warning";
+					// 	icon = "glyphicon-question-sign"
+					// 	scoreMessage = "This file suffers from moderate coverage issues. Proceed carefully.";
+					// } else if(score == 0) {
+					// 	scoreClass = "success";
+					// 	icon = "glyphicon-ok-sign"
+					// 	scoreMessage = "No QA issues detected";
+					// }
 					newLine =	'<tr class="' + scoreClass + '">' + 
 									'<td width="5%" class="active" style="text-align:center">' + 
 										'<span style="font-size:17px;" class="glyphicon ' + icon + '"></span>' + 
@@ -1278,6 +1323,8 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 								'</tr>';
 
 					omg[score].push(newLine);
+
+					alert(newLine)
 				}
 				
 				//for(i in omg)
