@@ -736,9 +736,15 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 					<a name="parameters"></a>
 
 					<!-- Buttons: back or next -->
-					<hr style="height:5px;border:none;background-color:#CCC;" /><br/>
+					<!-- <hr style="height:5px;border:none;background-color:#CCC;" /> -->
+					<?php
+						$btnCaption = 'Start Analysis';
+						if(file_exists($configFile))
+							$btnCaption = 'View Results';
+					?>
+					<hr><br/>
 					<div style="float:left"><a class="btn btn-lg btn-primary" href="?q=/<?php echo $GINKGO_USER_ID; ?>"><span class="glyphicon glyphicon-chevron-left"></span> Manage Files </a></div>
-					<div style="float:right"><a id="analyze" class="btn btn-lg btn-primary" href="javascript:void(0);">Start Analysis <span class="glyphicon glyphicon-chevron-right"></span></a></div><br/><br/><br/>
+					<div style="float:right"><a id="analyze" class="btn btn-lg btn-primary" href="javascript:void(0);"><?php echo $btnCaption; ?> <span class="glyphicon glyphicon-chevron-right"></span></a></div><br/><br/><br/>
 
 				</form>
 					
@@ -758,36 +764,39 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 			<!-- Results -->
 			<div class="row">
 				<div id="results" class="col-lg-8">
-					<h3 style="margin-top:-5px;"><span class="badge">STEP 3</span> View results</h3>
-					<p>Click on individual cells for details of the copy-number analysis.</p>
+ 					<!-- <div style="float:left"><a class="btn btn-small btn-primary" href="?q=dashboard/<?php echo $GINKGO_USER_ID; ?>"><span class="glyphicon glyphicon-chevron-left"></span> Analysis Options </a></div>
+					<br style="clear:both;"/>
+					<hr> -->
 
-					<div class="panel panel-info">
+					<h3 style="margin-top:-5px;"><span class="badge">STEP 3</span> View results</h3>
+
+					<div id="results-tree" class="panel panel-info">
 						<div class="panel-heading"><h3 class="panel-title"><span class="glyphicon glyphicon-tree-deciduous"></span> Tree</h3></div>
 						<div class="panel-body">
 							<div id="svgCanvas" class="row-fluid" style="border:0px solid red; ">
+								<!-- <p>Click on individual cells for details of the copy-number analysis.</p> -->
 								Analyzing your data...
 							</div>
 						</div>
 					</div>
+					<br/>
 
-					<h3>&nbsp;</h3>
-
-					<!-- Panel: Quality Assessment -->
-					<div class="panel panel-default">
-						<div class="panel-heading"><span class="glyphicon glyphicon-certificate"></span> Quality Assessment</div>
-						<div class="panel-body" id="results-QA-loadingTxt">
+					<!-- Panel: Summary -->
+					<div id="results-summary" class="panel panel-default">
+						<div class="panel-heading"><span class="glyphicon glyphicon-certificate"></span> Summary</div>
+						<!-- <div class="panel-body" id="results-QA-loadingTxt">
 							<p>Verifying that your files are adequate for copy-number analysis...</p>
-						</div>
+						</div> -->
 						<!-- Table -->
 							<table class="table" style="min-height:0px;">
 								<thead>
 									<tr>
-										<th width="5%">&nbsp;</th>
-										<th style="text-align:center" width="10%">Cell</th>
-										<th style="text-align:center" width="20%">Bin Count<br/>Too Low</th>
-										<th style="text-align:center" width="20%">Index of Dispersion<br/>Too High</th>
-										<th width="40%">Recommendation</th>
-										<th style="text-align:center; padding-right:17px;" width="5%">Info</th>
+										<th style="text-align:center" width="15%">Cell</th>
+										<th style="text-align:center" width="25%">CNV Profile</th>
+										<th style="text-align:center" width="15%"># Reads</th>
+										<th style="text-align:center" width="15%">Mean read count</th>
+										<th style="text-align:center" width="15%">Read count variance</th>
+										<th style="text-align:center" width="15%">Index of dispersion</th>
 									</tr>
 								</thead>
 							</table>
@@ -829,8 +838,9 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 
 					<!-- Buttons: back or next -->
 					<div id="results-navigation">
-						<br/><br/>
-						<hr style="height:5px;border:none;background-color:#CCC;" /><br/>
+						<br/>
+						<!-- <br/><hr style="height:5px;border:none;background-color:#CCC;" /> <br/>-->
+						<hr>
 						<div style="float:left"><a class="btn btn-lg btn-primary" href="?q=dashboard/<?php echo $GINKGO_USER_ID; ?>"><span class="glyphicon glyphicon-chevron-left"></span> Analysis Options </a></div>
 					</div>
 					<br><br><br><br>
@@ -873,7 +883,6 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 						<!-- Table -->
 						<table class="table">
 							<tr><td><a href="<?php echo URL_UPLOADS . "/" . $GINKGO_USER_ID . "/" . $CURR_CELL . "_CN.jpeg";?>"><img style="width:100%;" src="<?php echo URL_UPLOADS . "/" . $GINKGO_USER_ID . "/" . $CURR_CELL . "_CN.jpeg";?>"></a></td></tr>
-							<tr><td><a href="<?php echo URL_UPLOADS . "/" . $GINKGO_USER_ID . "/" . $CURR_CELL . "_dist.jpeg";?>"><img style="width:100%;" src="<?php echo URL_UPLOADS . "/" . $GINKGO_USER_ID . "/" . $CURR_CELL . "_dist.jpeg";?>"></a></td></tr>
 						</table>
 					</div>
 
@@ -882,11 +891,10 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 						<div class="panel-heading"><span class="glyphicon glyphicon-stats"></span> Quality Control</div>
 							<table class="table">
 								<tr><td>
-									<b>Frequency of Bin Counts</b>
-									<a href="<?php echo URL_UPLOADS . "/" . $GINKGO_USER_ID . "/" . $CURR_CELL . "_hist.jpeg";?>"><img style="width:100%;" src="<?php echo URL_UPLOADS . "/" . $GINKGO_USER_ID . "/" . $CURR_CELL . "_hist.jpeg";?>"></a>
-									<p style="text-align:center"><small>Caption</small></p>
+									<b>Genome-wide read distribution</b>
+									<a href="<?php echo URL_UPLOADS . "/" . $GINKGO_USER_ID . "/" . $CURR_CELL . "_dist.jpeg";?>"><img style="width:100%;" src="<?php echo URL_UPLOADS . "/" . $GINKGO_USER_ID . "/" . $CURR_CELL . "_dist.jpeg";?>"></a>
+									<p style="text-align:center"><small>The read count distribution spanning the full genome once reads have been talied within bin boundaries.</small></p>
 								</td></tr>
-
 								<tr><td>
 									<b>Histogram of read count frequency</b>
 									<a href="<?php echo URL_UPLOADS . "/" . $GINKGO_USER_ID . "/" . $CURR_CELL . "_counts.jpeg";?>"><img style="width:100%;" src="<?php echo URL_UPLOADS . "/" . $GINKGO_USER_ID . "/" . $CURR_CELL . "_counts.jpeg";?>"></a>
@@ -897,6 +905,12 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 									<b>Lorenz Curve</b>
 									<a href="<?php echo URL_UPLOADS . "/" . $GINKGO_USER_ID . "/" . $CURR_CELL . "_lorenz.jpeg";?>"><img style="width:100%;" src="<?php echo URL_UPLOADS . "/" . $GINKGO_USER_ID . "/" . $CURR_CELL . "_lorenz.jpeg";?>"></a>
 									<p style="text-align:center"><small>The Lorenz curve gives the cumulative fraction of reads as a function of the cumulative fraction of the genome.  Perfect coverage uniformity results in a straight line with slope 1.  The wider the curve below the line of “perfect uniformity” the lower the coverage uniformity of a sample.</small></p>
+								</td></tr>
+
+								<tr><td>
+									<b>Frequency of Bin Counts</b>
+									<a href="<?php echo URL_UPLOADS . "/" . $GINKGO_USER_ID . "/" . $CURR_CELL . "_hist.jpeg";?>"><img style="width:100%;" src="<?php echo URL_UPLOADS . "/" . $GINKGO_USER_ID . "/" . $CURR_CELL . "_hist.jpeg";?>"></a>
+									<p style="text-align:center"><small>Caption</small></p>
 								</td></tr>
 							</table>
  					</div>
@@ -1052,6 +1066,8 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 				// Don't wait 1 second to show 'Analysis Complete'
 				Tinycon.setBubble(0);
 				getAnalysisStatus();
+				$("#results-summary").hide();
+				$("#results-tree").hide();
 				
 				// Launch function to keep updating status
 				ginkgo_progress = setInterval( "getAnalysisStatus()", 1000 );
@@ -1075,6 +1091,11 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 			$('#params-cells input[type="checkbox"]').prop('checked',!$('input[type="checkbox"]').prop('checked'));
 			return false;
 		});
+		// Detect when user changes something in analysis parameters
+		$("#form-dashboard :input").change(function() {
+		   $('#analyze').html('Start Analysis <span class="glyphicon glyphicon-chevron-right"></span>')
+		});
+
 
 		// -------------------------------------------------------------------------
 		// -- Create new analysis --------------------------------------------------
@@ -1179,6 +1200,7 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 			rndNb = Math.round(Math.random()*10000); // to prevent browser from caching xml file!
 			$.get("<?php echo URL_UPLOADS; ?>/" + ginkgo_user_id + "/status.xml?uniq=" + rndNb, function(xmlFile)
 			{
+
 				// Extract status fields from status file
 				step 		= xmlFile.getElementsByTagName("step")[0].childNodes[0].nodeValue;
 				processing 	= xmlFile.getElementsByTagName("processingfile")[0].childNodes[0].nodeValue;
@@ -1194,8 +1216,8 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 					desc = "Computing quality control statistics";
 				else if(step == "3")
 					desc = "Processing and clustering samples";
-//				else if(step > 3)
-//					desc = "Annotating specified genes";
+				else if(step == "4")
+					desc = "Re-clustering with new parameters";
 
 				denominator = 3;
 				// Keep in mind: step > 3 is for reclust.R (re-draw dendrograms)
@@ -1213,11 +1235,9 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 				// Show status
 				processingMsg = "(" + processing.replace("_", " ") + ")";
 				$("#results-status-text").html(overallDone + "% complete.<br><small style='color:#999'>Step " + stepShow + ": " + percentdone + "%" + " " + desc + "... " + processingMsg + "</small>");
-
 				// Update progress bar % completed
 				if(percentdone > 100)
 					percentdone = 100;
-
 //				// Load tree
 //				if(typeof tree != 'undefined')
 //					drawTree(tree);
@@ -1239,6 +1259,8 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 					$("#results-download").show();
 					$("#results-heatmaps").show();
 					$("#results-search-genes").show();
+					$("#results-summary").show();
+					$("#results-tree").show();
 				}
 
 			});
@@ -1261,73 +1283,24 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 					arrLine = allLines[line].split("\t");
 					if(arrLine.length < 11)
 						continue;
-
 					cell  = arrLine[0].replace(/"/g, '');
-					// score = arrLine[11].replace(/"/g, '');
-
-					meanBinCount = ""
-					if(arrLine[3].replace(/"/g, '') < 25)
-						meanBinCount = '<span class="glyphicon glyphicon-remove"></span>'
-
-					indexOfDispersion = ""
-					if(arrLine[5].replace(/"/g, '') > 1)
-						indexOfDispersion = '<span class="glyphicon glyphicon-remove"></span>'
-
-					scoreClass = "active"
-					icon  = ""
-					scoreMessage = ""
 					score = 0
-					// if(score == 2) {
-					// 	scoreClass = "danger";
-					// 	icon = "glyphicon-exclamation-sign"
-					// 	scoreMessage = "This file suffers from extreme coverage issues.  Proceed carefully or consider removing the file from your analysis.";
-					// } else if(score == 1) {
-					// 	scoreClass = "warning";
-					// 	icon = "glyphicon-question-sign"
-					// 	scoreMessage = "This file suffers from moderate coverage issues. Proceed carefully.";
-					// } else if(score == 0) {
-					// 	scoreClass = "success";
-					// 	icon = "glyphicon-ok-sign"
-					// 	scoreMessage = "No QA issues detected";
-					// }
-					newLine =	'<tr class="' + scoreClass + '">' + 
-									'<td width="5%" class="active" style="text-align:center">' + 
-										'<span style="font-size:17px;" class="glyphicon ' + icon + '"></span>' + 
-									'</td>' + 
-									'<td width="10%" style="text-align:center">' + 
-										'<a href="?q=results/<?php echo $GINKGO_USER_ID; ?>/' + cell + '">' + cell + '</a>' + 
-									'</td>' + 
-									'<td width="20%" style="text-align:center">' +
-										meanBinCount +
-									'</td>' + 
-									'<td width="20%" style="text-align:center">' + 
-										indexOfDispersion +
-									'</td>' + 
-									'<td width="40%">' +
-										scoreMessage +
-									'</td>' + 
-									'<td width="4%" style="text-align:center;">' + 
-										'<a href="javascript:void(0);" onClick=\'javascript:$("#results-info-' + cell + '").slideToggle("slow");\'><span class="glyphicon glyphicon-info-sign"></span></a>' +
-									'</td>' +
-								'</tr>';
 
-					newLine +=	'<tr class="table-condensed active" id="results-info-' + cell + '" style="display:none">' +
-									'<td colspan="6" width="100%" class="active" style="text-align:left; padding-left:55px;">' +
-										"<code><br>" +
-											"<strong>Number of reads&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</strong>: " + arrLine[1].replace(/"/g, '') + "<br>" +
-											"<strong>Mean read count&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</strong>: " + arrLine[3].replace(/"/g, '') + " reads/bin<br>" + 
-											"<strong>Read count variance&nbsp;</strong>: " + arrLine[4].replace(/"/g, '') + " reads/bin<br>" + 
-											"<strong>Index of dispersion</strong>&nbsp;:&nbsp;" + arrLine[5].replace(/"/g, '') + "<br>" +
-										"<br></code>" +
-									'</td>' +
+					//
+					cnvProfileUrl = "<?php echo URL_UPLOADS; ?>/" + ginkgo_user_id + '/' + cell + '_CN.jpeg';
+					cellUrl = "?q=results/" + ginkgo_user_id + "/" + cell;
+					newLine =	'<tr>' + 
+									'<td width="15%" style="text-align:center"><a href="' + cellUrl + '">' + cell + '</a></td>' + 
+									'<td width="25%" style="text-align:center"><a href="' + cellUrl + '"><img height="40" src="' + cnvProfileUrl + '"></a></td>' + 
+									'<td width="15%" style="text-align:center">' + numberWithCommas(arrLine[1].replace(/"/g, '')) + '</td>' + 
+									'<td width="15%" style="text-align:center">' + numberWithCommas(arrLine[3].replace(/"/g, '')) + '</td>' + 
+									'<td width="15%" style="text-align:center">' + numberWithCommas(arrLine[4].replace(/"/g, '')) + '</td>' + 
+									'<td width="15%" style="text-align:center">' + numberWithCommas(arrLine[5].replace(/"/g, '')) + '</td>' + 
 								'</tr>';
 
 					omg[score].push(newLine);
-
-					alert(newLine)
 				}
-				
-				//for(i in omg)
+
 				for(i=2;i>=0;i--)
 					for(j in omg[i])
 						table += omg[i][j];
@@ -1339,6 +1312,10 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 				$("#results-QA-table").show();
 				$("#results-QA-table").html(table);
 			});
+		}
+
+		function numberWithCommas(x) {
+		    return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 		}
 
 		// -------------------------------------------------------------------------
