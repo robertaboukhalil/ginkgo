@@ -143,9 +143,9 @@ if($GINKGO_PAGE == 'admin-upload')
 	// Removed params-binning-file but have params-segmentation-file
 
 	// Error: invalid file type => return error
-	if($_FILES['params-facs-file']['name'] != "" || $_FILES['params-segmentation-file']['name'] != "")
-		if($_FILES['params-facs-file']['type'] != "text/plain" || $_FILES['params-segmentation-file']['type'] != "text/plain")
-			die("error");
+	// if($_FILES['params-facs-file']['name'] != "" || $_FILES['params-segmentation-file']['name'] != "")
+	// 	if($_FILES['params-facs-file']['type'] != "text/plain" /*|| $_FILES['params-segmentation-file']['type'] != "text/plain"*/)
+	// 		die("error");
 
 	$result = "";
 
