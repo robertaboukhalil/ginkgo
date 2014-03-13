@@ -197,7 +197,7 @@ for(k in 1:w){
   jpeg(filename=paste(lab[k], "_dist.jpeg", sep=""), width=3000, height=750)
     par(mar = c(7.0, 7.0, 7.0, 3.0))
 
-    top=round(quantile(raw[,k], c(.999))[[1]])
+    top=round(quantile(raw[,k], c(.995))[[1]])
 
     plot(which(raw[,k]<top), raw[which(raw[,k]<top),k], main=paste("Genome Wide Read Distribution for Sample \"", lab[k], "\"", sep=""), xlab="Bin", ylab="Fraction of reads", type="n", ylim=c(0,top), cex.main=3, cex.axis=2, cex.lab=2)
     tu <- par('usr')

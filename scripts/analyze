@@ -53,14 +53,18 @@ if [ "$init" == "1" ]; then
   paste ${dir}/*_mapped > ${dir}/data
   rm -f ${dir}/*_mapped ${dir}/*_binned
 
-  #Map reference sample (if provided by user)
-  if [ "$segMeth" == "2" ]; then
+fi
+
+
+############################################################
+##### Map User Provided Reference/Segmentation Sample ######
+############################################################
+
+if [ "$segMeth" == "2" ]; then
     ${home}/scripts/binUnsorted ${genome}/${binMeth} `wc -l < ${genome}/${binMeth}` ${dir}/${ref} Reference ${dir}/${ref}_mapped
-  else
+else
     ref=refDummy.bed
     touch ${dir}/${ref}_mapped
-  fi
-
 fi
 
 
