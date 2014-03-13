@@ -429,10 +429,10 @@ clust$labels <- lab
 write(hc2Newick(clust), file=paste(user_dir, "/clust.newick", sep=""))
 
 ###
-#main_dir="/mnt/data/ginkgo/scripts"
-#command=paste("java -cp ", main_dir, "/forester_1025.jar org.forester.application.phyloxml_converter -f=nn ", user_dir, "/clust.newick ", user_dir, "/clust.xml", sep="");
-#unlink( paste(user_dir, "/clust.xml", sep="") );
-#system(command);
+main_dir="/mnt/data/ginkgo/scripts"
+command=paste("java -cp ", main_dir, "/forester_1025.jar org.forester.application.phyloxml_converter -f=nn ", user_dir, "/clust.newick ", user_dir, "/clust.xml", sep="");
+unlink( paste(user_dir, "/clust.xml", sep="") );
+system(command);
 ###
 
 #Plot read cluster
@@ -465,10 +465,10 @@ clust2$labels <- lab
 write(hc2Newick(clust2), file=paste(user_dir, "/clust.newick", sep=""))
 
 ###
-#main_dir="/mnt/data/ginkgo/scripts"
-#command=paste("java -cp ", main_dir, "/forester_1025.jar org.forester.application.phyloxml_converter -f=nn ", user_dir, "/clust2.newick ", user_dir, "/clust2.xml", sep="");
-#unlink( paste(user_dir, "/clust2.xml", sep="") );
-#system(command);
+main_dir="/mnt/data/ginkgo/scripts"
+command=paste("java -cp ", main_dir, "/forester_1025.jar org.forester.application.phyloxml_converter -f=nn ", user_dir, "/clust2.newick ", user_dir, "/clust2.xml", sep="");
+unlink( paste(user_dir, "/clust2.xml", sep="") );
+system(command);
 ### 
 
 #Plot copy number cluster
@@ -480,6 +480,30 @@ dev.off()
 pdf("clust2.pdf", width=10, height=7)
   op = par(bg = "gray85")
   plot(clust2, xlab="Sample", hang=-1, ylab=paste("Distance (", dm, ")", sep=""), lwd=3)
+dev.off()
+
+
+#Calculate correlation distance matrix for clustering
+d3 <- as.dist((1 - cor(final))/2)
+clust3=hclust(d3)
+clust3$labels=lab
+
+###
+main_dir="/mnt/data/ginkgo/scripts"
+command=paste("java -cp ", main_dir, "/forester_1025.jar org.forester.application.phyloxml_converter -f=nn ", user_dir, "/clust3.newick ", user_dir, "/clust3.xml", sep="");
+unlink( paste(user_dir, "/clust3.xml", sep="") );
+system(command);
+### 
+
+#Plot correlation cluster
+jpeg("clust3.jpeg", width=2000, height=1400)
+  op = par(bg = "gray85")
+  plot(clust3, xlab="Sample", hang=-1, ylab=paste("Distance (", dm, ")", sep=""), lwd=3)
+dev.off()
+
+pdf("clust3.pdf", width=10, height=7)
+  op = par(bg = "gray85")
+  plot(clust3, xlab="Sample", hang=-1, ylab=paste("Distance (", dm, ")", sep=""), lwd=3)
 dev.off()
 
 ############################################################
@@ -509,7 +533,11 @@ dev.off()
 
 step=min(20, quantile(finalBPs, c(.98))[[1]])
 jpeg("heatCN.jpeg", width=2000, height=1400)
-heatmap.2(t(finalBPs), Colv=FALSE, Rowv=as.dendrogram(clust2), dendrogram="row", trace="none", xlab="Bins", ylab="Samples", cex.main=2, cex.axis=1.5, cex.lab=1.5, cexCol=.001, col=heat.colors(15), breaks=seq(0,step,step/15))
+heatmap.2(t(finalBPs), Colv=FALSE, Rowv=as.dendrogram(clust2), dendrogram="row", trace="none", xlab="Bins", ylab="Samples", cex.main=2, cex.axis=1.5, cex.lab=1.5, cexCol=.001, col=colorRampPalette(c("white","green","green4","violet","purple"))(15), breaks=seq(0,step,step/15))
+dev.off()
+
+jpeg("heatCor.jpeg", width=2000, height=1400)
+heatmap.2(t(finalBPs), Colv=FALSE, Rowv=as.dendrogram(clust3), dendrogram="row", trace="none", xlab="Bins", ylab="Samples", cex.main=2, cex.axis=1.5, cex.lab=1.5, cexCol=.001, col=colorRampPalette(c("white","steelblue1","steelblue4","orange","sienna3"))(15), breaks=seq(0,step,step/15))
 dev.off()
 
 statusFile<-file( paste(user_dir, "/", status, sep="") )
