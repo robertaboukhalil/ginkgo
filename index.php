@@ -126,6 +126,7 @@ $PANEL_DOWNLOAD = <<<PANEL
 		<table class="table" style="font-size:12.5px;">
 			<tr class="active"><td><strong>Normalized read counts</strong>: <a target="_blank" href="{$userUrl}/clust.newick">newick</a> | <a target="_blank" href="{$userUrl}/clust.xml">xml</a> | <a target="_blank" href="{$userUrl}/clust.pdf">pdf</a>&nbsp;<em>(plotted here)</em></td></tr>
 			<tr class="active"><td><strong>Copy-number</strong>: <a target="_blank" href="{$userUrl}/clust2.newick">newick</a> | <a target="_blank" href="{$userUrl}/clust2.xml">xml</a> | <a target="_blank" href="{$userUrl}/clust2.pdf">pdf</a></td></tr>
+			<tr class="active"><td><strong>Correlations</strong>: <a target="_blank" href="{$userUrl}/clust3.newick">newick</a> | <a target="_blank" href="{$userUrl}/clust3.xml">xml</a> | <a target="_blank" href="{$userUrl}/clust3.pdf">pdf</a></td></tr>
 		</table>
 	</div>
 PANEL;
@@ -239,7 +240,7 @@ if(isset($_POST['analyze'])) {
 							($oldParams['binList'] != $_POST['binList']) ||
 							($oldParams['facs']    != $_POST['facs']);
 		//
-		$newSegParams	= ($oldParams['segMeth']   != $_POST['segMeth']);
+		$newSegParams	= ($oldParams['segMeth']   != $_POST['segMeth']) || ($_POST['segMethCustom'] != '');
 		$newClustering	= ($oldParams['clustMeth'] != $_POST['clustMeth']);
 		$newDistance	= ($oldParams['distMeth']  != $_POST['distMeth']);
 		$newColor		= ($oldParams['color']	   != $_POST['color']);
@@ -824,19 +825,19 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 							<tr>
 								<td>
 									<strong>Heatmap of copy number values across all segment breakpoints (using chosen distance metric)</strong><br/>
-									<a href="<?php echo URL_UPLOADS . "/" . $GINKGO_USER_ID . "/heatCN.jpeg?uniq=" . rand(1e6,2e6); ?>"><img style="width:100%;" src="<?php echo URL_UPLOADS . "/" . $GINKGO_USER_ID . "/heatCN.jpeg"; ?>"></a>
+									<a href="<?php echo URL_UPLOADS . "/" . $GINKGO_USER_ID . "/heatCN.jpeg"; ?>"><img style="width:100%;" src="<?php echo URL_UPLOADS . "/" . $GINKGO_USER_ID . "/heatCN.jpeg?uniq=" . rand(1e6,2e6); ?>"></a>
 								</td>
 							</tr>
 							<tr>
 								<td>
 									<strong>Heatmap of copy number values across all segment breakpoints (using correlation)</strong><br/>
-									<a href="<?php echo URL_UPLOADS . "/" . $GINKGO_USER_ID . "/heatCor.jpeg?uniq=" . rand(1e6,2e6); ?>"><img style="width:100%;" src="<?php echo URL_UPLOADS . "/" . $GINKGO_USER_ID . "/heatCor.jpeg"; ?>"></a>
+									<a href="<?php echo URL_UPLOADS . "/" . $GINKGO_USER_ID . "/heatCor.jpeg"; ?>"><img style="width:100%;" src="<?php echo URL_UPLOADS . "/" . $GINKGO_USER_ID . "/heatCor.jpeg?uniq=" . rand(1e6,2e6); ?>"></a>
 								</td>
 							</tr>
 							<tr>
 								<td>
 									<strong>Heatmap of normalized read counts across segment breakpoints</strong><br/>
-									<a href="<?php echo URL_UPLOADS . "/" . $GINKGO_USER_ID . "/heatNorm.jpeg?uniq=" . rand(1e6,2e6); ?>"><img style="width:100%;" src="<?php echo URL_UPLOADS . "/" . $GINKGO_USER_ID . "/heatNorm.jpeg"; ?>"></a>
+									<a href="<?php echo URL_UPLOADS . "/" . $GINKGO_USER_ID . "/heatNorm.jpeg"; ?>"><img style="width:100%;" src="<?php echo URL_UPLOADS . "/" . $GINKGO_USER_ID . "/heatNorm.jpeg?uniq=" . rand(1e6,2e6); ?>"></a>
 								</td>
 							</tr>
 						</table>
@@ -1263,10 +1264,15 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 					$("#results-status-text").html("Analysis complete!");
 					$("#results-navigation").show();
 					$("#results-download").show();
-					$("#results-heatmaps").show();
 					$("#results-search-genes").show();
 					$("#results-summary").show();
 					$("#results-tree").show();
+					//
+					$("#results-heatmaps").show();
+					$("#results-heatmaps img").each(function(index, value){
+						newImg = $(value).attr('src') + '-' + Math.round(Math.random()*10000);
+						$(value).attr('src', newImg );
+					});
 				}
 
 			});
