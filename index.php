@@ -823,8 +823,14 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 						<table class="table" style="text-align:center;">
 							<tr>
 								<td>
-									<strong>Heatmap of copy number values across all segment breakpoints</strong><br/>
+									<strong>Heatmap of copy number values across all segment breakpoints (using chosen distance metric)</strong><br/>
 									<a href="<?php echo URL_UPLOADS . "/" . $GINKGO_USER_ID . "/heatCN.jpeg?uniq=" . rand(1e6,2e6); ?>"><img style="width:100%;" src="<?php echo URL_UPLOADS . "/" . $GINKGO_USER_ID . "/heatCN.jpeg"; ?>"></a>
+								</td>
+							</tr>
+							<tr>
+								<td>
+									<strong>Heatmap of copy number values across all segment breakpoints (using correlation)</strong><br/>
+									<a href="<?php echo URL_UPLOADS . "/" . $GINKGO_USER_ID . "/heatCor.jpeg?uniq=" . rand(1e6,2e6); ?>"><img style="width:100%;" src="<?php echo URL_UPLOADS . "/" . $GINKGO_USER_ID . "/heatCor.jpeg"; ?>"></a>
 								</td>
 							</tr>
 							<tr>
