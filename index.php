@@ -658,7 +658,7 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 									</select> size.
 								</td>
 							</tr>
-							<tr>
+							<tr id="param-binning-sim-options">
 								<td>Binning Simulation Options</td>
 								<td>
 									<?php $selected = array(); $selected[$binMeth[2]] = ' selected'; ?>
@@ -1100,7 +1100,11 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 		});
 		// Detect when user changes something in analysis parameters
 		$("#form-dashboard :input").change(function() {
-		   $('#analyze').html('Start Analysis <span class="glyphicon glyphicon-chevron-right"></span>')
+			$("#param-binning-sim-options").show();
+			
+			if($('#param-bins-type').val() == 'fixed_')
+				$("#param-binning-sim-options").hide();
+			$('#analyze').html('Start Analysis <span class="glyphicon glyphicon-chevron-right"></span>')
 		});
 
 
@@ -1157,13 +1161,17 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 						if(genes != "")
 							g = 1;
 
+						binMethVal = $('#param-bins-type').val() + $('#param-bins-value').val() + $('#param-bins-sim-rlen').val() + $('#param-bins-sim-mapper').val();
+						if($('#param-bins-type').val() == 'fixed_')
+							binMethVal = $('#param-bins-type').val() + $('#param-bins-value').val();
+
 						$.post("?q=dashboard/" + ginkgo_user_id, {
 								// General
 								'analyze':	1,
 								'cells[]':	arrCells,
 								'email':		email,
 								// Methods
-								'binMeth':	$('#param-bins-type').val() + $('#param-bins-value').val() + $('#param-bins-sim-rlen').val() + $('#param-bins-sim-mapper').val(),
+								'binMeth':	binMethVal,
 								'segMeth':	$('#param-segmentation').val(),
 								'clustMeth':$('#param-clustering').val(),
 								'distMeth':	$('#param-distance').val(),
