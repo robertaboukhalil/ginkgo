@@ -128,6 +128,18 @@ $PANEL_DOWNLOAD = <<<PANEL
 			<tr class="active"><td><strong>Copy-number</strong>: <a target="_blank" href="{$userUrl}/clust2.newick">newick</a> | <a target="_blank" href="{$userUrl}/clust2.xml">xml</a> | <a target="_blank" href="{$userUrl}/clust2.pdf">pdf</a></td></tr>
 			<tr class="active"><td><strong>Correlations</strong>: <a target="_blank" href="{$userUrl}/clust3.newick">newick</a> | <a target="_blank" href="{$userUrl}/clust3.xml">xml</a> | <a target="_blank" href="{$userUrl}/clust3.pdf">pdf</a></td></tr>
 		</table>
+
+		<br style="clear:both" />
+
+		<div class="panel-heading"><span class="glyphicon glyphicon-file"></span> Download processed data</div>
+		<!-- Table -->
+		<table class="table" style="font-size:12.5px;">
+			<tr class="active"><td><a target="_blank" href="{$userUrl}/SegBreaks"><strong>SegBreaks</strong></a> <a href="javascript:void(0);" onclick="javascript:$('#desc-1').toggle();"><span class="glyphicon glyphicon-question-sign"></span></a><span id="desc-1" style="display:none;">: a binary matrix that encodes whether a sample has breakpoints at every bin position. Rows correspond to bins and columns correspond to cell samples.</span></td></tr>
+			<tr class="active"><td><a target="_blank" href="{$userUrl}/SegCopy"><strong>SegCopy</strong></a> <a href="javascript:void(0);" onclick="javascript:$('#desc-2').toggle();"><span class="glyphicon glyphicon-question-sign"></span></a><span id="desc-2" style="display:none;">: an integer matrix that encodes the copy number state for each sample at every bin position. Rows correspond to bins and columns correspond to cell samples.</span></td></tr>
+			<tr class="active"><td><a target="_blank" href="{$userUrl}/SegFixed"><strong>SegFixed</strong></a> <a href="javascript:void(0);" onclick="javascript:$('#desc-3').toggle();"><span class="glyphicon glyphicon-question-sign"></span></a><span id="desc-3" style="display:none;">: a matrix that encodes the normalized and segmented bin counts for each sample at every bin position. Rows correspond to bins and columns correspond to cell samples.</span></td></tr>
+			<tr class="active"><td><a target="_blank" href="{$userUrl}/SegNorm"><strong>SegNorm</strong></a> <a href="javascript:void(0);" onclick="javascript:$('#desc-4').toggle();"><span class="glyphicon glyphicon-question-sign"></span></a><span id="desc-4" style="display:none;">: a matrix that encodes the normalized bin counts for each sample at every bin position. Rows correspond to bins and columns correspond to cell samples.</span></td></tr>
+			<tr class="active"><td><a target="_blank" href="{$userUrl}/SegStats"><strong>SegStats</strong></a> <a href="javascript:void(0);" onclick="javascript:$('#desc-5').toggle();"><span class="glyphicon glyphicon-question-sign"></span></a><span id="desc-5" style="display:none;">: a matrix that encodes basic bin count statistics for every sample. Rows correspond to samples.</span></td></tr>
+		</table>
 	</div>
 PANEL;
 
