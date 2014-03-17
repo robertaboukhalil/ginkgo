@@ -438,12 +438,12 @@ system(command);
 #Plot read cluster
 jpeg("clust.jpeg", width=2000, height=1400)
   op = par(bg = "gray85")
-  plot(clust, xlab="Sample", hang=-1, ylab=paste("Distance (", dm, ")", sep=""), lwd=3)
+  plot(clust, xlab="Sample", hang=-1, ylab=paste("Distance (", dm, ")", sep=""), lwd=2)
 dev.off()
 
 pdf("clust.pdf", width=10, height=7)
   op = par(bg = "gray85")
-  plot(clust, xlab="Sample", hang=-1, ylab=paste("Distance (", dm, ")", sep=""), lwd=3)
+  plot(clust, xlab="Sample", hang=-1, ylab=paste("Distance (", dm, ")", sep=""), lwd=2)
 dev.off()
 
 statusFile<-file( paste(user_dir, "/", status, sep="") )
@@ -474,12 +474,12 @@ system(command);
 #Plot copy number cluster
 jpeg("clust2.jpeg", width=2000, height=1400)
   op = par(bg = "gray85")
-  plot(clust2, xlab="Sample", hang=-1, ylab=paste("Distance (", dm, ")", sep=""), lwd=3)
+  plot(clust2, xlab="Sample", hang=-1, ylab=paste("Distance (", dm, ")", sep=""), lwd=2)
 dev.off()
 
 pdf("clust2.pdf", width=10, height=7)
   op = par(bg = "gray85")
-  plot(clust2, xlab="Sample", hang=-1, ylab=paste("Distance (", dm, ")", sep=""), lwd=3)
+  plot(clust2, xlab="Sample", hang=-1, ylab=paste("Distance (", dm, ")", sep=""), lwd=2)
 dev.off()
 
 
@@ -498,12 +498,12 @@ system(command);
 #Plot correlation cluster
 jpeg("clust3.jpeg", width=2000, height=1400)
   op = par(bg = "gray85")
-  plot(clust3, xlab="Sample", hang=-1, ylab=paste("Distance (", dm, ")", sep=""), lwd=3)
+  plot(clust3, xlab="Sample", hang=-1, ylab=paste("Distance (", dm, ")", sep=""), lwd=2)
 dev.off()
 
 pdf("clust3.pdf", width=10, height=7)
   op = par(bg = "gray85")
-  plot(clust3, xlab="Sample", hang=-1, ylab=paste("Distance (", dm, ")", sep=""), lwd=3)
+  plot(clust3, xlab="Sample", hang=-1, ylab=paste("Distance (", dm, ")", sep=""), lwd=2)
 dev.off()
 
 ############################################################
