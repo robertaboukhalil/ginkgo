@@ -619,6 +619,7 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 
 				<!-- buttons -->
 
+				<?php if($GINKGO_USER_ID != 'sample'): ?>
 					<!-- Set parameters -->
 					<h3 style="margin-top:-5px;"><span class="badge">OPTIONAL</span> <a href="#parameters" onClick="javascript:$('#params-table').toggle();">Advanced parameters</a></h3>
 					<table class="table table-striped" id="params-table">
@@ -637,6 +638,8 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 							<tr>
 								<td>General Binning Options</td>
 								<?php
+									if(empty($config))
+										$config['binMeth'] = 'variable_100000_101_bowtie';
 									$binMeth = split('_', $config['binMeth']);
 								?>
 								<td>
@@ -670,7 +673,7 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 
 									<?php $selected = array(); $selected[$binMeth[3]] = ' selected'; ?>
 									<select id="param-bins-sim-mapper" class="input-mini" style="margin-top:8px; font-size:11px; padding-top:3px; padding-bottom:0; height:25px; ">
-									<option value="bowtie"<?php echo $selected['bowtie']; ?>>bowtie2</option>
+									<option value="bowtie"<?php echo $selected['bowtie']; ?>>bowtie</option>
 									<option value="bwa"<?php echo $selected['bwa']; ?>>bwa</option>
 									</select>.
 								</td>
@@ -733,6 +736,7 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 							</tr>
 						</tbody>
 					</table>
+				<?php endif; ?>
 					<br/>
 					<a name="parameters"></a>
 
@@ -848,7 +852,9 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 						<br/>
 						<!-- <br/><hr style="height:5px;border:none;background-color:#CCC;" /> <br/>-->
 						<hr>
+						<?php if($GINKGO_USER_ID != 'sample'): ?>
 						<div style="float:left"><a class="btn btn-lg btn-primary" href="?q=dashboard/<?php echo $GINKGO_USER_ID; ?>"><span class="glyphicon glyphicon-chevron-left"></span> Analysis Options </a></div>
+						<?php endif; ?>
 					</div>
 					<br><br><br><br>
 				</div>
