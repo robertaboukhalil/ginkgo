@@ -124,21 +124,21 @@ $PANEL_DOWNLOAD = <<<PANEL
 		<div class="panel-heading"><span class="glyphicon glyphicon-tree-deciduous"></span> Download tree</div>
 		<!-- Table -->
 		<table class="table" style="font-size:12.5px;">
-			<tr class="active"><td><strong>Normalized read counts</strong>: <a target="_blank" href="{$userUrl}/clust.newick">newick</a> | <a target="_blank" href="{$userUrl}/clust.xml">xml</a> | <a target="_blank" href="{$userUrl}/clust.pdf">pdf</a>&nbsp;<em>(plotted here)</em></td></tr>
-			<tr class="active"><td><strong>Copy-number</strong>: <a target="_blank" href="{$userUrl}/clust2.newick">newick</a> | <a target="_blank" href="{$userUrl}/clust2.xml">xml</a> | <a target="_blank" href="{$userUrl}/clust2.pdf">pdf</a></td></tr>
-			<tr class="active"><td><strong>Correlations</strong>: <a target="_blank" href="{$userUrl}/clust3.newick">newick</a> | <a target="_blank" href="{$userUrl}/clust3.xml">xml</a> | <a target="_blank" href="{$userUrl}/clust3.pdf">pdf</a></td></tr>
+			<tr class="active"><td><strong>Normalized read counts</strong>: <a target="_blank" href="{$userUrl}/clust.newick">newick</a> | <a target="_blank" href="{$userUrl}/clust.xml">xml</a> | <a target="_blank" href="{$userUrl}/clust.pdf">pdf</a> | <a target="_blank" href="{$userUrl}/clust1.jpeg">jpeg</a>&nbsp;<em>(plotted here)</em></td></tr>
+			<tr class="active"><td><strong>Copy-number</strong>: <a target="_blank" href="{$userUrl}/clust2.newick">newick</a> | <a target="_blank" href="{$userUrl}/clust2.xml">xml</a> | <a target="_blank" href="{$userUrl}/clust2.pdf">pdf</a> | <a target="_blank" href="{$userUrl}/clust2.jpeg">jpeg</a></td></tr>
+			<tr class="active"><td><strong>Correlations</strong>: <a target="_blank" href="{$userUrl}/clust3.newick">newick</a> | <a target="_blank" href="{$userUrl}/clust3.xml">xml</a> | <a target="_blank" href="{$userUrl}/clust3.pdf">pdf</a> | <a target="_blank" href="{$userUrl}/clust3.jpeg">jpeg</a></td></tr>
 		</table>
+	</div>
 
-		<br style="clear:both" />
-
+	<div id="results-download2" class="panel panel-default" style="display:none;">
 		<div class="panel-heading"><span class="glyphicon glyphicon-file"></span> Download processed data</div>
 		<!-- Table -->
 		<table class="table" style="font-size:12.5px;">
 			<tr class="active"><td><a target="_blank" href="{$userUrl}/SegBreaks"><strong>SegBreaks</strong></a> <a href="javascript:void(0);" onclick="javascript:$('#desc-1').toggle();"><span class="glyphicon glyphicon-question-sign"></span></a><span id="desc-1" style="display:none;">: a binary matrix that encodes whether a sample has breakpoints at every bin position. Rows correspond to bins and columns correspond to cell samples.</span></td></tr>
-			<tr class="active"><td><a target="_blank" href="{$userUrl}/SegCopy"><strong>SegCopy</strong></a> <a href="javascript:void(0);" onclick="javascript:$('#desc-2').toggle();"><span class="glyphicon glyphicon-question-sign"></span></a><span id="desc-2" style="display:none;">: an integer matrix that encodes the copy number state for each sample at every bin position. Rows correspond to bins and columns correspond to cell samples.</span></td></tr>
-			<tr class="active"><td><a target="_blank" href="{$userUrl}/SegFixed"><strong>SegFixed</strong></a> <a href="javascript:void(0);" onclick="javascript:$('#desc-3').toggle();"><span class="glyphicon glyphicon-question-sign"></span></a><span id="desc-3" style="display:none;">: a matrix that encodes the normalized and segmented bin counts for each sample at every bin position. Rows correspond to bins and columns correspond to cell samples.</span></td></tr>
-			<tr class="active"><td><a target="_blank" href="{$userUrl}/SegNorm"><strong>SegNorm</strong></a> <a href="javascript:void(0);" onclick="javascript:$('#desc-4').toggle();"><span class="glyphicon glyphicon-question-sign"></span></a><span id="desc-4" style="display:none;">: a matrix that encodes the normalized bin counts for each sample at every bin position. Rows correspond to bins and columns correspond to cell samples.</span></td></tr>
-			<tr class="active"><td><a target="_blank" href="{$userUrl}/SegStats"><strong>SegStats</strong></a> <a href="javascript:void(0);" onclick="javascript:$('#desc-5').toggle();"><span class="glyphicon glyphicon-question-sign"></span></a><span id="desc-5" style="display:none;">: a matrix that encodes basic bin count statistics for every sample. Rows correspond to samples.</span></td></tr>
+			<tr class="active"><td><a target="_blank" href="{$userUrl}/SegCopy"><strong>SegCopy</strong></a> <a href="javascript:void(0);" onclick="javascript:$('#desc-2').toggle();"><span class="glyphicon glyphicon-question-sign"></span></a><span id="desc-2" style="display:none;">: copy number state for each sample at every bin position. Rows correspond to bins and columns correspond to cell samples.</span></td></tr>
+			<tr class="active"><td><a target="_blank" href="{$userUrl}/SegFixed"><strong>SegFixed</strong></a> <a href="javascript:void(0);" onclick="javascript:$('#desc-3').toggle();"><span class="glyphicon glyphicon-question-sign"></span></a><span id="desc-3" style="display:none;">: normalized and segmented bin counts for each sample at every bin position. Rows correspond to bins and columns correspond to cell samples.</span></td></tr>
+			<tr class="active"><td><a target="_blank" href="{$userUrl}/SegNorm"><strong>SegNorm</strong></a> <a href="javascript:void(0);" onclick="javascript:$('#desc-4').toggle();"><span class="glyphicon glyphicon-question-sign"></span></a><span id="desc-4" style="display:none;">: normalized bin counts for each sample at every bin position. Rows correspond to bins and columns correspond to cell samples.</span></td></tr>
+			<tr class="active"><td><a target="_blank" href="{$userUrl}/SegStats"><strong>SegStats</strong></a> <a href="javascript:void(0);" onclick="javascript:$('#desc-5').toggle();"><span class="glyphicon glyphicon-question-sign"></span></a><span id="desc-5" style="display:none;">: basic bin count statistics for every sample. Rows correspond to samples.</span></td></tr>
 		</table>
 	</div>
 PANEL;
@@ -249,8 +249,8 @@ if(isset($_POST['analyze'])) {
 
 		// Do we need to remap? This sets init to 1 if yes, 0 if not
 		$newBinParams	= ($oldParams['binMeth']   != $_POST['binMeth']) || 
-							($oldParams['binList'] != $_POST['binList']) ||
-							($oldParams['facs']    != $_POST['facs']);
+							($oldParams['binList'] != $_POST['binList']);
+		$newFacs		= ($oldParams['facs']    != $_POST['facs']);
 		//
 		$newSegParams	= ($oldParams['segMeth']   != $_POST['segMeth']) || ($_POST['segMethCustom'] != '');
 		$newClustering	= ($oldParams['clustMeth'] != $_POST['clustMeth']);
@@ -269,7 +269,7 @@ if(isset($_POST['analyze'])) {
 			$init = 1;
 
 		// Redo binning stuff
-		if($newBinParams || $newSegParams || $newColor)
+		if($newBinParams || $newSegParams || $newColor || $newFacs)
 			$process = 1;
 
 		// Redraw dendrogams
@@ -413,6 +413,7 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 							<ul class="dropdown-menu" role="menu">
 								<li><a href="?q=">Home</a></li>
 								<li><a href="?q=results/sample">Sample run <small>(Polygenomic breast tumor)</small></a></li>
+								<li><a href="?q=results/sample2">Sample run <small>(Circulating tumor cells)</small></a></li>
 								<li><a href="https://github.com/robertaboukhalil/ginkgo">Source code on Github</a></li>
 
 								<?php if(count($_COOKIE['ginkgo']) > 0): ?>
@@ -443,6 +444,8 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 					  <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown">Load previous analysis <span class="caret"></span></button>
 					  <ul class="dropdown-menu" role="menu">
 						<li><a href="?q=results/sample">Sample run: Polygenomic breast tumor</a></li>
+						<li><a href="?q=results/sample2">Sample run: Circulating tumor cells</a></li>
+
 						<?php if(count($_COOKIE['ginkgo']) > 0): ?>
 							<li class="divider"></li>
 							<?php foreach($_COOKIE['ginkgo'] as $id => $name): ?>
@@ -473,6 +476,7 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 			<?php // ================================================================ ?>
 			<?php if($GINKGO_PAGE == 'home'): ?>
 			<!-- Upload files -->
+			<?php if($GINKGO_USER_ID != 'sample' && $GINKGO_USER_ID != 'sample2'): ?>
 			<div class="row" style="height:100%;">
 				<div class="col-lg-8">
 					<h3 style="margin-top:-5px;"><span class="badge">STEP 0</span> Upload your .bed files <small><strong>(We accept *.bed, *.zip, *.tar, *.tar.gz and *.tgz)</strong></small></h3>
@@ -519,6 +523,11 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 					</div>
 				</div>
 			</div>
+			<?php else: ?>
+			<script>
+			window.location = '?q=results/<?php echo $GINKGO_USER_ID; ?>';
+			</script>
+			<?php endif; ?>
 
 			<?php // ================================================================ ?>
 			<?php // == Dashboard: Analysis settings ================================ ?>
@@ -542,6 +551,7 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 					<!-- Choose cells of interest -->
 					<h3 style="margin-top:-5px;"><span class="badge">STEP 1</span> Choose cells for analysis</h3>
 
+					<?php if($GINKGO_USER_ID != 'sample' && $GINKGO_USER_ID != 'sample2'): ?>
 					<button id="dashboard-toggle-cells" class="btn btn-info" style="margin:20px;">Select all cells</button>
 					<br/>
 					<div id="params-cells" style="max-height:200px; overflow:auto">
@@ -631,7 +641,7 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 
 				<!-- buttons -->
 
-				<?php if($GINKGO_USER_ID != 'sample'): ?>
+				
 					<!-- Set parameters -->
 					<h3 style="margin-top:-5px;"><span class="badge">OPTIONAL</span> <a href="#parameters" onClick="javascript:$('#params-table').toggle();">Advanced parameters</a></h3>
 					<table class="table table-striped" id="params-table">
@@ -748,6 +758,10 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 							</tr>
 						</tbody>
 					</table>
+				<?php else: ?>
+				<script>
+				window.location = '?q=results/<?php echo $GINKGO_USER_ID; ?>';
+				</script>
 				<?php endif; ?>
 					<br/>
 					<a name="parameters"></a>
@@ -864,7 +878,7 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 						<br/>
 						<!-- <br/><hr style="height:5px;border:none;background-color:#CCC;" /> <br/>-->
 						<hr>
-						<?php if($GINKGO_USER_ID != 'sample'): ?>
+						<?php if($GINKGO_USER_ID != 'sample' && $GINKGO_USER_ID != 'sample2'): ?>
 						<div style="float:left"><a class="btn btn-lg btn-primary" href="?q=dashboard/<?php echo $GINKGO_USER_ID; ?>"><span class="glyphicon glyphicon-chevron-left"></span> Analysis Options </a></div>
 						<?php endif; ?>
 					</div>
@@ -1290,6 +1304,7 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 					$("#results-status-text").html("Analysis complete!");
 					$("#results-navigation").show();
 					$("#results-download").show();
+					$("#results-download2").show();
 					$("#results-search-genes").show();
 					$("#results-summary").show();
 					$("#results-tree").show();
@@ -1402,7 +1417,7 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 					annotationNode	= currElement.parentNode.appendChild(xmlFile.createElement("annotation"));
 					annotationNode
 						.appendChild(xmlFile.createElement("desc"))
-						.appendChild(xmlFile.createTextNode("<img width='290' src='<?php echo URL_UPLOADS; ?>/" + ginkgo_user_id + "/" + cellId + "_CN.jpeg'>" + cellId));
+						.appendChild(xmlFile.createTextNode("<img height='80' width='290' src='<?php echo URL_UPLOADS; ?>/" + ginkgo_user_id + "/" + cellId + "_CN.jpeg'>" + cellId));
 					annotationNode
 						.appendChild(xmlFile.createElement("uri"))
 						.appendChild(xmlFile.createTextNode("?q=results/" + ginkgo_user_id + "/" + cellId));
