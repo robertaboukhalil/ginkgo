@@ -73,7 +73,7 @@ fi
 ############################################################
 
 if [ "$process" == "1" ]; then
-  ${home}/scripts/process.R $genome $dir $statFile data $segMeth $binMeth $clustMeth $distMet $color ${ref}_mapped $f $facs #${dir}/${query} 
+  ${home}/scripts/process.R $genome $dir $statFile data $segMeth $binMeth $clustMeth $distMet $color ${ref}_mapped $f $facs $sex 
 fi
 
 ############################################################
@@ -81,7 +81,7 @@ fi
 ############################################################
 
 if [ "$fix" == "1" ]; then
-  ${home}/scripts/reclust.R $dir $statFile $clustMeth $distMet $f $facs
+  ${home}/scripts/reclust.R $genome $dir $statFile $binMeth $clustMeth $distMet $f $facs $sex
 fi
 
 ############################################################

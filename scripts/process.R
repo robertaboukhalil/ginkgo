@@ -14,6 +14,7 @@ cp <- as.numeric(args[[9]])
 ref <- args[[10]]
 f <- as.numeric(args[[11]])
 facs <- args[[12]]
+sex <- as.numeric(args[[13]])
 
 library('ctc')
 library(DNAcopy) #segmentation
@@ -21,7 +22,6 @@ library(inline) #use of c++
 library(gplots) #visual plotting of tables
 library(scales)
 library(plyr)
-
 
 ############################################################
 ########  Initialize Variables & Pre-Process Data ##########
@@ -413,6 +413,16 @@ write.table(stats, file=paste(user_dir, "/SegStats", sep=""), sep="\t")
 statusFile <- file( paste(user_dir, "/", status, sep="") )
 writeLines(c("<?xml version='1.0'?>", "<status>", "<step>3</step>", paste("<processingfile>Computing Cluster (Read Count)</processingfile>", sep=""), paste("<percentdone>", ((w+1)*100)%/%(w+4), "</percentdone>", sep=""), "<tree>clust.xml</tree>", "</status>"), statusFile)
 close(statusFile)
+
+#Ignore sex chromomes if specified
+if (sex == 0) {
+  l=bounds[(dim(bounds)-1)[1],][[2]]-1
+  raw=raw[1:l,]
+  final=final[1:l,]
+  fixed=fixed[1:l,]
+  breaks=breaks[1:l,]
+  normal=normal[1:l,]
+}
 
 #Calculate read distance matrix for clustering
 mat=matrix(0,nrow=w,ncol=w)
