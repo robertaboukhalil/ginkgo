@@ -84,6 +84,23 @@ if [ "$fix" == "1" ]; then
   ${home}/scripts/reclust.R $genome $dir $statFile $binMeth $clustMeth $distMet $f $facs $sex
 fi
 
+
+############################################################
+#### Create CNV profiles
+############################################################
+nbCols=$(awk '{ print NF; exit; }' $dir/SegCopy)
+for (( i=1; i<=$nbCols; i++ )); do
+  currCell=$(cut -f$i $dir/SegCopy | head -n 1 | tr -d '"')
+  if [ "$currCell" == "" ]; then
+    continue;
+  fi
+  cut -f$i $dir/SegCopy | tail -n+2 | awk 'BEGIN{prev="";}{if(NR==1){prev=$1;print "1,"$1;next;} if($1!=prev){print NR","prev"\n"NR","$1;prev=$1;}  }' > $dir/$currCell.cnv
+done
+# TODO!!!!!!!!
+# CREATE CHROMOSOME BOUNDARIES
+
+
+
 ############################################################
 ############# Email notification of completion #############
 ############################################################
