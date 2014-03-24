@@ -1386,7 +1386,7 @@ if(file_exists($configFile)) {
 				$("#results-QA-loadingTxt").hide();
 				$("#results-QA-table").show();
 				$("#results-QA-table").html(table);
-				$('#results-QA-table').dataTable(
+				oTable = $('#results-QA-table').dataTable(
 					{
 						"bSort": true,
 						"bFilter":false,
