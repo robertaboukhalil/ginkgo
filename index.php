@@ -927,6 +927,7 @@ if(file_exists($configFile)) {
 						<div class="panel-heading"><span class="glyphicon glyphicon-align-center"></span> Copy-number profile</div>
 						<!-- Table -->
 						<table class="table">
+							<tr><td><div class="div_g" id="cell_cnv" style="width:95%;height:200px;"></div></td></tr>
 							<tr><td><a href="<?php echo URL_UPLOADS . "/" . $GINKGO_USER_ID . "/" . $CURR_CELL . "_CN.jpeg?uniq=" . rand(1e6,2e6);?>"><img style="width:100%;" src="<?php echo URL_UPLOADS . "/" . $GINKGO_USER_ID . "/" . $CURR_CELL . "_CN.jpeg";?>"></a></td></tr>
 						</table>
 					</div>
@@ -1025,9 +1026,6 @@ if(file_exists($configFile)) {
 		<script src="http://code.jquery.com/jquery-2.0.3.min.js"></script>
 		<script src="//netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.min.js"></script>
 
-		<!-- DataTables (sortable tables) -->
-		<script type="text/javascript" language="javascript" src="includes/datatables/jquery.dataTables.min.js"></script>
-
 		<!-- JQuery/Bootstrap customization
 		================================================== -->
 		<script language="javascript">
@@ -1092,6 +1090,14 @@ if(file_exists($configFile)) {
 		================================================== -->
 		<link rel="stylesheet" type="text/css" href="includes/unitip/unitip.css">
 		<script type="text/javascript" src="includes/unitip/unitip.js"></script>
+
+		<!-- DataTables (sortable tables)
+		================================================== -->
+		<script type="text/javascript" language="javascript" src="includes/datatables/jquery.dataTables.min.js"></script>
+
+		<!-- CNV profiles
+		================================================== -->
+		<script type="text/javascript" language="javascript" src="includes/dygraph/dygraph-combined.js"></script>
 
 		<!-- Ginkgo
 		================================================== -->
@@ -1403,6 +1409,40 @@ if(file_exists($configFile)) {
 						}]
 					});
 				$('#results-QA-table_length').css('display', 'none');
+
+
+				//$.get('uploads/' + ginkgo_user_id + '/chrom.boundaries', function(data){
+				$.get('chrom.boundaries', function(data){
+					chromBoundaries = data.split('\n');
+
+					// 
+					//loadCellProfile('CHR');
+					loadCellProfile('cnv');
+
+					// Chromosome annotations
+					n = 0;
+					allAnnotations = [];
+					for(j in chromBoundaries)
+					{
+						chr = parseInt(j);
+						if(chromBoundaries[chr] != "")
+						{
+							allAnnotations.push(
+							{
+								series: allCells[n],
+								x: (parseInt(chromBoundaries[chr])-1),
+								shortText: (chr+1),
+								text: "<-- chr" + (chr+1)
+							}
+							);
+						}
+					}
+
+					allCellProfiles[n].setAnnotations(allAnnotations);
+				});
+
+
+
 			});
 		}
 
@@ -1487,6 +1527,153 @@ if(file_exists($configFile)) {
 				init();
 			});
 		}
+		<?php
+		/*
+			# Make compressed graph of copy-number profile for first cell
+			awk 'BEGIN{print "Index,Plot"}{ if(NR>1) print (NR-1)","$4 }' data/uber.9727420.seg.quantal.5k.txt > 9727420.seg.5k.csv
+			awk -F "," 'BEGIN{prev="NA";prevLine="";}{if(NR==1){print;}else{if(prev!=$2){if(prevLine!=""&&NR>2){print prevLine; print (NR-2)","$2;} print; prev=$2;}} prevLine=$0;}' 9727420.seg.5k.csv > 9727420.seg.5k.csv.compressed
+
+			# Make chromosome boundaries
+			awk 'BEGIN{prevChrom="";}{if(prevChrom!=$1){print NR"\t"$0; prevChrom=$1;}}' data/uber.9727420.seg.quantal.5k.txt | tail -n +3 > 9727420.seg.5k.csv.boundaries
+		*/
+		?>
+
+		// =========================================================================
+		// == Load profile =========================================================
+		// =========================================================================
+		allCellProfiles = [];
+		function loadCellProfile(cellName)
+		{
+			// -- Settings -----------------------------------------------------------		
+			cellName = '<?php echo $CURR_CELL; ?>'
+			graphTitle = cellName;
+			axisColor = 'black';
+			axisFontSize = 14;
+			labelsDisplay = 'block';
+			// Settings for Chr
+			if(cellName == 'CHR') {
+				graphTitle = '';
+				axisColor = 'white';
+				labelsDisplay = 'none';
+			}
+
+			// -- Load data file -----------------------------------------------------
+			var blockRedraw = false;
+			allCellProfiles.push(
+				g = new Dygraph(
+					document.getElementById("cell_cnv"),
+					"uploads/" + ginkgo_user_id + "/" + cellName + ".cnv",
+					{
+						// Settings
+						rollPeriod: 0,
+						showRoller: false,
+						errorBars: false,
+						valueRange: [-2,10],
+						animatedZooms: true,
+						sigFigs: 4,
+						axisLabelFontSize: axisFontSize,
+						axisLabelColor: axisColor,
+						// Grid
+						drawYGrid: true,//drawGrid: false,
+						drawXGrid: false,
+						gridLineColor: '#ccc',
+						// Title
+						title: graphTitle,
+						// Labels
+						labelsSeparateLines: false,
+						labelsDivStyles: {
+							'backgroundColor': 'rgba(230, 230, 230, 0.30)',
+							'padding': '10px',
+							'border': '1px solid black',
+							'borderRadius': '5px',
+							'boxShadow': '4px 4px 4px #888',
+							'display': labelsDisplay,
+						},
+
+						// Chromosome boundaries
+						underlayCallback: function(canvas, area, g) {
+							if(cellName != 'CHR')
+								for(key in chromBoundaries)
+								{
+									var bottom_left = g.toDomCoords(parseInt(chromBoundaries[key])-1, -20);
+									var top_right = g.toDomCoords(parseInt(chromBoundaries[key])+1, +20);
+									var left = bottom_left[0];
+									var right = top_right[0];
+									canvas.fillStyle = "rgba(255, 20, 20, 0.3)";
+									canvas.fillRect(left, area.y, right - left, area.h);
+								}
+						},
+
+						// Synchronize zooming into plot
+						drawCallback: function(me, initial) {
+							if (blockRedraw || initial) return;
+							blockRedraw = true;
+							var range = me.xAxisRange();
+							var yrange = me.yAxisRange();
+							for(j in allCellProfiles)
+							{
+								if (allCellProfiles[j] == me)
+									continue;
+								allCellProfiles[j].updateOptions( {
+									dateWindow: range,
+									valueRange: yrange
+								} );
+							}
+							blockRedraw = false;
+						},	
+
+						// Click callback
+						clickCallback: function(e, x, pts) {
+							// Get bin number and copy-number value
+							binNb = pts[0].xval;
+							cnVal = pts[1].yval;
+
+							// Figure out chr:pos from bin number
+							// 
+						},
+					}
+				)
+			);
+		}
+		
+		// http://dygraphs.com/tests/callback.html
+		pts_info = function(e, x, pts, row) {
+			var str = "(" + x + ") ";
+			for (var i = 0; i < pts.length; i++) {
+				var p = pts[i];
+				if (i) str += ", ";
+				str += p.name + ": " + p.yval;
+			}
+
+			var x = e.offsetX;
+			var y = e.offsetY;
+			var dataXY = g.toDataCoords(x, y);
+			str += ", (" + x + ", " + y + ")";
+			str += " -> (" + dataXY[0] + ", " + dataXY[1] + ")";
+			str += ", row #"+row;
+
+			return str;
+		};
+
+		// 
+	    var toArray = function(data) {
+			var lines = data.split("\n");
+			var arry = [];
+			for (var idx = 0; idx < lines.length; idx++)
+			{
+				var line = lines[idx];
+				// Oftentimes there's a blank line at the end. Ignore it.
+				if (line.length == 0)
+					continue;
+				var row = line.split(",");
+				// Special processing for every row except the header.
+			    row[0] = parseFloat(row[0]);
+			    row[1] = parseFloat(row[1]);
+				arry.push(row);
+			}
+			return arry;
+	    }
+
 		</script>
 
 	</body>
