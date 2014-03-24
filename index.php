@@ -124,7 +124,7 @@ $PANEL_DOWNLOAD = <<<PANEL
 		<div class="panel-heading"><span class="glyphicon glyphicon-tree-deciduous"></span> Download tree</div>
 		<!-- Table -->
 		<table class="table" style="font-size:12.5px;">
-			<tr class="active"><td><strong>Normalized read counts</strong>: <a target="_blank" href="{$userUrl}/clust.newick">newick</a> | <a target="_blank" href="{$userUrl}/clust.xml">xml</a> | <a target="_blank" href="{$userUrl}/clust.pdf">pdf</a> | <a target="_blank" href="{$userUrl}/clust1.jpeg">jpeg</a>&nbsp;<em>(plotted here)</em></td></tr>
+			<tr class="active"><td><strong>Normalized read counts</strong>: <a target="_blank" href="{$userUrl}/clust.newick">newick</a> | <a target="_blank" href="{$userUrl}/clust.xml">xml</a> | <a target="_blank" href="{$userUrl}/clust.pdf">pdf</a> | <a target="_blank" href="{$userUrl}/clust.jpeg">jpeg</a>&nbsp;<em>(plotted here)</em></td></tr>
 			<tr class="active"><td><strong>Copy-number</strong>: <a target="_blank" href="{$userUrl}/clust2.newick">newick</a> | <a target="_blank" href="{$userUrl}/clust2.xml">xml</a> | <a target="_blank" href="{$userUrl}/clust2.pdf">pdf</a> | <a target="_blank" href="{$userUrl}/clust2.jpeg">jpeg</a></td></tr>
 			<tr class="active"><td><strong>Correlations</strong>: <a target="_blank" href="{$userUrl}/clust3.newick">newick</a> | <a target="_blank" href="{$userUrl}/clust3.xml">xml</a> | <a target="_blank" href="{$userUrl}/clust3.pdf">pdf</a> | <a target="_blank" href="{$userUrl}/clust3.jpeg">jpeg</a></td></tr>
 		</table>
@@ -256,6 +256,7 @@ if(isset($_POST['analyze'])) {
 		$newClustering	= ($oldParams['clustMeth'] != $_POST['clustMeth']);
 		$newDistance	= ($oldParams['distMeth']  != $_POST['distMeth']);
 		$newColor		= ($oldParams['color']	   != $_POST['color']);
+		$sexChange		= ($oldParams['sex']	   != $_POST['sex']);
 		// Different files than last time?
 		$cells = '';
 		foreach($_POST['cells'] as $cell)
@@ -274,7 +275,7 @@ if(isset($_POST['analyze'])) {
 
 		// Redraw dendrogams
 		# Only need to run fix when not running process
-		if(!$process && !$init && ($newClustering || $newDistance))
+		if(!$process && !$init && ($newClustering || $newDistance || $sexChange))
 			$fix = 1;
 
 		// When redirect, if status file isn't changed quickly enough, will show up as 100% completed
@@ -321,6 +322,7 @@ if(isset($_POST['analyze'])) {
 	$config.= 'ref=' . $_POST['segMethCustom'] . "\n";
 	//
 	$config.= 'color=' . $_POST['color'] . "\n";
+	$config.= 'sex=' . $_POST['sex'] . "\n";
 	//
 	file_put_contents($userDir . '/config', $config);
 
@@ -358,6 +360,16 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 	}
 }
 
+$configFile = $userDir . "/config";
+if(file_exists($configFile)) {
+	$f = file($configFile);
+	$config = array();
+	foreach($f as $index => $val) {
+		$values = explode("=", $val, 2);
+		$config[$values[0]] = str_replace("'", "", trim($values[1]));
+	}
+}
+
 // =============================================================================
 // == HTML template ============================================================
 // =============================================================================
@@ -387,6 +399,11 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 			.badge      { vertical-align:top; margin-top:5px; }
 			.permalink  { border:1px solid #DDD; width:100%; color:#666; background:transparent; font-family:"courier"; resize:none; height:50px; }
 			#results-navigation { display:none; }
+			.sorting_asc { background: url('includes/datatables/images/sort_asc.png') no-repeat center right; }
+			.sorting_desc { background: url('includes/datatables/images/sort_desc.png') no-repeat center right; }
+			.sorting { background: url('includes/datatables/images/sort_both.png') no-repeat center right; }
+			.sorting_asc_disabled { background: url('includes/datatables/images/sort_asc_disabled.png') no-repeat center right; }
+			.sorting_desc_disabled { background: url('includes/datatables/images/sort_desc_disabled.png') no-repeat center right; }
 		</style>
 
 		<!-- Tinycon styles/javascript -->
@@ -533,17 +550,6 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 			<?php // == Dashboard: Analysis settings ================================ ?>
 			<?php // ================================================================ ?>
 			<?php elseif($GINKGO_PAGE == 'dashboard'): ?>
-			<?php 
-					$configFile = $userDir . "/config";
-					if(file_exists($configFile)) {
-						$f = file($configFile);
-						$config = array();
-						foreach($f as $index => $val) {
-							$values = explode("=", $val, 2);
-							$config[$values[0]] = str_replace("'", "", trim($values[1]));
-						}
-					}
-			?>
 			<!-- Dashboard -->
 			<div class="row">
 				<div id="dashboard" class="col-lg-8">
@@ -646,6 +652,7 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 					<h3 style="margin-top:-5px;"><span class="badge">OPTIONAL</span> <a href="#parameters" onClick="javascript:$('#params-table').toggle();">Advanced parameters</a></h3>
 					<table class="table table-striped" id="params-table">
 						<tbody>
+							<tr><td colspan="2"><strong>Sample Parameters</strong></td></tr>
 							<tr>
 								<td>CNV Profile Color Scheme</td>
 								<?php $selected = array(); $selected[$config['color']] = ' selected'; ?>
@@ -730,6 +737,8 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 										</div>
 								</td>
 							</tr>
+
+							<tr><td colspan="2"><strong>Clustering Parameters</strong></td></tr>
 							<tr>
 								<td>Clustering</td>
 								<td>
@@ -754,6 +763,13 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 									<option value="binary"<?php echo $selected['binary']; ?>>binary</option>
 									<option value="minkowski"<?php echo $selected['minkowski']; ?>>Minkowski</option>
 									</select> distance.
+								</td>
+							</tr>
+							<tr>
+								<td>Include sex chromosomes?<br/><i><small>Not recommended for mixed-gender samples</small></i></td>
+								<td>
+									<?php $checked = " checked"; if($config['sex'] == '0') $checked=""; ?>
+									<input type="checkbox" id="dashboard-include-sex"<?php echo $checked;?>>
 								</td>
 							</tr>
 						</tbody>
@@ -819,19 +835,9 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 							<p>Verifying that your files are adequate for copy-number analysis...</p>
 						</div> -->
 						<!-- Table -->
-							<table class="table" style="min-height:0px;">
-								<thead>
-									<tr>
-										<th style="text-align:center" width="15%">Cell</th>
-										<th style="text-align:center" width="25%">CNV Profile</th>
-										<th style="text-align:center" width="15%"># Reads</th>
-										<th style="text-align:center" width="15%">Mean read count</th>
-										<th style="text-align:center" width="15%">Read count variance</th>
-										<th style="text-align:center" width="15%">Index of dispersion</th>
-									</tr>
-								</thead>
+<!-- 							<table class="table" style="min-height:0px;">
 							</table>
-						<div style="height:300px; overflow:auto;">
+ -->						<div style="height:300px; overflow:auto;">
 							<table class="table" id="results-QA-table" style="display:none;">
 							</table>
 						</div>
@@ -848,13 +854,13 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 					<div id="results-heatmaps" class="panel panel-default" style="display:none;">
 						<div class="panel-heading"><span class="glyphicon glyphicon-barcode"></span> Heatmaps</div>
 						<div class="panel-body">
-							<p>Both heatmaps are generated using the unique breakpoints found across all samples, and their values correspond to their relative read counts or copy number as determined by their dissimilarity structure for each respective dendrogram.</p>
+							<p>Heatmaps are generated using the unique breakpoints found across all samples, and their values correspond to their relative read counts or copy number as determined by their dissimilarity structure for each respective dendrogram.</p>
 						</div>
 						<!-- Table -->
 						<table class="table" style="text-align:center;">
 							<tr>
 								<td>
-									<strong>Heatmap of copy number values across all segment breakpoints (using chosen distance metric)</strong><br/>
+									<strong>Heatmap of copy number values across all segment breakpoints (using <?php echo ucfirst($config['distMeth']); ?> distance metric)</strong><br/>
 									<a href="<?php echo URL_UPLOADS . "/" . $GINKGO_USER_ID . "/heatCN.jpeg"; ?>"><img style="width:100%;" src="<?php echo URL_UPLOADS . "/" . $GINKGO_USER_ID . "/heatCN.jpeg?uniq=" . rand(1e6,2e6); ?>"></a>
 								</td>
 							</tr>
@@ -1018,6 +1024,9 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 		================================================== -->
 		<script src="http://code.jquery.com/jquery-2.0.3.min.js"></script>
 		<script src="//netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.min.js"></script>
+
+		<!-- DataTables (sortable tables) -->
+		<script type="text/javascript" language="javascript" src="includes/datatables/jquery.dataTables.min.js"></script>
 
 		<!-- JQuery/Bootstrap customization
 		================================================== -->
@@ -1224,6 +1233,8 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 								'job_name'	   : $('#param-job-name').val(),
 								// Color scheme
 								'color': $('#param-color-scheme').val(),
+								// Sex?
+								'sex': $('#dashboard-include-sex').is(':checked') == true ? 1 : 0,
 							},
 							// If get response
 							function(data) {
@@ -1323,7 +1334,17 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 			{
 				// Turn string into array of lines
 				lineNb = 0;
-				table  = '<tbody>';
+				table = '<thead> ' + '\n' +
+						'	<tr> ' + '\n' +
+						'		<th style="text-align:center" width="15%">Cell</th> ' + '\n' +
+						'		<th style="text-align:center" width="25%">CNV Profile</th> ' + '\n' +
+						'		<th style="text-align:center" width="15%"># Reads</th> ' + '\n' +
+						'		<th style="text-align:center" width="15%">Mean read count</th> ' + '\n' +
+						'		<th style="text-align:center" width="15%">Read count variance</th> ' + '\n' +
+						'		<th style="text-align:center" width="15%">Index of dispersion</th> ' + '\n' +
+						'	</tr> ' + '\n' +
+						'	</thead>\n';
+				table += '<tbody>';
 				allLines = qaFile.split("\n");
 
 				omg = [[], [], []];
@@ -1365,11 +1386,29 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 				$("#results-QA-loadingTxt").hide();
 				$("#results-QA-table").show();
 				$("#results-QA-table").html(table);
+				$('#results-QA-table').dataTable(
+					{
+						"bSort": true,
+						"bFilter":false,
+						"bInfo":false,
+						"iDisplayLength":10,
+						"bPaginate":false,
+						"aoColumnDefs": [ {
+						   "aTargets": [2,3,4],
+						   "fnCreatedCell": function (nTd, sData, oData, iRow, iCol) {
+						     var $currencyCell = $(nTd);
+						     var commaValue = $currencyCell.text().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,");
+						     $currencyCell.text(commaValue);
+						   }
+						}]
+					});
+				$('#results-QA-table_length').css('display', 'none');
 			});
 		}
 
 		function numberWithCommas(x) {
-		    return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+		    //return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+		    return x;
 		}
 
 		// -------------------------------------------------------------------------
