@@ -936,28 +936,29 @@ if(file_exists($configFile)) {
 					<div class="panel panel-default">
 						<div class="panel-heading"><span class="glyphicon glyphicon-stats"></span> Quality Control</div>
 							<table class="table">
-								<tr><td>
+								<tr><td colspan="3">
 									<b>Genome-wide read distribution</b>
 									<a href="<?php echo URL_UPLOADS . "/" . $GINKGO_USER_ID . "/" . $CURR_CELL . "_dist.jpeg?uniq=" . rand(1e6,2e6); ?>"><img style="width:100%;" src="<?php echo URL_UPLOADS . "/" . $GINKGO_USER_ID . "/" . $CURR_CELL . "_dist.jpeg";?>"></a>
 									<p style="text-align:center"><small>The read count distribution spanning the full genome once reads have been talied within bin boundaries.</small></p>
 								</td></tr>
-								<tr><td>
-									<b>Histogram of read count frequency</b>
-									<a href="<?php echo URL_UPLOADS . "/" . $GINKGO_USER_ID . "/" . $CURR_CELL . "_counts.jpeg?uniq=" . rand(1e6,2e6); ?>"><img style="width:100%;" src="<?php echo URL_UPLOADS . "/" . $GINKGO_USER_ID . "/" . $CURR_CELL . "_counts.jpeg";?>"></a>
-									<p style="text-align:center"><small>Single cell data should fit a negative binomial distribution with narrower histograms representing higher quality data. Wide histograms without a distinct peak are representative of a high degree of amplification bias. Histograms with a mode near zero have a high degree of “read dropout” and are generally the result of poor library preparation or technical sequencing error.</small></p>
-								</td></tr>
+								<tr>
+									<td style="text-align:center"><b>Histogram of read count frequency</b></td>
+									<td style="text-align:center"><b>Lorenz Curve</b></td>
+									<td style="text-align:center"><b>Frequency of Bin Counts</b></td>
+								</tr>
 
-								<tr><td>
-									<b>Lorenz Curve</b>
-									<a href="<?php echo URL_UPLOADS . "/" . $GINKGO_USER_ID . "/" . $CURR_CELL . "_lorenz.jpeg?uniq=" . rand(1e6,2e6); ?>"><img style="width:100%;" src="<?php echo URL_UPLOADS . "/" . $GINKGO_USER_ID . "/" . $CURR_CELL . "_lorenz.jpeg";?>"></a>
-									<p style="text-align:center"><small>The Lorenz curve gives the cumulative fraction of reads as a function of the cumulative fraction of the genome.  Perfect coverage uniformity results in a straight line with slope 1.  The wider the curve below the line of “perfect uniformity” the lower the coverage uniformity of a sample.</small></p>
-								</td></tr>
+								<tr>
+									<td><a href="<?php echo URL_UPLOADS . "/" . $GINKGO_USER_ID . "/" . $CURR_CELL . "_counts.jpeg?uniq=" . rand(1e6,2e6); ?>"><img style="width:100%;" src="<?php echo URL_UPLOADS . "/" . $GINKGO_USER_ID . "/" . $CURR_CELL . "_counts.jpeg";?>"></a></td>
+									<td><a href="<?php echo URL_UPLOADS . "/" . $GINKGO_USER_ID . "/" . $CURR_CELL . "_lorenz.jpeg?uniq=" . rand(1e6,2e6); ?>"><img style="width:100%;" src="<?php echo URL_UPLOADS . "/" . $GINKGO_USER_ID . "/" . $CURR_CELL . "_lorenz.jpeg";?>"></a></td>
+									<td><a href="<?php echo URL_UPLOADS . "/" . $GINKGO_USER_ID . "/" . $CURR_CELL . "_hist.jpeg?uniq=" . rand(1e6,2e6); ?>"><img style="width:100%;" src="<?php echo URL_UPLOADS . "/" . $GINKGO_USER_ID . "/" . $CURR_CELL . "_hist.jpeg";?>"></a></td>
+								</tr>
 
-								<tr><td>
-									<b>Frequency of Bin Counts</b>
-									<a href="<?php echo URL_UPLOADS . "/" . $GINKGO_USER_ID . "/" . $CURR_CELL . "_hist.jpeg?uniq=" . rand(1e6,2e6); ?>"><img style="width:100%;" src="<?php echo URL_UPLOADS . "/" . $GINKGO_USER_ID . "/" . $CURR_CELL . "_hist.jpeg";?>"></a>
-									<p style="text-align:center"><small>Caption</small></p>
-								</td></tr>
+								<tr>
+									<td><p style="text-align:center"><small>Single cell data should fit a negative binomial distribution with narrower histograms representing higher quality data. Wide histograms without a distinct peak are representative of a high degree of amplification bias. Histograms with a mode near zero have a high degree of “read dropout” and are generally the result of poor library preparation or technical sequencing error.</small></p></td>
+									<td><p style="text-align:center"><small>The Lorenz curve gives the cumulative fraction of reads as a function of the cumulative fraction of the genome.  Perfect coverage uniformity results in a straight line with slope 1.  The wider the curve below the line of “perfect uniformity” the lower the coverage uniformity of a sample.</small></p></td>
+									<td><p style="text-align:center"><small>Caption</small></p></td>
+								</tr>
+
 							</table>
  					</div>
 
