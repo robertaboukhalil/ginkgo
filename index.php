@@ -1411,9 +1411,14 @@ if(file_exists($configFile)) {
 				$('#results-QA-table_length').css('display', 'none');
 
 
-				//$.get('uploads/' + ginkgo_user_id + '/chrom.boundaries', function(data){
-				$.get('chrom.boundaries', function(data){
+				$.get('genomes/<?php echo $config["chosen_genome"] ?>/bounds_<?php echo $config["binMeth"]; ?>', function(data){
+				//$.get('chrom.boundaries', function(data){
 					chromBoundaries = data.split('\n');
+					for(i=0; i<chromBoundaries.length; i++)
+					{
+						tmp = chromBoundaries[i].split('\t');
+						chromBoundaries[i] = chromBoundaries[i].replace(tmp[0]+'\t', '')
+					}
 
 					// 
 					//loadCellProfile('CHR');
