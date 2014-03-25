@@ -910,7 +910,7 @@ if(file_exists($configFile)) {
 			<?php elseif($GINKGO_PAGE == 'results' && $CURR_CELL != ""): ?>
 			<!-- Results -->
 			<div class="row">
-				<div id="results" class="col-lg-8">
+				<div id="results" class="col-lg-12">
 
 					<h3 style="margin-top:-5px;">Viewing cell <?php echo $CURR_CELL; ?></h3><br/>
 
@@ -988,9 +988,12 @@ if(file_exists($configFile)) {
 					</div>
 				</div>
 
-				<div class="col-lg-4">
+				<?php
+				/*<div class="col-lg-4">
 					<?php echo $PANEL_LATER; ?>
 				</div>
+				*/
+				?>
 			</div>
 
 			<?php endif; ?>
