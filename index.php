@@ -1416,16 +1416,11 @@ if(file_exists($configFile)) {
 
 
 				$.get('genomes/<?php echo $config["chosen_genome"] ?>/bounds_<?php echo $config["binMeth"]; ?>', function(data){
-				//$.get('chrom.boundaries', function(data){
 					chromBoundaries = data.split('\n');
-					for(i=0; i<chromBoundaries.length; i++)
-					{
+					for(i=0; i<chromBoundaries.length; i++) {
 						tmp = chromBoundaries[i].split('\t');
 						chromBoundaries[i] = chromBoundaries[i].replace(tmp[0]+'\t', '')
 					}
-
-					// 
-					//loadCellProfile('CHR');
 					loadCellProfile('cnv');
 
 					// Chromosome annotations
@@ -1566,83 +1561,123 @@ if(file_exists($configFile)) {
 				labelsDisplay = 'none';
 			}
 
-			// -- Load data file -----------------------------------------------------
-			var blockRedraw = false;
-			allCellProfiles.push(
-				g = new Dygraph(
-					document.getElementById("cell_cnv"),
-					"uploads/" + ginkgo_user_id + "/" + cellName + ".cnv",
-					{
-						// Settings
-						rollPeriod: 0,
-						showRoller: false,
-						errorBars: false,
-						valueRange: [-2,10],
-						animatedZooms: true,
-						sigFigs: 4,
-						axisLabelFontSize: axisFontSize,
-						axisLabelColor: axisColor,
-						// Grid
-						drawYGrid: true,//drawGrid: false,
-						drawXGrid: false,
-						gridLineColor: '#ccc',
-						// Title
-						title: graphTitle,
-						// Labels
-						labelsSeparateLines: false,
-						labelsDivStyles: {
-							'backgroundColor': 'rgba(230, 230, 230, 0.30)',
-							'padding': '10px',
-							'border': '1px solid black',
-							'borderRadius': '5px',
-							'boxShadow': '4px 4px 4px #888',
-							'display': labelsDisplay,
-						},
+			// -- Load file that specifies bin # <--> chr:pos
+			$.get('genomes/<?php echo $config["chosen_genome"] ?>/<?php echo $config["binMeth"]; ?>', function(data){
 
-						// Chromosome boundaries
-						underlayCallback: function(canvas, area, g) {
-							if(cellName != 'CHR')
-								for(key in chromBoundaries)
-								{
-									var bottom_left = g.toDomCoords(parseInt(chromBoundaries[key])-1, -20);
-									var top_right = g.toDomCoords(parseInt(chromBoundaries[key])+1, +20);
-									var left = bottom_left[0];
-									var right = top_right[0];
-									canvas.fillStyle = "rgba(255, 20, 20, 0.3)";
-									canvas.fillRect(left, area.y, right - left, area.h);
-								}
-						},
+				binToPos = data.split('\n');
+				// Note i=1 b/c skipping header
+				for(i=1; i<binToPos.length; i++) {
+					tmp = binToPos[i].split('\t');
+					binToPos[i] = tmp //binToPos[i].replace(tmp[0]+'\t', '')
+					//alert(i + "\t" + binToPos[i][1])
+				}
 
-						// Synchronize zooming into plot
-						drawCallback: function(me, initial) {
-							if (blockRedraw || initial) return;
-							blockRedraw = true;
-							var range = me.xAxisRange();
-							var yrange = me.yAxisRange();
-							for(j in allCellProfiles)
-							{
-								if (allCellProfiles[j] == me)
-									continue;
-								allCellProfiles[j].updateOptions( {
-									dateWindow: range,
-									valueRange: yrange
-								} );
-							}
-							blockRedraw = false;
-						},	
+				//alert(binToPos)
 
-						// Click callback
-						clickCallback: function(e, x, pts) {
-							// Get bin number and copy-number value
-							binNb = pts[0].xval;
-							cnVal = pts[1].yval;
+				// -- Load data file -----------------------------------------------------
+				var blockRedraw = false;
+				allCellProfiles.push(
+					g = new Dygraph(
+						document.getElementById("cell_cnv"),
+						"uploads/" + ginkgo_user_id + "/" + cellName + ".cnv",
+						{
+							// Settings
+							rollPeriod: 0,
+							showRoller: false,
+							errorBars: false,
+							valueRange: [-2,10],
+							animatedZooms: true,
+							sigFigs: 4,
+							axisLabelFontSize: axisFontSize,
+							axisLabelColor: axisColor,
+							// Grid
+							drawYGrid: true,//drawGrid: false,
+							drawXGrid: false,
+							gridLineColor: '#ccc',
+							// Title
+							title: graphTitle,
+							// Labels
+							labelsSeparateLines: true,
+							labelsDivWidth: 300,
+							hideOverlayOnMouseOut: false,
+							labelsDivStyles: {
+								'backgroundColor': 'rgba(230, 230, 230, 0.30)',
+								'padding': '10px',
+								'border': '1px solid black',
+								'borderRadius': '5px',
+								'boxShadow': '4px 4px 4px #888',
+								'display': 'block',//labelsDisplay,
+							},
+        					labels:["Bin Number", "Copy-Number"],
+							axes: {
+							  x: {
+							    valueFormatter: function(x) {
+							      //return 'Bin (' + new Date(ms).strftime('%Y-%m-%d') + ')';
+							      //alert(document.getElementById("xdimensions"));
+							      return '<b>Bin ' + x + '</b>' + '<br/><span> <span style="color: rgb(0,128,128);"><b>Position</b>:&nbsp;</span>' + binToPos[x][0] + ':' + binToPos[x][1] + '-' + binToPos[x+1][1] + ' <a target="_blank" href="https://genome.ucsc.edu/cgi-bin/hgTracks?db=<?php echo $config["chosen_genome"]; ?>&position=' + binToPos[x][0] + ':' + binToPos[x][1] + '-' + binToPos[x+1][1] + '"><img src="http://i.stack.imgur.com/3H2PQ.png"></a><br/><div style="display:none">';
+							    },
+							  },
+							  y: {
+							    valueFormatter: function(y) {
+							      //return 'Bin (' + new Date(ms).strftime('%Y-%m-%d') + ')';
+							      return '</div><b><span style="color: rgb(0,128,128);">Copy-Number</span></b>:&nbsp;' + y;
+							    },
+							  },
+							 },
 
-							// Figure out chr:pos from bin number
-							// 
-						},
-					}
-				)
-			);
+							// Chromosome boundaries
+							underlayCallback: function(canvas, area, g) {
+								if(cellName != 'CHR')
+									for(key in chromBoundaries)
+									{
+										var bottom_left = g.toDomCoords(parseInt(chromBoundaries[key])-1, -20);
+										var top_right = g.toDomCoords(parseInt(chromBoundaries[key])+1, +20);
+										var left = bottom_left[0];
+										var right = top_right[0];
+										canvas.fillStyle = "rgba(255, 20, 20, 0.3)";
+										canvas.fillRect(left, area.y, right - left, area.h);
+									}
+							},
+
+							drawCallback: function(me, initial) {
+							// // Synchronize zooming into plot
+							// 	if (blockRedraw || initial) return;
+							// 	blockRedraw = true;
+							// 	var range = me.xAxisRange();
+							// 	var yrange = me.yAxisRange();
+							// 	for(j in allCellProfiles)
+							// 	{
+							// 		if (allCellProfiles[j] == me)
+							// 			continue;
+							// 		allCellProfiles[j].updateOptions( {
+							// 			dateWindow: range,
+							// 			valueRange: yrange
+							// 		} );
+							// 	}
+							// 	blockRedraw = false;
+
+							// // Show selected range in UCSC (but it can't support multiple chromosomes)
+								// alert(g.xAxisRange()[0] + '-' + g.xAxisRange()[1])
+								// chrpos = binToPos[g.xAxisRange()[0]][0]+':' + 3 + '-' + 4;
+								// $('#cnv-ucsc').html('<a href="https://genome.ucsc.edu/cgi-bin/hgTracks?db=<?php echo $config["chosen_genome"]; ?>&position=' + chrpos + '">See current range in UCSC browser</a>');
+							},	
+
+							// Click callback
+							clickCallback: function(e, x, pts) {
+								// Get bin number and copy-number value
+								//binNb = pts[0].xval;
+								//cnVal = pts[1].yval;
+
+								// Figure out chr:pos from bin number
+								// 
+								//alert('wtf' + pts.xval)
+							},
+						}
+					)
+				);
+
+			});
+
 		}
 		
 		// http://dygraphs.com/tests/callback.html
