@@ -924,10 +924,23 @@ if(file_exists($configFile)) {
 
 					<!-- Panel: Copy-number profile -->
 					<div class="panel panel-default">
-						<div class="panel-heading"><span class="glyphicon glyphicon-align-center"></span> Copy-number profile</div>
+						<div class="panel-heading"><span class="glyphicon glyphicon-align-center"></span> Interactive Profile Viewer</div>
 						<!-- Table -->
 						<table class="table">
 							<tr><td><div class="div_g" id="cell_cnv" style="width:95%;height:200px;"></div></td></tr>
+							<tr><td style="text-align:center">
+								<small><b>Click + Drag</b>: zoom in on a region</small>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+								<!-- <small><b>Click + Drag vertically</b>: zoom in vertically</small><br/> -->
+								<small><b>Shift + Click</b>: move the profile</small>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+								<small><b>Double-click</b>: zoom out</small><br/>
+							</td></tr>
+						</table>
+					</div>
+
+					<div class="panel panel-default">
+						<div class="panel-heading"><span class="glyphicon glyphicon-align-center"></span> Static Profile</div>
+						<!-- Table -->
+						<table class="table">
 							<tr><td><a href="<?php echo URL_UPLOADS . "/" . $GINKGO_USER_ID . "/" . $CURR_CELL . "_CN.jpeg?uniq=" . rand(1e6,2e6);?>"><img style="width:100%;" src="<?php echo URL_UPLOADS . "/" . $GINKGO_USER_ID . "/" . $CURR_CELL . "_CN.jpeg";?>"></a></td></tr>
 						</table>
 					</div>
@@ -1291,7 +1304,7 @@ if(file_exists($configFile)) {
 				// Keep in mind: step > 3 is for reclust.R (re-draw dendrograms)
 				if(step > denominator)
 					denominator = step;
-				overallDone = Math.round(100*(step-1+percentdone/100)/denominator);
+				overallDone = Math.floor(100*(step-1+percentdone/100)/denominator);
 				$("#results-progress").width(overallDone + "%");
 				Tinycon.setBubble(overallDone);
 
@@ -1342,6 +1355,9 @@ if(file_exists($configFile)) {
 			// Load Quality Assessment file (only runs if file exists)
 			$.get("<?php echo URL_UPLOADS; ?>/" + ginkgo_user_id + "/SegStats", function(qaFile)
 			{
+				if(overallDone < 100)
+					return;
+
 				// Turn string into array of lines
 				lineNb = 0;
 				table = '<thead> ' + '\n' +
