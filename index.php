@@ -134,11 +134,11 @@ $PANEL_DOWNLOAD = <<<PANEL
 		<div class="panel-heading"><span class="glyphicon glyphicon-file"></span> Download processed data</div>
 		<!-- Table -->
 		<table class="table" style="font-size:12.5px;">
+			<tr class="active"><td><a target="_blank" href="{$userUrl}/SegStats"><strong>SegStats</strong></a> <a href="javascript:void(0);" onclick="javascript:$('#desc-5').toggle();"><span class="glyphicon glyphicon-question-sign"></span></a><span id="desc-5" style="display:none;">: basic bin count statistics for every sample. Rows correspond to samples.</span></td></tr>
 			<tr class="active"><td><a target="_blank" href="{$userUrl}/SegBreaks"><strong>SegBreaks</strong></a> <a href="javascript:void(0);" onclick="javascript:$('#desc-1').toggle();"><span class="glyphicon glyphicon-question-sign"></span></a><span id="desc-1" style="display:none;">: a binary matrix that encodes whether a sample has breakpoints at every bin position. Rows correspond to bins and columns correspond to cell samples.</span></td></tr>
 			<tr class="active"><td><a target="_blank" href="{$userUrl}/SegCopy"><strong>SegCopy</strong></a> <a href="javascript:void(0);" onclick="javascript:$('#desc-2').toggle();"><span class="glyphicon glyphicon-question-sign"></span></a><span id="desc-2" style="display:none;">: copy number state for each sample at every bin position. Rows correspond to bins and columns correspond to cell samples.</span></td></tr>
-			<tr class="active"><td><a target="_blank" href="{$userUrl}/SegFixed"><strong>SegFixed</strong></a> <a href="javascript:void(0);" onclick="javascript:$('#desc-3').toggle();"><span class="glyphicon glyphicon-question-sign"></span></a><span id="desc-3" style="display:none;">: normalized and segmented bin counts for each sample at every bin position. Rows correspond to bins and columns correspond to cell samples.</span></td></tr>
 			<tr class="active"><td><a target="_blank" href="{$userUrl}/SegNorm"><strong>SegNorm</strong></a> <a href="javascript:void(0);" onclick="javascript:$('#desc-4').toggle();"><span class="glyphicon glyphicon-question-sign"></span></a><span id="desc-4" style="display:none;">: normalized bin counts for each sample at every bin position. Rows correspond to bins and columns correspond to cell samples.</span></td></tr>
-			<tr class="active"><td><a target="_blank" href="{$userUrl}/SegStats"><strong>SegStats</strong></a> <a href="javascript:void(0);" onclick="javascript:$('#desc-5').toggle();"><span class="glyphicon glyphicon-question-sign"></span></a><span id="desc-5" style="display:none;">: basic bin count statistics for every sample. Rows correspond to samples.</span></td></tr>
+			<tr class="active"><td><a target="_blank" href="{$userUrl}/SegFixed"><strong>SegFixed</strong></a> <a href="javascript:void(0);" onclick="javascript:$('#desc-3').toggle();"><span class="glyphicon glyphicon-question-sign"></span></a><span id="desc-3" style="display:none;">: normalized and segmented bin counts for each sample at every bin position. Rows correspond to bins and columns correspond to cell samples.</span></td></tr>
 		</table>
 	</div>
 PANEL;
@@ -429,9 +429,17 @@ if(file_exists($configFile)) {
 							<a class="navbar-brand dropdown-toggle" data-toggle="dropdown" href="#"><span class="glyphicon glyphicon-tree-deciduous"></span> Ginkgo <span class="caret" style="border-top-color:#ccc !important; border-bottom-color:#ccc !important;"></span></a>
 							<ul class="dropdown-menu" role="menu">
 								<li><a href="?q=">Home</a></li>
-								<li><a href="?q=results/sample">Sample run <small>(Polygenomic breast tumor)</small></a></li>
-								<li><a href="?q=results/sample2">Sample run <small>(Circulating tumor cells)</small></a></li>
-								<li><a href="https://github.com/robertaboukhalil/ginkgo">Source code on Github</a></li>
+								<li><a href="https://github.com/robertaboukhalil/ginkgo">Github</a></li>
+								<li class="divider"></li>
+								<li><a href="?q=results/_t10breast_navin"><small><small style="color:#bdc3c7">DOP-PCR</small></small> Polygenomic breast tumor &mdash; <i>Navin et al, 2011</i></a></li>
+								<li><a href="?q=results/_t16breast_liver_met_navin"><small><small style="color:#bdc3c7">DOP-PCR</small></small> Breast cancer + liver metastasis &mdash; <i>Navin et al, 2011</i></a></li>
+								<li><a href="?q=results/_neuron_mcconnell"><small><small style="color:#bdc3c7">DOP-PCR</small></small> Neurons &mdash; <i>McConnell et al, 2013</i></a></li>
+								<li><a href="?q=results/_ctc_ni"><small><small style="color:#bdc3c7">MALBAC&nbsp;</small></small> Circulating lung tumor cells &mdash; <i>Ni et al, 2013</i></a></li>
+								<li><a href="?q=results/_oocyte_hou"><small><small style="color:#bdc3c7">MALBAC&nbsp;</small></small> Oocytes &mdash; <i>Hou et al, 2013</i></a></li>
+								<li><a href="?q=results/_sperm_lu"><small><small style="color:#bdc3c7">MALBAC&nbsp;</small></small> Sperm &mdash; <i>Lu et al, 2012</i></a></li>
+								<li><a href="?q=results/_bonemarrow_hou"><small><small style="color:#bdc3c7">MDA&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</small></small> Bone marrow &mdash; <i>Hou et al, 2012</i></a></li>
+								<li><a href="?q=results/_kidney_xu"><small><small style="color:#bdc3c7">MDA&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</small></small> Kidney &mdash; <i>Xu et al, 2012</i></a></li>
+								<li><a href="?q=results/_neuron_evrony"><small><small style="color:#bdc3c7">MDA&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</small></small> Neurons &mdash; <i>Evrony et al, 2012</i></a></li>
 
 								<?php if(count($_COOKIE['ginkgo']) > 0): ?>
 									<li class="divider"></li>
@@ -658,9 +666,9 @@ if(file_exists($configFile)) {
 								<?php $selected = array(); $selected[$config['color']] = ' selected'; ?>
 								<td>
 									Use <select id="param-color-scheme" class="input-mini" style="margin-top:8px; font-size:11px; padding-top:3px; padding-bottom:0; height:25px; ">
+									<option value="3"<?php echo $selected['3']; ?>>dark blue / red</option>
 									<option value="1"<?php echo $selected['1']; ?>>light blue / orange</option>
 									<option value="2"<?php echo $selected['2']; ?>>magenta / gold</option>
-									<option value="3"<?php echo $selected['3']; ?>>dark blue / red</option>
 									</select> color scheme.
 								</td>
 							</tr>
@@ -668,7 +676,7 @@ if(file_exists($configFile)) {
 								<td>General Binning Options</td>
 								<?php
 									if(empty($config))
-										$config['binMeth'] = 'variable_100000_101_bowtie';
+										$config['binMeth'] = 'variable_500000_101_bowtie';
 									$binMeth = split('_', $config['binMeth']);
 								?>
 								<td>
@@ -822,7 +830,7 @@ if(file_exists($configFile)) {
 						<div class="panel-body">
 							<div id="svgCanvas" class="row-fluid" style="border:0px solid red; ">
 								<!-- <p>Click on individual cells for details of the copy-number analysis.</p> -->
-								Analyzing your data...
+								Loading tree... <img src="loading.gif" />
 							</div>
 						</div>
 					</div>
@@ -872,7 +880,7 @@ if(file_exists($configFile)) {
 							</tr>
 							<tr>
 								<td>
-									<strong>Heatmap of normalized read counts across segment breakpoints</strong><br/>
+									<strong>Heatmap of normalized read counts across segment breakpoints (using <?php echo ucfirst($config['distMeth']); ?> distance metric)</strong><br/>
 									<a href="<?php echo URL_UPLOADS . "/" . $GINKGO_USER_ID . "/heatNorm.jpeg"; ?>"><img style="width:100%;" src="<?php echo URL_UPLOADS . "/" . $GINKGO_USER_ID . "/heatNorm.jpeg?uniq=" . rand(1e6,2e6); ?>"></a>
 								</td>
 							</tr>
@@ -924,7 +932,12 @@ if(file_exists($configFile)) {
 
 					<!-- Panel: Copy-number profile -->
 					<div class="panel panel-default">
-						<div class="panel-heading"><span class="glyphicon glyphicon-align-center"></span> Interactive Profile Viewer</div>
+						<div class="panel-heading">
+							<span class="glyphicon glyphicon-align-center"></span> Interactive Profile Viewer
+							<div style="float:right; margin-top:-5px;">
+								<a class="btn btn-sm btn-primary" href="#" onclick="javascript:viewRegionUCSC()">View region in UCSC browser</a>
+							</div>
+						</div>
 						<!-- Table -->
 						<table class="table">
 							<tr><td><div class="div_g" id="cell_cnv" style="width:95%;height:200px;"></div></td></tr>
@@ -938,7 +951,7 @@ if(file_exists($configFile)) {
 					</div>
 
 					<div class="panel panel-default">
-						<div class="panel-heading"><span class="glyphicon glyphicon-align-center"></span> Static Profile</div>
+						<div class="panel-heading"><span class="glyphicon glyphicon-align-center"></span> Static Profile Viewer</div>
 						<!-- Table -->
 						<table class="table">
 							<tr><td><a href="<?php echo URL_UPLOADS . "/" . $GINKGO_USER_ID . "/" . $CURR_CELL . "_CN.jpeg?uniq=" . rand(1e6,2e6);?>"><img style="width:100%;" src="<?php echo URL_UPLOADS . "/" . $GINKGO_USER_ID . "/" . $CURR_CELL . "_CN.jpeg";?>"></a></td></tr>
@@ -956,7 +969,11 @@ if(file_exists($configFile)) {
 								</td></tr>
 								<tr>
 									<td style="text-align:center"><b>Histogram of read count frequency</b></td>
-									<td style="text-align:center"><b>Lorenz Curve</b></td>
+									<td style="text-align:center"><b>Lorenz Curve</b> (for
+									<?php
+									preg_match('/_([0-9]*)_/', $config['binMeth'], $matches);
+									echo $matches[1] / 1000;
+									?>kb bins)</td>
 									<td style="text-align:center"><b>Frequency of Bin Counts</b></td>
 								</tr>
 
@@ -1171,7 +1188,6 @@ if(file_exists($configFile)) {
 			$('#analyze').html('Start Analysis <span class="glyphicon glyphicon-chevron-right"></span>')
 		});
 
-
 		// -------------------------------------------------------------------------
 		// -- Create new analysis --------------------------------------------------
 		// -------------------------------------------------------------------------
@@ -1355,7 +1371,7 @@ if(file_exists($configFile)) {
 			// Load Quality Assessment file (only runs if file exists)
 			$.get("<?php echo URL_UPLOADS; ?>/" + ginkgo_user_id + "/SegStats", function(qaFile)
 			{
-				if(overallDone < 100)
+				if(typeof overallDone != 'undefined' && overallDone < 100)
 					return;
 
 				// Turn string into array of lines
@@ -1530,7 +1546,7 @@ if(file_exists($configFile)) {
 				var dataObject = { xml: xmlFile, fileSource: true };
 
 				// Show tree
-				treeHeight = 500;
+				treeHeight = 200;
 				treeWidth  = $("#svgCanvas").width();//500
 				ginkgo_phylocanvas = new Smits.PhyloCanvas(dataObject, 'svgCanvas', treeWidth, treeHeight); //, 'circular'
 
@@ -1540,8 +1556,8 @@ if(file_exists($configFile)) {
 				var rec = c[0].getBBox();					// Works in FF, Chrome
 
 				$("svg").css("height", rec.height+50 + "px");
-				console.log(rec.height+50);
-				console.log($("svg").css("height"));
+				// console.log(rec.height+50);
+				// console.log($("svg").css("height"));
 
 				// Init unitip (see unitip.css to change tip size)
 				init();
@@ -1733,6 +1749,39 @@ if(file_exists($configFile)) {
 			}
 			return arry;
 	    }
+
+		// =====================================================================
+		// == View current region in UCSC browser in new tab/window ============
+		// =====================================================================
+		function viewRegionUCSC()
+		{
+			//
+			binRange = g.xAxisRange()
+			posStart = binToPos[ Math.ceil(binRange[0]) ]
+			posEnd   = binToPos[ Math.ceil(binRange[1]) ]
+			//
+			chrStart = posStart[0]
+			chrEnd   = posEnd[0]
+			//
+			nuclStart= posStart[1]
+			nuclEnd  = posEnd[1]
+
+			//
+			range = chrStart + ':' + nuclStart + '-' + nuclEnd
+
+			nextChr = "chr" + ( parseInt(chrStart.replace(/^\D+/g,'')) + 1 )
+			if(chrStart != chrEnd)
+				for(x=-1;x<(binToPos.length-1);x++)
+				{
+					if(binToPos[x+1][0] == nextChr)
+					{
+						range = chrStart + ":" + nuclStart + "-" + binToPos[x][1]
+						break
+					}
+				}
+
+			window.open('https://genome.ucsc.edu/cgi-bin/hgTracks?db=<?php echo $config["chosen_genome"]; ?>&position=' + range, '_blank')
+		}
 
 		</script>
 
