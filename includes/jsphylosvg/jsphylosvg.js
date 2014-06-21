@@ -1053,12 +1053,12 @@ Smits.PhyloCanvas.NexmlParse.prototype = {
 	Rectangular : {
 		bufferX			: 130, 			// Reduces the available canvas space for tree branches, allowing
 										// for more space for the textual/charting components
-		paddingX		: 10,//10
+		paddingX		: 15,//10
 		paddingY		: 10,//20
 		
 		bufferInnerLabels : 5, 		// Pixels
 		bufferOuterLabels : 0, 			// Pixels
-		minHeightBetweenLeaves : 17,  	// Should probably set pretty low, as clipping may occur if it needs to be implemented		
+		minHeightBetweenLeaves : 15,  	// Should probably set pretty low, as clipping may occur if it needs to be implemented		
 		
 		alignPadding	: 100,			// Pixels to push the labels out by - this extension should be 
 										// compensated by an increase in bufferX too
