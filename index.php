@@ -42,10 +42,11 @@ if(!$GINKGO_USER_ID)
 // == Page-specific configuration ==============================================
 // =============================================================================
 
-// Step 1 (choose cells) & Step 2 (specify email)
+// Step 1 (choose cells), Step 2 (job name, genome, etc), Step 3 (specify email)
 if($GINKGO_PAGE == "dashboard")
   $MY_CELLS = getMyFiles($GINKGO_USER_ID);
 
+// Step 4 (results)
 if($GINKGO_PAGE == "results")
   $CURR_CELL = $query[2];
 
@@ -74,10 +75,7 @@ $PANEL_LATER = <<<PANEL
 	<!-- Panel: Save for later -->
 	<div class="panel panel-primary">
 		<div class="panel-heading"><h3 class="panel-title"><span class="glyphicon glyphicon-time"></span> View analysis later</h3></div>
-		<div class="panel-body">
-			Access your results later at the following address:<br/><br/>
-			<textarea class="input-sm permalink">{$permalink}</textarea>
-		</div>
+		<div class="panel-body">Access your results later at the following address:<br/><br/><textarea class="input-sm permalink">{$permalink}</textarea></div>
 	</div>
 PANEL;
 
@@ -88,34 +86,10 @@ if(file_exists(DIR_UPLOADS . '/' . $GINKGO_USER_ID . '/status.xml'))
 	<!-- Panel: View previous analysis results -->
 	<div class="panel panel-primary">
 		<div class="panel-heading"><h3 class="panel-title"><span class="glyphicon glyphicon-stats"></span> Previous analysis results</h3></div>
-		<div class="panel-body">
-			See your <a href="?q=results/$GINKGO_USER_ID">previous analysis results</a>.<br/><br/>
-			<strong>Note</strong>: Running another analysis will overwrite previous results.
-		</div>
+		<div class="panel-body">See your <a href="?q=results/$GINKGO_USER_ID">previous analysis results</a>.<br/><br/><strong>Note</strong>: Running another analysis will overwrite previous results.</div>
 	</div>
 PANEL;
 }
-
-// -- Panel for annotating genes -----------------------------------------------
-$tmp_query = @file_get_contents($userDir . "/query.txt");
-if(file_exists($userDir . "/query.txt"))
-	$tmp_table = '<table class="table"><tr>'   .   '<td><b>Download intervals plotted:</b> <a target="_blank" href="' . URL_UPLOADS . '/' . $GINKGO_USER_ID . '/intervals.txt' .'">.txt</a>'."\n".'</td>'."\n"   .   '</tr></table>';
-
-$PANEL_ANNOTATE = <<<PANEL
-	<!-- Panel: Search for genes -->
-	<div id="results-search-genes" class="panel panel-default" style="display:none;">
-		<div class="panel-heading"><span class="glyphicon glyphicon-search"></span> Annotate copy-number profile</div>
-		<div class="panel-body">
-			Label copy-number profiles with the following chromosome positions:<br/><small>Format: chrName startPos endPos<br/>Specify one range per line.</small><br/><br/>
-			<textarea id="results-search-txt" class="form-control" rows="3" placeholder="chr1 10000 2392392">{$tmp_query}</textarea>
-		</div>
-		<table class="table">
-			<tr><td style="text-align:right"> <button type="button" class="btn btn-info" id="results-search-btn">Save</button> </td></tr>
-		</table>
-		<!-- Table -->
-		${tmp_table}
-	</div>
-PANEL;
 
 // -- Panel for downloading tree -----------------------------------------------
 $PANEL_DOWNLOAD = <<<PANEL
@@ -185,37 +159,11 @@ if($GINKGO_PAGE == 'admin-upload')
 
 
 // =============================================================================
-// == Launch gene annotation ===================================================
-// =============================================================================
-
-// if($GINKGO_PAGE == 'admin-annotate')
-// {
-// 	// Sanitize user input (see bootstrap.php)
-// 	array_walk_recursive($_POST, 'sanitize');
-// 	$genes = str_replace("'", "", $_POST['genes']);
-// 	$genes = str_replace(" ", "\t", $genes);
-
-// 	// Two notes about changing config:
-// 	// 	-> Don't want to send email to users when it's done => set email to empty
-// 	//	-> Change gene list file name (query.txt -- see scripts/analyze)
-// 	file_put_contents( $userDir . "/config", "email=\"\"\nquery=\"query.txt\"\ninit=0\nprocess=0\nfix=0\nq=1\n", FILE_APPEND );
-// 	file_put_contents( $userDir . "/query.txt", $genes );
-
-// 	// Start analysis
-// 	$cmd = "./scripts/analyze $GINKGO_USER_ID >> $userDir/ginkgo.out 2>&1  &";
-// 	session_regenerate_id(TRUE);	
-// 	$handle = popen($cmd, 'r');
-// 	pclose($handle);
-
-// 	exit;
-// }
-
-
-// =============================================================================
 // == Launch analysis ==========================================================
 // =============================================================================
 
-if(isset($_POST['analyze'])) {
+if(isset($_POST['analyze']))
+{
 	// Create user directory if doesn't exist
 	@mkdir($userDir);
 
@@ -249,15 +197,14 @@ if(isset($_POST['analyze'])) {
 
 		// Do we need to remap? This sets init to 1 if yes, 0 if not
 		$newBinParams	= ($oldParams['binMeth']   != $_POST['binMeth']) || 
-							($oldParams['binList'] != $_POST['binList']);
-		$newFacs		= ($oldParams['facs']    != $_POST['facs']);
-		//
+				  ($oldParams['binList']   != $_POST['binList']);
+		$newFacs	= ($oldParams['facs']      != $_POST['facs']);
 		$newSegParams	= ($oldParams['segMeth']   != $_POST['segMeth']) || ($_POST['segMethCustom'] != '');
 		$newClustering	= ($oldParams['clustMeth'] != $_POST['clustMeth']);
 		$newDistance	= ($oldParams['distMeth']  != $_POST['distMeth']);
-		$newColor		= ($oldParams['color']	   != $_POST['color']);
-		$sexChange		= ($oldParams['sex']	   != $_POST['sex']);
-		// Different files than last time?
+		$newColor	= ($oldParams['color']	   != $_POST['color']);
+		$sexChange	= ($oldParams['sex']	   != $_POST['sex']);
+		// Different cells to analyze than last time?
 		$cells = '';
 		foreach($_POST['cells'] as $cell)
 			$cells .= str_replace("'", "", $cell) . "\n";
@@ -268,16 +215,13 @@ if(isset($_POST['analyze'])) {
 		// Redo the mapping for all files
 		if($newBinParams)
 			$init = 1;
-
 		// Redo binning stuff
 		if($newBinParams || $newSegParams || $newColor || $newFacs)
 			$process = 1;
-
 		// Redraw dendrogams
-		# Only need to run fix when not running process
+		// Only need to run fix when not running process.R
 		if(!$process && !$init && ($newClustering || $newDistance || $sexChange))
 			$fix = 1;
-
 		// When redirect, if status file isn't changed quickly enough, will show up as 100% completed
 		// However, only delete status file if we need to redo at least 1 part of the analysis
 		if($init || $process || $fix) {
@@ -312,7 +256,6 @@ if(isset($_POST['analyze'])) {
 	$config.= 'f=' . $_POST['f'] . "\n";
 	$config.= 'facs=' . $_POST['facs'] . "\n";
 	$config.= 'q=' . $_POST['g'] . "\n";
-	//$config.= 'query=' . $_POST['query'] . "\n";
 	$config.= 'chosen_genome=' . $_POST['chosen_genome'] . "\n";
 	//
 	$config.= 'init=' . $init . "\n";
@@ -330,18 +273,17 @@ if(isset($_POST['analyze'])) {
 	$cmd = "./scripts/analyze $GINKGO_USER_ID >> $userDir/ginkgo.out 2>&1  &";
 	session_regenerate_id(TRUE);	
 	$handle = popen($cmd, 'r');
-	#$out = stream_get_contents($handle);
 	pclose($handle);
 	
 	// Save to cookie and file
 	setcookie("ginkgo[$GINKGO_USER_ID]", $_POST['job_name'], time()+36000000);
-	// 
 	file_put_contents($userDir . '/description.txt', $_POST['job_name']);
 
 	// Return OK status
 	echo "OK";
 	exit;
 }
+
 
 // =============================================================================
 // == If analysis under way, redirect to status page ===========================
@@ -360,6 +302,7 @@ if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 	}
 }
 
+// Load current settings
 $configFile = $userDir . "/config";
 if(file_exists($configFile)) {
 	$f = file($configFile);
@@ -398,7 +341,6 @@ if(file_exists($configFile)) {
 			.glyphicon  { vertical-align:top; }
 			.badge      { vertical-align:top; margin-top:5px; }
 			.permalink  { border:1px solid #DDD; width:100%; color:#666; background:transparent; font-family:"courier"; resize:none; height:50px; }
-			#results-navigation { display:none; }
 			.sorting_asc { background: url('includes/datatables/images/sort_asc.png') no-repeat center right; }
 			.sorting_desc { background: url('includes/datatables/images/sort_desc.png') no-repeat center right; }
 			.sorting { background: url('includes/datatables/images/sort_both.png') no-repeat center right; }
@@ -619,23 +561,20 @@ if(file_exists($configFile)) {
 								<tr>
 									<td>FACS file:</td>
 									<td>
-										<!-- <form enctype='multipart/form-data'> -->
-											<div class="fileupload fileupload-new" data-provides="fileupload">
-												<div class="input-append">
-													<div class="uneditable-input span3">
-														<i class="glyphicon glyphicon-upload"></i>
-														<span class="fileupload-preview"></span>
-													</div>
-
-													<span class="btn btn-file">
-														<span class="fileupload-new btn btn-success">Select .txt file</span>
-														<span class="fileupload-exists btn btn-success">Change</span>
-														<input type="file" name="params-facs-file" />
-													</span>
-
-													<a href="#" class="btn btn-danger fileupload-exists" data-dismiss="fileupload">Remove</a>
+										<div class="fileupload fileupload-new" data-provides="fileupload">
+											<div class="input-append">
+												<div class="uneditable-input span3">
+													<i class="glyphicon glyphicon-upload"></i>
+													<span class="fileupload-preview"></span>
 												</div>
+												<span class="btn btn-file">
+													<span class="fileupload-new btn btn-success">Select .txt file</span>
+													<span class="fileupload-exists btn btn-success">Change</span>
+													<input type="file" name="params-facs-file" />
+												</span>
+												<a href="#" class="btn btn-danger fileupload-exists" data-dismiss="fileupload">Remove</a>
 											</div>
+										</div>
 									</td>
 								</tr>
 							</table>
@@ -653,9 +592,6 @@ if(file_exists($configFile)) {
 					</div>
 					<br/><br/>
 
-				<!-- buttons -->
-
-				
 					<!-- Set parameters -->
 					<h3 style="margin-top:-5px;"><span class="badge">OPTIONAL</span> <a href="#parameters" onClick="javascript:$('#params-table').toggle();">Advanced parameters</a></h3>
 					<table class="table table-striped" id="params-table">
@@ -791,7 +727,6 @@ if(file_exists($configFile)) {
 					<a name="parameters"></a>
 
 					<!-- Buttons: back or next -->
-					<!-- <hr style="height:5px;border:none;background-color:#CCC;" /> -->
 					<?php
 						$btnCaption = 'Start Analysis';
 						if(file_exists($configFile))
@@ -819,17 +754,11 @@ if(file_exists($configFile)) {
 			<!-- Results -->
 			<div class="row">
 				<div id="results" class="col-lg-8">
- 					<!-- <div style="float:left"><a class="btn btn-small btn-primary" href="?q=dashboard/<?php echo $GINKGO_USER_ID; ?>"><span class="glyphicon glyphicon-chevron-left"></span> Analysis Options </a></div>
-					<br style="clear:both;"/>
-					<hr> -->
-
 					<h3 style="margin-top:-5px;"><span class="badge">STEP 3</span> View results</h3>
-
 					<div id="results-tree" class="panel panel-info">
 						<div class="panel-heading"><h3 class="panel-title"><span class="glyphicon glyphicon-tree-deciduous"></span> Tree</h3></div>
 						<div class="panel-body">
 							<div id="svgCanvas" class="row-fluid" style="border:0px solid red; ">
-								<!-- <p>Click on individual cells for details of the copy-number analysis.</p> -->
 								Loading tree... <img src="loading.gif" />
 							</div>
 						</div>
@@ -839,19 +768,10 @@ if(file_exists($configFile)) {
 					<!-- Panel: Summary -->
 					<div id="results-summary" class="panel panel-default">
 						<div class="panel-heading"><span class="glyphicon glyphicon-certificate"></span> Summary</div>
-						<!-- <div class="panel-body" id="results-QA-loadingTxt">
-							<p>Verifying that your files are adequate for copy-number analysis...</p>
-						</div> -->
-						<!-- Table -->
-<!-- 							<table class="table" style="min-height:0px;">
-							</table>
- -->						<div style="height:300px; overflow:auto;">
-							<table class="table" id="results-QA-table" style="display:none;">
-							</table>
-						</div>
+						<div style="height:300px; overflow:auto;"><table class="table" id="results-QA-table" style="display:none;"></table></div>
 						<table class="table">
 							<tr><td><b>Download detailed quality assessment:</b> 
-								<a target="_blank" href="<?php echo URL_UPLOADS . '/' . $GINKGO_USER_ID . '/SegStats'; ?>">.txt</a>							
+								<a target="_blank" href="<?php echo URL_UPLOADS . '/' . $GINKGO_USER_ID . '/SegStats'; ?>">.txt</a>		
 							</td></tr>
 						</table>
 					</div>
@@ -890,7 +810,6 @@ if(file_exists($configFile)) {
 					<!-- Buttons: back or next -->
 					<div id="results-navigation">
 						<br/>
-						<!-- <br/><hr style="height:5px;border:none;background-color:#CCC;" /> <br/>-->
 						<hr>
 						<?php if($GINKGO_USER_ID != 'sample' && $GINKGO_USER_ID != 'sample2'): ?>
 						<div style="float:left"><a class="btn btn-lg btn-primary" href="?q=dashboard/<?php echo $GINKGO_USER_ID; ?>"><span class="glyphicon glyphicon-chevron-left"></span> Analysis Options </a></div>
@@ -905,7 +824,6 @@ if(file_exists($configFile)) {
 					<br>
 					<?php echo $PANEL_DOWNLOAD; ?>
 					<br>
-					<?php //echo $PANEL_ANNOTATE; ?>
 				</div>
 			</div>
 
@@ -927,7 +845,6 @@ if(file_exists($configFile)) {
 						<div style="float:left"><a class="btn btn-lg btn-primary" href="?q=results/<?php echo $GINKGO_USER_ID; ?>"><span class="glyphicon glyphicon-chevron-left"></span> Back to tree </a></div>
 					</div>
 					<br style="clear:both"/>
-					<!-- <hr style="height:5px;border:none;background-color:#CCC;" />-->
 					<br/>
 
 					<!-- Panel: Copy-number profile -->
@@ -999,33 +916,22 @@ if(file_exists($configFile)) {
 								<tr><td>
 									<b>GC Correction</b>
 									<a href="<?php echo URL_UPLOADS . "/" . $GINKGO_USER_ID . "/" . $CURR_CELL . "_GC.jpeg?uniq=" . rand(1e6,2e6); ?>"><img style="width:100%;" src="<?php echo URL_UPLOADS . "/" . $GINKGO_USER_ID . "/" . $CURR_CELL . "_GC.jpeg";?>"></a>
-									<!-- <span style="text-align:center"><small>Binned read count distribution across the genome; allows for identification of cells with strange read coverage.</small></span> -->
 								</td></tr>
 
 								<tr><td>
 									<b>Sum Of Squares Error</b>
 									<a href="<?php echo URL_UPLOADS . "/" . $GINKGO_USER_ID . "/" . $CURR_CELL . "_SoS.jpeg?uniq=" . rand(1e6,2e6); ?>"><img style="width:100%;" src="<?php echo URL_UPLOADS . "/" . $GINKGO_USER_ID . "/" . $CURR_CELL . "_SoS.jpeg";?>"></a>
-									<!-- <p style="text-align:center"><small>Single cell data should fit a negative binomial distribution with narrower histograms representing higher quality data. Wide histograms without a distinct peak are representative of a high degree of amplification bias. Histograms with a mode near zero have a high degree of “read dropout” and are generally the result of poor library preparation or technical sequencing error.</small></p> -->
 								</td></tr>
-
 							</table>
-					</div>
+						</div>
 
-					<!-- Buttons: back or next -->
-					<div id="results-navigation2">
-						<!-- <hr style="height:5px;border:none;background-color:#CCC;" /> --><br/>
-						<div style="float:left"><a class="btn btn-lg btn-primary" href="?q=results/<?php echo $GINKGO_USER_ID; ?>"><span class="glyphicon glyphicon-chevron-left"></span> Back to tree </a></div>
-						<br/><br/><br/><br/>
+						<!-- Buttons: back or next -->
+						<div id="results-navigation2">
+							<div style="float:left"><a class="btn btn-lg btn-primary" href="?q=results/<?php echo $GINKGO_USER_ID; ?>"><span class="glyphicon glyphicon-chevron-left"></span> Back to tree </a></div>
+							<br/><br/><br/><br/>
+						</div>
 					</div>
 				</div>
-
-				<?php
-				/*<div class="col-lg-4">
-					<?php echo $PANEL_LATER; ?>
-				</div>
-				*/
-				?>
-			</div>
 
 			<?php endif; ?>
 
@@ -1335,9 +1241,6 @@ if(file_exists($configFile)) {
 				// Update progress bar % completed
 				if(percentdone > 100)
 					percentdone = 100;
-//				// Load tree
-//				if(typeof tree != 'undefined')
-//					drawTree(tree);
 
 				// When we're done with the analysis, stop getting progress continually
 				// if((step >= 3 && percentdone >= 100) || typeof step == 'undefined')
@@ -1551,28 +1454,17 @@ if(file_exists($configFile)) {
 				ginkgo_phylocanvas = new Smits.PhyloCanvas(dataObject, 'svgCanvas', treeWidth, treeHeight); //, 'circular'
 
 				// Resize SVG to fit by height
-			    var c = document.getElementsByTagName("svg");
+				var c = document.getElementsByTagName("svg");
 				//var rec = c[0].getBoundingClientRect();	// Works in FF, not in Chrome
-				var rec = c[0].getBBox();					// Works in FF, Chrome
+				var rec = c[0].getBBox();			// Works in FF, Chrome
 
 				$("svg").css("height", rec.height+50 + "px");
-				// console.log(rec.height+50);
-				// console.log($("svg").css("height"));
 
 				// Init unitip (see unitip.css to change tip size)
 				init();
 			});
 		}
-		<?php
-		/*
-			# Make compressed graph of copy-number profile for first cell
-			awk 'BEGIN{print "Index,Plot"}{ if(NR>1) print (NR-1)","$4 }' data/uber.9727420.seg.quantal.5k.txt > 9727420.seg.5k.csv
-			awk -F "," 'BEGIN{prev="NA";prevLine="";}{if(NR==1){print;}else{if(prev!=$2){if(prevLine!=""&&NR>2){print prevLine; print (NR-2)","$2;} print; prev=$2;}} prevLine=$0;}' 9727420.seg.5k.csv > 9727420.seg.5k.csv.compressed
 
-			# Make chromosome boundaries
-			awk 'BEGIN{prevChrom="";}{if(prevChrom!=$1){print NR"\t"$0; prevChrom=$1;}}' data/uber.9727420.seg.quantal.5k.txt | tail -n +3 > 9727420.seg.5k.csv.boundaries
-		*/
-		?>
 
 		// =========================================================================
 		// == Load profile =========================================================
@@ -1600,11 +1492,8 @@ if(file_exists($configFile)) {
 				// Note i=1 b/c skipping header
 				for(i=1; i<binToPos.length; i++) {
 					tmp = binToPos[i].split('\t');
-					binToPos[i] = tmp //binToPos[i].replace(tmp[0]+'\t', '')
-					//alert(i + "\t" + binToPos[i][1])
+					binToPos[i] = tmp
 				}
-
-				//alert(binToPos)
 
 				// -- Load data file -----------------------------------------------------
 				var blockRedraw = false;
@@ -1623,7 +1512,7 @@ if(file_exists($configFile)) {
 							axisLabelFontSize: axisFontSize,
 							axisLabelColor: axisColor,
 							// Grid
-							drawYGrid: true,//drawGrid: false,
+							drawYGrid: true,
 							drawXGrid: false,
 							gridLineColor: '#ccc',
 							// Title
@@ -1638,20 +1527,17 @@ if(file_exists($configFile)) {
 								'border': '1px solid black',
 								'borderRadius': '5px',
 								'boxShadow': '4px 4px 4px #888',
-								'display': 'block',//labelsDisplay,
+								'display': 'block',
 							},
         					labels:["Bin Number", "Copy-Number"],
 							axes: {
 							  x: {
 							    valueFormatter: function(x) {
-							      //return 'Bin (' + new Date(ms).strftime('%Y-%m-%d') + ')';
-							      //alert(document.getElementById("xdimensions"));
 							      return '<b>Bin ' + x + '</b>' + '<br/><span> <span style="color: rgb(0,128,128);"><b>Position</b>:&nbsp;</span>' + binToPos[x][0] + ':' + binToPos[x][1] + '-' + binToPos[x+1][1] + ' <a target="_blank" href="https://genome.ucsc.edu/cgi-bin/hgTracks?db=<?php echo $config["chosen_genome"]; ?>&position=' + binToPos[x][0] + ':' + binToPos[x][1] + '-' + binToPos[x+1][1] + '"><img src="http://i.stack.imgur.com/3H2PQ.png"></a><br/><div style="display:none">';
 							    },
 							  },
 							  y: {
 							    valueFormatter: function(y) {
-							      //return 'Bin (' + new Date(ms).strftime('%Y-%m-%d') + ')';
 							      return '</div><b><span style="color: rgb(0,128,128);">Copy-Number</span></b>:&nbsp;' + y;
 							    },
 							  },
@@ -1671,39 +1557,6 @@ if(file_exists($configFile)) {
 									}
 							},
 
-							drawCallback: function(me, initial) {
-							// // Synchronize zooming into plot
-							// 	if (blockRedraw || initial) return;
-							// 	blockRedraw = true;
-							// 	var range = me.xAxisRange();
-							// 	var yrange = me.yAxisRange();
-							// 	for(j in allCellProfiles)
-							// 	{
-							// 		if (allCellProfiles[j] == me)
-							// 			continue;
-							// 		allCellProfiles[j].updateOptions( {
-							// 			dateWindow: range,
-							// 			valueRange: yrange
-							// 		} );
-							// 	}
-							// 	blockRedraw = false;
-
-							// // Show selected range in UCSC (but it can't support multiple chromosomes)
-								// alert(g.xAxisRange()[0] + '-' + g.xAxisRange()[1])
-								// chrpos = binToPos[g.xAxisRange()[0]][0]+':' + 3 + '-' + 4;
-								// $('#cnv-ucsc').html('<a href="https://genome.ucsc.edu/cgi-bin/hgTracks?db=<?php echo $config["chosen_genome"]; ?>&position=' + chrpos + '">See current range in UCSC browser</a>');
-							},	
-
-							// Click callback
-							clickCallback: function(e, x, pts) {
-								// Get bin number and copy-number value
-								//binNb = pts[0].xval;
-								//cnVal = pts[1].yval;
-
-								// Figure out chr:pos from bin number
-								// 
-								//alert('wtf' + pts.xval)
-							},
 						}
 					)
 				);
@@ -1732,7 +1585,7 @@ if(file_exists($configFile)) {
 		};
 
 		// 
-	    var toArray = function(data) {
+		var toArray = function(data) {
 			var lines = data.split("\n");
 			var arry = [];
 			for (var idx = 0; idx < lines.length; idx++)
@@ -1748,7 +1601,7 @@ if(file_exists($configFile)) {
 				arry.push(row);
 			}
 			return arry;
-	    }
+		}
 
 		// =====================================================================
 		// == View current region in UCSC browser in new tab/window ============
