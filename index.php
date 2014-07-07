@@ -557,26 +557,6 @@ if(file_exists($configFile)) {
 										</select>
 									</td>
 								</tr>
-
-								<tr>
-									<td>FACS file:</td>
-									<td>
-										<div class="fileupload fileupload-new" data-provides="fileupload">
-											<div class="input-append">
-												<div class="uneditable-input span3">
-													<i class="glyphicon glyphicon-upload"></i>
-													<span class="fileupload-preview"></span>
-												</div>
-												<span class="btn btn-file">
-													<span class="fileupload-new btn btn-success">Select .txt file</span>
-													<span class="fileupload-exists btn btn-success">Change</span>
-													<input type="file" name="params-facs-file" />
-												</span>
-												<a href="#" class="btn btn-danger fileupload-exists" data-dismiss="fileupload">Remove</a>
-											</div>
-										</div>
-									</td>
-								</tr>
 							</table>
 					</div>
 
@@ -594,9 +574,9 @@ if(file_exists($configFile)) {
 
 					<!-- Set parameters -->
 					<h3 style="margin-top:-5px;"><span class="badge">OPTIONAL</span> <a href="#parameters" onClick="javascript:$('#params-table').toggle();">Advanced parameters</a></h3>
-					<table class="table table-striped" id="params-table">
+					<table class="table" id="params-table"><!-- table-striped -->
 						<tbody>
-							<tr><td colspan="2"><strong>Sample Parameters</strong></td></tr>
+							<tr class="active"><td colspan="2"><strong>Sample Parameters</strong></td></tr>
 							<tr>
 								<td>CNV Profile Color Scheme</td>
 								<?php $selected = array(); $selected[$config['color']] = ' selected'; ?>
@@ -638,11 +618,11 @@ if(file_exists($configFile)) {
 								<td>Binning Simulation Options</td>
 								<td>
 									<?php $selected = array(); $selected[$binMeth[2]] = ' selected'; ?>
-									Define bins based on simulations of <select id="param-bins-sim-rlen" class="input-mini" style="margin-top:8px; font-size:11px; padding-top:3px; padding-bottom:0; height:25px; ">
+									Bins based on simulations of <select id="param-bins-sim-rlen" class="input-mini" style="margin-top:8px; font-size:11px; padding-top:3px; padding-bottom:0; height:25px; ">
 									<option value="101_"<?php echo $selected['101']; ?>>101</option>
 									<option value="76_"<?php echo $selected['76']; ?>>76</option>
 									<option value="48_"<?php echo $selected['48']; ?>>48</option>
-									</select> bp reads, mapped using
+									</select> bp reads, mapped with
 
 									<?php $selected = array(); $selected[$binMeth[3]] = ' selected'; ?>
 									<select id="param-bins-sim-mapper" class="input-mini" style="margin-top:8px; font-size:11px; padding-top:3px; padding-bottom:0; height:25px; ">
@@ -682,7 +662,7 @@ if(file_exists($configFile)) {
 								</td>
 							</tr>
 
-							<tr><td colspan="2"><strong>Clustering Parameters</strong></td></tr>
+							<tr class="active"><td colspan="2"><strong>Clustering Parameters</strong></td></tr>
 							<tr>
 								<td>Clustering</td>
 								<td>
@@ -714,6 +694,28 @@ if(file_exists($configFile)) {
 								<td>
 									<?php $checked = " checked"; if($config['sex'] == '0') $checked=""; ?>
 									<input type="checkbox" id="dashboard-include-sex"<?php echo $checked;?>>
+								</td>
+							</tr>
+
+
+							<tr class="active"><td colspan="2"><strong>FACS File</strong></td></tr>
+							<tr>
+								<td>FACS file:</td>
+								<td>
+									<div class="fileupload fileupload-new" data-provides="fileupload">
+										<div class="input-append">
+											<div class="uneditable-input span3">
+												<i class="glyphicon glyphicon-upload"></i>
+												<span class="fileupload-preview"></span>
+											</div>
+											<span class="btn btn-file">
+												<span class="fileupload-new btn btn-success">Select .txt file</span>
+												<span class="fileupload-exists btn btn-success">Change</span>
+												<input type="file" name="params-facs-file" />
+											</span>
+											<a href="#" class="btn btn-danger fileupload-exists" data-dismiss="fileupload">Remove</a>
+										</div>
+									</div>
 								</td>
 							</tr>
 						</tbody>

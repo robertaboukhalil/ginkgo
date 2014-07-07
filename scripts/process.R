@@ -259,7 +259,7 @@ for(k in 1:w){
     axis(side=2, at=seq(0,1,.1), tcl=.5, cex.axis=2)
     axis(side=3, at=seq(0,1,.1), tcl=.5, cex.axis=2, labels=FALSE)
     axis(side=4, at=seq(0,1,.1), tcl=.5, cex.axis=2, labels=FALSE)
-    lines(smooth.spline(lorenz), col=col1[cp,2], lwd=2.5)
+    try(lines(smooth.spline(lorenz), col=col1[cp,2], lwd=2.5), silent=TRUE)
     lines(c(0,1), c(0,1), lwd=2.5)
     tu <- par('usr')
     par(xpd=FALSE)
@@ -276,7 +276,7 @@ for(k in 1:w){
     app <- approx(low$x, low$y, GC[,1])
     cor <- exp(log(normal2[,k]) - app$y)
     
-    plot(GC[,1], log(normal2[,k]), main=paste("GC Content vs. Bin Count\nSample ", lab[k], " (Uncorrected)", sep=""), type= "n", xlim=c(min(.3, min(GC[,1])), max(.6, max(GC[,1]))), xlab="GC content", ylab="Normalized Read Counts (Log Scale)", cex.main=3, cex.axis=2, cex.lab=2)
+    try(plot(GC[,1], log(normal2[,k]), main=paste("GC Content vs. Bin Count\nSample ", lab[k], " (Uncorrected)", sep=""), type= "n", xlim=c(min(.3, min(GC[,1])), max(.6, max(GC[,1]))), xlab="GC content", ylab="Normalized Read Counts (Log Scale)", cex.main=3, cex.axis=2, cex.lab=2))
     tu <- par('usr')
     par(xpd=FALSE)
     rect(tu[1], tu[3], tu[2], tu[4], col = "gray85")
@@ -286,7 +286,7 @@ for(k in 1:w){
     points(app, col=col1[cp,2])
     legend("bottomright", inset=.05, legend="Lowess Fit", fill=col1[cp,2], cex=2.5)
 
-    plot(GC[,1], log(cor), main=paste("GC Content vs. Bin Count\nSample ", lab[k], " (Corrected)", sep=""), type= "n", xlim=c(min(.3, min(GC[,1])), max(.6, max(GC[,1]))), xlab="GC content", ylab="Normalized Read Counts (log scale)", cex.main=3, cex.axis=2, cex.lab=2)
+    try(plot(GC[,1], log(cor), main=paste("GC Content vs. Bin Count\nSample ", lab[k], " (Corrected)", sep=""), type= "n", xlim=c(min(.3, min(GC[,1])), max(.6, max(GC[,1]))), xlab="GC content", ylab="Normalized Read Counts (log scale)", cex.main=3, cex.axis=2, cex.lab=2))
     tu <- par('usr')
     par(xpd=FALSE)
     rect(tu[1], tu[3], tu[2], tu[4], col = "gray85")
