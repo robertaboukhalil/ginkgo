@@ -719,47 +719,50 @@ class UploadHandler
                     $fileDirname   = pathinfo($file_path, PATHINFO_DIRNAME );
                     $fileName      = pathinfo($file_path, PATHINFO_FILENAME);
 
-										## ------------------------------------------------------------------------
+
+                    //file_put_contents('/mnt/data/ginkgo/uploads/_nucseq_TNBC_navin/wtf', 'hai' . $fileExtension);
+
+					## ------------------------------------------------------------------------
                     ## --- Handle .zip files --------------------------------------------------
-										## ------------------------------------------------------------------------
+					## ------------------------------------------------------------------------
                     if($fileExtension == "zip")
                     {
                     	//
-											$this->options['ginkgo_zip'] = true;
+						$this->options['ginkgo_zip'] = true;
 
-											// -- Go through the files in the .zip and only unzip .bed files
+						// -- Go through the files in the .zip and only unzip .bed files
                     	$zip = new ZipArchive;
-											if($zip->open($file_path))
-											{
-												for($i = 0; $i < $zip->numFiles; $i++)
-												{
-													$subfilename = $zip->getNameIndex($i);
-													$subfileinfo = pathinfo($subfilename);
-													if($subfileinfo['extension'] == "bed")
-														copy("zip://".$file_path."#".$subfilename, $fileDirname . '/' . $subfilename);
-												}
-											  $zip->close();
-											}
-											// -- Delete archive after extracting
-											unlink($file_path);
+						if($zip->open($file_path))
+						{
+							for($i = 0; $i < $zip->numFiles; $i++)
+							{
+								$subfilename = $zip->getNameIndex($i);
+								$subfileinfo = pathinfo($subfilename);
+								if($subfileinfo['extension'] == "bed")
+									copy("zip://".$file_path."#".$subfilename, $fileDirname . '/' . $subfilename);
+							}
+						  $zip->close();
+						}
+						// -- Delete archive after extracting
+						unlink($file_path);
                     }
 
-										## ------------------------------------------------------------------------
+					## ------------------------------------------------------------------------
                     ## --- Handle .tar.gz/.tar... files ---------------------------------------
-										## ------------------------------------------------------------------------
-										if($fileExtension == "tar" || $fileExtension == "tgz")
-										{
-											// -- Extract .bed files from tar file
-											$this->options['ginkgo_zip'] = true;
-											$cmd = "tar -xvf $file_path -C $fileDirname/ *.bed --exclude=\"._*\"";
-											// -- Add redirection so we can get stderr.
-											session_regenerate_id(TRUE);	
-											$handle = popen($cmd, 'r');
-											$out = stream_get_contents($handle);
-											pclose($handle);
-											// -- Delete archive after extracting
-											unlink($file_path);
-										}
+    				## ------------------------------------------------------------------------
+    				if($fileExtension == "tar" || $fileExtension == "tgz" || $fileExtension == "tar.gz" || $fileExtension == "gz")
+    				{
+    					// -- Extract .bed files from tar file
+    					$this->options['ginkgo_zip'] = true;
+    					$cmd = "tar -xvf $file_path -C $fileDirname/ *.bed --exclude=\"._*\"";
+    					// -- Add redirection so we can get stderr.
+    					session_regenerate_id(TRUE);	
+    					$handle = popen($cmd, 'r');
+    					$out = stream_get_contents($handle);
+    					pclose($handle);
+    					// -- Delete archive after extracting
+    					unlink($file_path);
+    				}
 
                 }
 
