@@ -1249,7 +1249,8 @@ if(file_exists($configFile)) {
 				if( overallDone >= 100 || typeof step == 'undefined' )
 				{
 					// Plot tree
-					drawTree(tree);
+					// drawTree(tree);
+					drawTree('clust3.xml');
 					// Remove auto-update timer
 					clearInterval(ginkgo_progress);
 					Tinycon.setBubble(0);
@@ -1311,7 +1312,14 @@ if(file_exists($configFile)) {
 					rndNb = Math.round(Math.random()*10000); // to prevent browser from caching xml file!
 					cnvProfileUrl = "<?php echo URL_UPLOADS; ?>/" + ginkgo_user_id + '/' + cell + '_CN.jpeg?uniq=' + rndNb;
 					cellUrl = "?q=results/" + ginkgo_user_id + "/" + cell;
-					newLine =	'<tr>' + 
+
+					//
+					rowClass = ''
+					if(numberWithCommas(arrLine[3].replace(/"/g, '')) < 1)
+						rowClass = ' class="danger"'
+
+					//
+					newLine =	'<tr' + rowClass + '>' + 
 									'<td width="15%" style="text-align:center"><a href="' + cellUrl + '">' + cell + '</a></td>' + 
 									'<td width="25%" style="text-align:center"><a href="' + cellUrl + '"><img height="40" src="' + cnvProfileUrl + '"></a></td>' + 
 									'<td width="15%" style="text-align:center">' + numberWithCommas(arrLine[1].replace(/"/g, '')) + '</td>' + 
