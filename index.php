@@ -920,7 +920,7 @@ if($GINKGO_PAGE == 'admin-search')
 								<tr><td colspan="3">
 									<b>Genome-wide read distribution</b>
 									<a href="<?php echo URL_UPLOADS . "/" . $GINKGO_USER_ID . "/" . $CURR_CELL . "_dist.jpeg?uniq=" . rand(1e6,2e6); ?>"><img style="width:100%;" src="<?php echo URL_UPLOADS . "/" . $GINKGO_USER_ID . "/" . $CURR_CELL . "_dist.jpeg";?>"></a>
-									<p style="text-align:center"><small>The read count distribution spanning the full genome once reads have been talied within bin boundaries.</small></p>
+									<p style="text-align:center"><small>The read count distribution spanning the full genome once reads have been tallied within bin boundaries.</small></p>
 								</td></tr>
 								<tr>
 									<td style="text-align:center"><b>Histogram of read count frequency</b></td>
@@ -941,7 +941,7 @@ if($GINKGO_PAGE == 'admin-search')
 								<tr>
 									<td><p style="text-align:center"><small>Single cell data should fit a negative binomial distribution with narrower histograms representing higher quality data. Wide histograms without a distinct peak are representative of a high degree of amplification bias. Histograms with a mode near zero have a high degree of “read dropout” and are generally the result of poor library preparation or technical sequencing error.</small></p></td>
 									<td><p style="text-align:center"><small>The Lorenz curve gives the cumulative fraction of reads as a function of the cumulative fraction of the genome.  Perfect coverage uniformity results in a straight line with slope 1.  The wider the curve below the line of “perfect uniformity” the lower the coverage uniformity of a sample.</small></p></td>
-									<td><p style="text-align:center"><small>Caption</small></p></td>
+									<td><p style="text-align:center"><small>A histogram of the scaled read count distribution.  Samples with a low coverage dispersion will have reads counts the closely bound the interger copy number state.  These can be seen as clear peaks at integer values of the histrogram.  Samples without clear peaks are indicative of lower quality samples and we recommend choosing a larger binning interval to control the signal to noise ratio.</small></p></td>
 								</tr>
 
 							</table>
