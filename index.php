@@ -313,6 +313,23 @@ if(file_exists($configFile)) {
 	}
 }
 
+//
+if($GINKGO_PAGE == 'admin-search')
+{
+	$file = DIR_ROOT . '/genomes/' . $config['chosen_genome'] . '/genes_' . $config['binMeth'];
+	$gene = escapeshellarg($_GET['gene']);
+	$bin  = escapeshellarg($_GET['binNumber']);
+
+	//
+	if(isset($_GET['gene']))
+		die(`grep -i -w $gene $file | head -n 1 | cut -f3`);
+	//
+	if(isset($_GET['binNumber']))
+		die(`awk '{if($3==$bin) print $2}' $file | sort | uniq`);
+}
+
+
+
 // =============================================================================
 // == HTML template ============================================================
 // =============================================================================
@@ -859,13 +876,32 @@ if(file_exists($configFile)) {
 						</div>
 						<!-- Table -->
 						<table class="table">
-							<tr><td><div class="div_g" id="cell_cnv" style="width:95%;height:200px;"></div></td></tr>
-							<tr><td style="text-align:center">
-								<small><b>Click + Drag</b>: zoom in on a region</small>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-								<!-- <small><b>Click + Drag vertically</b>: zoom in vertically</small><br/> -->
-								<small><b>Shift + Click</b>: move the profile</small>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-								<small><b>Double-click</b>: zoom out</small><br/>
-							</td></tr>
+							<tr><td colspan="3"><div class="div_g" id="cell_cnv" style="width:95%;height:200px;"></div></td></tr>
+							<tr>
+								<td style="text-align:center; width:50%">
+									<small><b>Click + Drag</b>: zoom in</small>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+									<small><b>Shift + Click</b>: move profile</small>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+									<small><b>Double-click</b>: zoom out</small><br/>
+								</td>
+								<td style="text-align:center; width:30%; border-left:1px solid #ccc;">
+									<form class="form-inline" role="form">
+										<div class="form-group">
+											<small><label for="searchForGeneName">Find gene:</label></small>
+											<input id="searchForGeneName" type="text" class="form-control" style="width:120px !important;">
+										</div>
+										<a id="searchForGeneBtn" class="btn btn-sm btn-info" href="#" onclick="javascript:searchForGene()">Search</a>
+									</form>
+								</td>
+								<td style="text-align:center; width:30%; border-left:1px solid #ccc;">
+									<form class="form-inline" role="form">
+										<div class="form-group">
+											<small><label for="searchForBin">List genes in bin #</label></small>
+											<input id="searchForBin" type="text" class="form-control" style="width:90px !important;">
+										</div>
+										<a id="listGenesBtn" class="btn btn-sm btn-info" href="#" onclick="javascript:listGenes()">List</a>
+									</form>
+								</td>
+							</tr>
 						</table>
 					</div>
 
@@ -1045,6 +1081,7 @@ if(file_exists($configFile)) {
 		================================================== -->
 		<script language="javascript">
 		var ginkgo_user_id = "<?php echo $GINKGO_USER_ID; ?>";
+		var g = null;
 
 		// -------------------------------------------------------------------------
 		// -- On page load ---------------------------------------------------------
@@ -1151,7 +1188,10 @@ if(file_exists($configFile)) {
 
 						binMethVal = $('#param-bins-type').val() + $('#param-bins-value').val() + $('#param-bins-sim-rlen').val() + $('#param-bins-sim-mapper').val();
 						if($('#param-bins-type').val() == 'fixed_')
+						{
 							binMethVal = $('#param-bins-type').val() + $('#param-bins-value').val();
+							binMethVal = binMethVal.substring(0, binMethVal.length - 1);
+						}
 
 						$.post("?q=dashboard/" + ginkgo_user_id, {
 								// General
@@ -1368,26 +1408,26 @@ if(file_exists($configFile)) {
 					}
 					loadCellProfile('cnv');
 
-					// Chromosome annotations
-					n = 0;
-					allAnnotations = [];
-					for(j in chromBoundaries)
-					{
-						chr = parseInt(j);
-						if(chromBoundaries[chr] != "")
-						{
-							allAnnotations.push(
-							{
-								series: allCells[n],
-								x: (parseInt(chromBoundaries[chr])-1),
-								shortText: (chr+1),
-								text: "<-- chr" + (chr+1)
-							}
-							);
-						}
-					}
+					// // Chromosome annotations
+					// n = 0;
+					// allAnnotations = [];
+					// for(j in chromBoundaries)
+					// {
+					// 	chr = parseInt(j);
+					// 	if(chromBoundaries[chr] != "")
+					// 	{
+					// 		allAnnotations.push(
+					// 		{
+					// 			// series: allCells[n],
+					// 			x: (parseInt(chromBoundaries[chr])-1),
+					// 			shortText: (chr+1),
+					// 			text: "<-- chr" + (chr+1)
+					// 		}
+					// 		);
+					// 	}
+					// }
 
-					allCellProfiles[n].setAnnotations(allAnnotations);
+					// allCellProfiles[n].setAnnotations(allAnnotations);
 				});
 
 
@@ -1646,7 +1686,64 @@ if(file_exists($configFile)) {
 			window.open('https://genome.ucsc.edu/cgi-bin/hgTracks?db=<?php echo $config["chosen_genome"]; ?>&position=' + range, '_blank')
 		}
 
+		//
+		function searchForGene()
+		{
+			$('#searchForGeneBtn').toggleClass('disabled', 'true');
+			gene = $("#searchForGeneName").val()
+
+			$.get("?q=admin-search/" + ginkgo_user_id + '&gene=' + gene, function(binNumber){
+				if(binNumber == "" || binNumber == 'NaN')
+				{
+					$('#searchForGeneBtn').toggleClass('disabled', 'false');
+					alert('Gene not found :(')
+					return
+				}
+
+				binNumber = parseInt(binNumber)
+
+				allAnnotations = g.annotations();
+				allAnnotations.push(
+				{
+					series: 'Copy-Number',
+					x: binNumber,
+					shortText: gene,
+					width: 40,
+					height: 20,
+					cssClass: 'graph-annotations',
+					text: "Gene: " + gene
+				}
+				);
+				console.log(g)
+
+				g.updateOptions({
+					dateWindow: [binNumber - 200, binNumber + 200]
+				});
+
+				g.setAnnotations(allAnnotations);
+
+				$('#searchForGeneBtn').toggleClass('disabled', 'false');
+			});
+		}
+		//
+		function listGenes()
+		{
+			binNumber = parseInt($("#searchForBin").val())
+			$.get("?q=admin-search/" + ginkgo_user_id + '&binNumber=' + binNumber, function(genes){
+				alert('Genes in bin ' + binNumber + ':\n' + '----------------------\n' + genes)
+			})
+		}
+
 		</script>
 
+		<style>
+		.graph-annotations
+		{
+			font-size: 11px !important;
+			color: #fff !important;
+			background-color: #c73030;
+
+		}
+		</style>
 	</body>
 </html>
