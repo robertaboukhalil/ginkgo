@@ -1711,7 +1711,7 @@ if($GINKGO_PAGE == 'admin-search')
 					width: 40,
 					height: 20,
 					cssClass: 'graph-annotations',
-					text: "Gene: " + gene
+					text: "Gene: " + gene + "\nBin: " + binNumber
 				}
 				);
 				console.log(g)
