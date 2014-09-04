@@ -1733,6 +1733,21 @@ if($GINKGO_PAGE == 'admin-search')
 				alert('Genes in bin ' + binNumber + ':\n' + '----------------------\n' + genes)
 			})
 		}
+		//
+		$('#searchForGeneName').bind('keydown', function(e) {
+			if (e.keyCode == 13)
+			{
+				searchForGene()
+				e.preventDefault();
+			}
+		});
+		$('#searchForBin').bind('keydown', function(e) {
+			if (e.keyCode == 13)
+			{
+				listGenes()
+				e.preventDefault();
+			}
+		});
 
 		</script>
 
