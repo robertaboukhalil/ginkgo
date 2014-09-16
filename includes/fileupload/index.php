@@ -10,9 +10,9 @@ session_start();
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <!-- Styles -->
-<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css">
+<link rel="stylesheet" href="css/bootstrap.min.css">
 <link rel="stylesheet" href="css/style.css">
-<link rel="stylesheet" href="http://blueimp.github.io/Gallery/css/blueimp-gallery.min.css">
+<link rel="stylesheet" href="css/blueimp-gallery.min.css">
 <link rel="stylesheet" href="css/jquery.fileupload-ui.css">
 <noscript><link rel="stylesheet" href="css/jquery.fileupload-ui-noscript.css"></noscript>
 </head>
@@ -164,18 +164,24 @@ session_start();
 
 
 
-<script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+<script src="js/jquery.min.js"></script>
 <script src="js/vendor/jquery.ui.widget.js"></script>
-<script src="http://blueimp.github.io/JavaScript-Templates/js/tmpl.min.js"></script>
-<script src="http://blueimp.github.io/JavaScript-Load-Image/js/load-image.min.js"></script>
-<script src="http://blueimp.github.io/JavaScript-Canvas-to-Blob/js/canvas-to-blob.min.js"></script>
-<script src="//netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.min.js"></script>
-<script src="http://blueimp.github.io/Gallery/js/jquery.blueimp-gallery.min.js"></script>
+
+<script src="js/tmpl.min.js"></script>
+<!--<script src="http://blueimp.github.io/JavaScript-Load-Image/js/load-image.min.js"></script>-->
+<script src="js/load-image.js"></script>
+<script src="js/canvas-to-blob.min.js"></script>
+
+<script src="js/bootstrap.min.js"></script>
+<script src="js/jquery.blueimp-gallery.min.js"></script> 
+
 <script src="js/jquery.iframe-transport.js"></script>
 <script src="js/jquery.fileupload.js"></script>
 <script src="js/jquery.fileupload-process.js"></script>
+<!-- 
 <script src="js/jquery.fileupload-image.js"></script>
-<script src="js/jquery.fileupload-audio.js"></script>
+
+ --><script src="js/jquery.fileupload-audio.js"></script>
 <script src="js/jquery.fileupload-video.js"></script>
 <script src="js/jquery.fileupload-validate.js"></script>
 <script src="js/jquery.fileupload-ui.js"></script>
