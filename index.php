@@ -499,7 +499,7 @@ if($GINKGO_PAGE == 'admin-search')
 									<p>Open a terminal and navigate to your data folder:</p>
 									<div style="background-color:#f9f2f4">
 										<code>$ <input type="text" value="bowtie2 file > file.bam"></code>
-										<code>$ <input type="text" value="bamToBed file.bam > file.bed"></code>
+										<code>$ <input type="text" value="bamToBed -i file.bam > file.bed"></code>
 									</div>
 								</div>
 							</div>
