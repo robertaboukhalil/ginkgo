@@ -424,22 +424,35 @@ if($GINKGO_PAGE == 'admin-search')
 					<?php if($GINKGO_PAGE == 'home'): ?>
 					A web tool for analyzing single-cell sequencing data.
 					<br>
+
+					<div class="btn-group">
+					  <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown">Sample analyses <span class="caret"></span></button>
+					  <ul class="dropdown-menu" role="menu">
+						<li><a href="?q=results/_t10breast_navin"><small><small style="color:#bdc3c7">DOP-PCR</small></small> Polygenomic breast tumor &mdash; <i>Navin et al, 2011</i></a></li>
+						<li><a href="?q=results/_t16breast_liver_met_navin"><small><small style="color:#bdc3c7">DOP-PCR</small></small> Breast cancer + liver metastasis &mdash; <i>Navin et al, 2011</i></a></li>
+						<li><a href="?q=results/_neuron_mcconnell"><small><small style="color:#bdc3c7">DOP-PCR</small></small> Neurons &mdash; <i>McConnell et al, 2013</i></a></li>
+						<li><a href="?q=results/_ctc_ni"><small><small style="color:#bdc3c7">MALBAC&nbsp;</small></small> Circulating lung tumor cells &mdash; <i>Ni et al, 2013</i></a></li>
+						<li><a href="?q=results/_oocyte_hou"><small><small style="color:#bdc3c7">MALBAC&nbsp;</small></small> Oocytes &mdash; <i>Hou et al, 2013</i></a></li>
+						<li><a href="?q=results/_sperm_lu"><small><small style="color:#bdc3c7">MALBAC&nbsp;</small></small> Sperm &mdash; <i>Lu et al, 2012</i></a></li>
+						<li><a href="?q=results/_bonemarrow_hou"><small><small style="color:#bdc3c7">MDA&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</small></small> Bone marrow &mdash; <i>Hou et al, 2012</i></a></li>
+						<li><a href="?q=results/_kidney_xu"><small><small style="color:#bdc3c7">MDA&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</small></small> Kidney &mdash; <i>Xu et al, 2012</i></a></li>
+						<li><a href="?q=results/_neuron_evrony"><small><small style="color:#bdc3c7">MDA&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</small></small> Neurons &mdash; <i>Evrony et al, 2012</i></a></li>
+					  </ul>
+					</div>
+
+					<?php if(count($_COOKIE['ginkgo']) > 0): ?>
 					<div class="btn-group">
 					  <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown">Load previous analysis <span class="caret"></span></button>
 					  <ul class="dropdown-menu" role="menu">
-						<li><a href="?q=results/sample">Sample run: Polygenomic breast tumor</a></li>
-						<li><a href="?q=results/sample2">Sample run: Circulating tumor cells</a></li>
-
-						<?php if(count($_COOKIE['ginkgo']) > 0): ?>
 							<li class="divider"></li>
 							<?php foreach($_COOKIE['ginkgo'] as $id => $name): ?>
 								<?php if($id != "sample"): ?>
 								<li><a href="?q=dashboard/<?php echo $id;?>"><?php echo str_replace("'", "", $name);?></a></li>
 								<?php endif; ?>
 							<?php endforeach; ?>
-						<?php endif; ?>
 					  </ul>
 					</div>
+					<?php endif; ?>
 
 					<?php elseif($GINKGO_PAGE == 'dashboard'): ?>
 					<div class="status-box">Your files are uploaded. Now let's do some analysis:</div>
