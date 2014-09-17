@@ -38,7 +38,7 @@ class UploadHandler
 
     function __construct($options = null, $initialize = true, $error_messages = null) {
         $this->options = array(
-        		'ginkgo_zip' => false,
+    		'ginkgo_zip' => false,
             'script_url' => $this->get_full_url().'/',
             'upload_dir' => '/mnt/data/ginkgo/uploads/' . $_SESSION["user_id"] . '/',
             'upload_url' => 'http://qb.cshl.edu/ginkgo/uploads/' . $_SESSION["user_id"] . '/',
@@ -78,7 +78,7 @@ class UploadHandler
             'inline_file_types' => '/\.(gif|jpe?g|png)$/i',
             // Defines which files (based on their names) are accepted for upload:
             #'accept_file_types' => '/.+$/i',
-            'accept_file_types' => '/.bed$|.tar$|.tar.gz$|.zip$/i',
+            'accept_file_types' => '/.bed$|.tar$|.gz$|.bed.gz$|.tar.gz$|.zip$/i',
             // The php.ini settings upload_max_filesize and post_max_size
             // take precedence over the following max_file_size setting:
             'max_file_size' => null,
@@ -425,6 +425,7 @@ class UploadHandler
     }
 
     protected function validate($uploaded_file, $file, $error, $index) {
+
         if ($error) {
             $file->error = $this->get_error_message($error);
             return false;
@@ -691,7 +692,10 @@ class UploadHandler
         $file->size = $this->fix_integer_overflow(intval($size));
         $file->type = $type;
         
+
         if ($this->validate($uploaded_file, $file, $error, $index)) {
+
+
             $this->handle_form_data($file, $index);
             $upload_dir = $this->get_upload_path();
             if (!is_dir($upload_dir)) {
@@ -700,6 +704,8 @@ class UploadHandler
             $file_path = $this->get_upload_path($file->name);
             $append_file = $content_range && is_file($file_path) &&
                 $file->size > $this->get_file_size($file_path);
+
+
 
             if ($uploaded_file && is_uploaded_file($uploaded_file)) {
                 // multipart/formdata uploads (POST method uploads)
@@ -721,6 +727,9 @@ class UploadHandler
 
 
                     //file_put_contents('/mnt/data/ginkgo/uploads/_nucseq_TNBC_navin/wtf', 'hai' . $fileExtension);
+                    // file_put_contents('/mnt/data/ginkgo/uploads/cizgEQ3PSLEn27QbX94q/hai', $fileExtension);
+        
+
 
 					## ------------------------------------------------------------------------
                     ## --- Handle .zip files --------------------------------------------------
@@ -750,8 +759,8 @@ class UploadHandler
 					## ------------------------------------------------------------------------
                     ## --- Handle .tar.gz/.tar... files ---------------------------------------
     				## ------------------------------------------------------------------------
-    				if($fileExtension == "tar" || $fileExtension == "tgz" || $fileExtension == "tar.gz" || $fileExtension == "gz")
-    				{
+                    if($fileExtension == "tar" || $fileExtension == "tgz" || $fileExtension == "tar.gz")
+                    {
     					// -- Extract .bed files from tar file
     					$this->options['ginkgo_zip'] = true;
     					$cmd = "tar -xvf $file_path -C $fileDirname/ *.bed --exclude=\"._*\"";
@@ -764,6 +773,20 @@ class UploadHandler
     					unlink($file_path);
     				}
 
+                    // .gz files
+                    if($fileExtension == "gz")
+                    {
+                        // -- Extract .bed files from tar file
+                        $this->options['ginkgo_zip'] = true;
+                        $cmd = "gunzip $file_path";
+                        // -- Add redirection so we can get stderr.
+                        session_regenerate_id(TRUE);    
+                        $handle = popen($cmd, 'r');
+                        $out = stream_get_contents($handle);
+                        pclose($handle);
+                        // -- Delete archive after extracting
+                        unlink($file_path);
+                    }
                 }
 
             } else {
@@ -978,6 +1001,7 @@ class UploadHandler
     }
 
     public function post($print_response = true) {
+
         if (isset($_REQUEST['_method']) && $_REQUEST['_method'] === 'DELETE') {
             return $this->delete($print_response);
         }
@@ -999,6 +1023,7 @@ class UploadHandler
         if ($upload && is_array($upload['tmp_name'])) {
             // param_name is an array identifier like "files[]",
             // $_FILES is a multi-dimensional array:
+
             foreach ($upload['tmp_name'] as $index => $value) {
             		#$tmp_name = str_replace("/tmp/", "/var/www/tmp/", $upload['tmp_name'][$index]);
             		#echo sys_get_temp_dir() . "---";
