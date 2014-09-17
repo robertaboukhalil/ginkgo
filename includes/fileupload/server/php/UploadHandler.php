@@ -725,12 +725,6 @@ class UploadHandler
                     $fileDirname   = pathinfo($file_path, PATHINFO_DIRNAME );
                     $fileName      = pathinfo($file_path, PATHINFO_FILENAME);
 
-
-                    //file_put_contents('/mnt/data/ginkgo/uploads/_nucseq_TNBC_navin/wtf', 'hai' . $fileExtension);
-                    // file_put_contents('/mnt/data/ginkgo/uploads/cizgEQ3PSLEn27QbX94q/hai', $fileExtension);
-        
-
-
 					## ------------------------------------------------------------------------
                     ## --- Handle .zip files --------------------------------------------------
 					## ------------------------------------------------------------------------
