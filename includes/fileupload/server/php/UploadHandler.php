@@ -759,7 +759,7 @@ class UploadHandler
     					$this->options['ginkgo_zip'] = true;
     					$cmd = "tar -xvf $file_path -C $fileDirname/ *.bed --exclude=\"._*\"";
     					// -- Add redirection so we can get stderr.
-    					session_regenerate_id(TRUE);	
+    					// session_regenerate_id(TRUE);	
     					$handle = popen($cmd, 'r');
     					$out = stream_get_contents($handle);
     					pclose($handle);
@@ -767,14 +767,18 @@ class UploadHandler
     					unlink($file_path);
     				}
 
-                    // .gz files
+                    ## ------------------------------------------------------------------------
+                    ## --- Handle .gz... files ------------------------------------------------
+                    ## ------------------------------------------------------------------------
                     if($fileExtension == "gz")
                     {
-                        // -- Extract .bed files from tar file
+                        // -- Extract .bed files from gz file
                         $this->options['ginkgo_zip'] = true;
+                        // $file_path2 = str_replace('.gz', '', $file_path);
+                        // $cmd = "gunzip -c $file_path > $file_path2";
                         $cmd = "gunzip $file_path";
                         // -- Add redirection so we can get stderr.
-                        session_regenerate_id(TRUE);    
+                        // session_regenerate_id(TRUE);    
                         $handle = popen($cmd, 'r');
                         $out = stream_get_contents($handle);
                         pclose($handle);
