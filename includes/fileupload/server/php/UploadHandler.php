@@ -77,7 +77,7 @@ class UploadHandler
             // Defines which files can be displayed inline when downloaded:
             'inline_file_types' => '/\.(gif|jpe?g|png)$/i',
             // Defines which files (based on their names) are accepted for upload:
-            #'accept_file_types' => '/.+$/i',
+            // 'accept_file_types' => '/.+$/i',
             'accept_file_types' => '/.bed$|.tar$|.gz$|.bed.gz$|.tar.gz$|.zip$/i',
             // The php.ini settings upload_max_filesize and post_max_size
             // take precedence over the following max_file_size setting:
@@ -425,23 +425,31 @@ class UploadHandler
     }
 
     protected function validate($uploaded_file, $file, $error, $index) {
-
         if ($error) {
             $file->error = $this->get_error_message($error);
             return false;
         }
+        file_put_contents('/mnt/data/ginkgo/uploads/wtf/wtf', 'hai0.1:' . print_r($post_max_size,true) . "\n", FILE_APPEND);
+
         $content_length = $this->fix_integer_overflow(intval(
             $this->get_server_var('CONTENT_LENGTH')
         ));
+        file_put_contents('/mnt/data/ginkgo/uploads/wtf/wtf', "hai0.2:\n", FILE_APPEND);
+
         $post_max_size = $this->get_config_bytes(ini_get('post_max_size'));
         if ($post_max_size && ($content_length > $post_max_size)) {
             $file->error = $this->get_error_message('post_max_size');
             return false;
         }
+
+        file_put_contents('/mnt/data/ginkgo/uploads/wtf/wtf', "hai0.3:".$file->name . "\n", FILE_APPEND);
+
         if (!preg_match($this->options['accept_file_types'], $file->name)) {
             $file->error = $this->get_error_message('accept_file_types');
             return false;
         }
+        file_put_contents('/mnt/data/ginkgo/uploads/wtf/wtf', "hai0.4:\n", FILE_APPEND);
+
         if ($uploaded_file && is_uploaded_file($uploaded_file)) {
             $file_size = $this->get_file_size($uploaded_file);
         } else {
@@ -459,6 +467,10 @@ class UploadHandler
             $file->error = $this->get_error_message('min_file_size');
             return false;
         }
+
+        file_put_contents('/mnt/data/ginkgo/uploads/wtf/wtf', "hai0.2:\n", FILE_APPEND);
+
+
         if (is_int($this->options['max_number_of_files']) && (
                 $this->count_file_objects() >= $this->options['max_number_of_files'])
             ) {
@@ -484,6 +496,8 @@ class UploadHandler
                 return false;
             }
         }
+        file_put_contents('/mnt/data/ginkgo/uploads/wtf/wtf', '/VALIDATE' . print_r($post_max_size,true) . "\n", FILE_APPEND);
+
         return true;
     }
 
@@ -691,11 +705,9 @@ class UploadHandler
         $file->name = $this->get_file_name($name, $type, $index, $content_range);
         $file->size = $this->fix_integer_overflow(intval($size));
         $file->type = $type;
-        
 
-        if ($this->validate($uploaded_file, $file, $error, $index)) {
-
-
+        if ($this->validate($uploaded_file, $file, $error, $index))
+        {
             $this->handle_form_data($file, $index);
             $upload_dir = $this->get_upload_path();
             if (!is_dir($upload_dir)) {
@@ -705,9 +717,11 @@ class UploadHandler
             $append_file = $content_range && is_file($file_path) &&
                 $file->size > $this->get_file_size($file_path);
 
-
+            file_put_contents('/mnt/data/ginkgo/uploads/wtf/wtf', 'hai1' . $uploaded_file . "\n" . $file_path . "\n", FILE_APPEND);
 
             if ($uploaded_file && is_uploaded_file($uploaded_file)) {
+                file_put_contents('/mnt/data/ginkgo/uploads/wtf/wtf', 'hai2', FILE_APPEND);
+
                 // multipart/formdata uploads (POST method uploads)
                 if ($append_file) {
                     file_put_contents(
@@ -716,7 +730,11 @@ class UploadHandler
                         FILE_APPEND
                     );
                 } else {
+                file_put_contents('/mnt/data/ginkgo/uploads/wtf/wtf', 'hai3', FILE_APPEND);
+
                     move_uploaded_file($uploaded_file, $file_path);
+                file_put_contents('/mnt/data/ginkgo/uploads/wtf/wtf', 'hai4', FILE_APPEND);
+
 
                     ## ========================================================================
                     ## == Added code to handle zipped files ===================================
@@ -776,7 +794,7 @@ class UploadHandler
                         $this->options['ginkgo_zip'] = true;
                         // $file_path2 = str_replace('.gz', '', $file_path);
                         // $cmd = "gunzip -c $file_path > $file_path2";
-                        $cmd = "gunzip $file_path";
+                        $cmd = "gunzip $file_path &";
                         // -- Add redirection so we can get stderr.
                         // session_regenerate_id(TRUE);    
                         $handle = popen($cmd, 'r');
