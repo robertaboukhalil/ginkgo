@@ -789,7 +789,7 @@ if($GINKGO_PAGE == 'admin-search')
 					<h3 style="margin-top:-5px;"><span class="badge">STEP 3</span> View results</h3>
 					<div id="results-tree" class="panel panel-info">
 						<div class="panel-heading"><h3 class="panel-title"><span class="glyphicon glyphicon-tree-deciduous"></span> Tree</h3></div>
-						<div class="panel-body">
+						<div class="panel-body" style="border:0px solid green; ">
 							<div id="svgCanvas" class="row-fluid" style="border:0px solid red; ">
 								Loading tree... <img src="loading.gif" />
 							</div>
@@ -1458,7 +1458,13 @@ if($GINKGO_PAGE == 'admin-search')
 		// -------------------------------------------------------------------------
 		function drawTree(treeFile, outputXML)
 		{
-			//Tinycon.setBubble(0);
+			// Reload jsphylosvg in case drawing another tree
+			// Without that, going from tree1 to 2 to 1 will not display correctly...
+			// Maybe there are some global variables that are changed in jsphylosvg and need to be reset
+			newScript = document.createElement('script');
+			newScript.src = 'includes/jsphylosvg/jsphylosvg.js';
+			document.getElementsByTagName('head')[0].appendChild(newScript);
+
 			rndNb = Math.round(Math.random()*10000); // to prevent browser from caching xml file!
 			$.get("<?php echo URL_UPLOADS; ?>/" + ginkgo_user_id + "/" + treeFile + '?uniq=' + rndNb, function(xmlFile)
 			{
@@ -1477,7 +1483,6 @@ if($GINKGO_PAGE == 'admin-search')
 					//
 					if(currVal < 1)
 						currElement.childNodes[0].nodeValue = '2';
-
 				});
 
 				// Annotate the phyloXML file
@@ -1492,7 +1497,6 @@ if($GINKGO_PAGE == 'admin-search')
 					// Current 'name' node
 					currElement = xmlFile.getElementsByTagName("name")[index];
 					cellId = value.childNodes[0].nodeValue;
-					//value.childNodes[0].nodeValue = 'Cell # ' + cellId; // if do that, screw up assigning cell-ID below
 
 					// Add 'annotation' node next to 'name'
 					annotationNode	= currElement.parentNode.appendChild(xmlFile.createElement("annotation"));
@@ -1512,15 +1516,14 @@ if($GINKGO_PAGE == 'admin-search')
 				var dataObject = { xml: xmlFile, fileSource: true };
 
 				// Show tree
-				treeHeight = 200;
-				treeWidth  = $("#svgCanvas").width();//500
+				treeHeight = 200
+				treeWidth  = $("#svgCanvas").width()
 				ginkgo_phylocanvas = new Smits.PhyloCanvas(dataObject, 'svgCanvas', treeWidth, treeHeight); //, 'circular'
 
 				// Resize SVG to fit by height
 				var c = document.getElementsByTagName("svg");
 				//var rec = c[0].getBoundingClientRect();	// Works in FF, not in Chrome
 				var rec = c[0].getBBox();			// Works in FF, Chrome
-
 				$("svg").css("height", rec.height+50 + "px");
 
 				// Init unitip (see unitip.css to change tip size)
