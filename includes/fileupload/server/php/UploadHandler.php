@@ -770,12 +770,13 @@ class UploadHandler
 
 					## ------------------------------------------------------------------------
                     ## --- Handle .tar.gz/.tar... files ---------------------------------------
+                    ## --- NOTE: .tar.gz will be seen as .gz! ---------------------------------
     				## ------------------------------------------------------------------------
-                    if($fileExtension == "tar" || $fileExtension == "tgz" || $fileExtension == "tar.gz")
+                    if($fileExtension == "tar" || $fileExtension == "tgz" || $fileExtension == "tar.gz" || $fileExtension == "gz")
                     {
     					// -- Extract .bed files from tar file
     					$this->options['ginkgo_zip'] = true;
-    					$cmd = "tar -xvf $file_path -C $fileDirname/ *.bed --exclude=\"._*\"";
+    					$cmd = "tar -zxvf $file_path -C $fileDirname/ *.bed* --exclude=\"._*\"";
     					// -- Add redirection so we can get stderr.
     					// session_regenerate_id(TRUE);	
     					$handle = popen($cmd, 'r');
@@ -784,25 +785,6 @@ class UploadHandler
     					// -- Delete archive after extracting
     					unlink($file_path);
     				}
-
-                    ## ------------------------------------------------------------------------
-                    ## --- Handle .gz... files ------------------------------------------------
-                    ## ------------------------------------------------------------------------
-                    if($fileExtension == "gz")
-                    {
-                        // -- Extract .bed files from gz file
-                        $this->options['ginkgo_zip'] = true;
-                        // $file_path2 = str_replace('.gz', '', $file_path);
-                        // $cmd = "gunzip -c $file_path > $file_path2";
-                        $cmd = "gunzip $file_path &";
-                        // -- Add redirection so we can get stderr.
-                        // session_regenerate_id(TRUE);    
-                        $handle = popen($cmd, 'r');
-                        $out = stream_get_contents($handle);
-                        pclose($handle);
-                        // -- Delete archive after extracting
-                        unlink($file_path);
-                    }
                 }
 
             } else {
