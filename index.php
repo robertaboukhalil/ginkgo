@@ -98,9 +98,9 @@ $PANEL_DOWNLOAD = <<<PANEL
 		<div class="panel-heading"><span class="glyphicon glyphicon-tree-deciduous"></span> Download tree</div>
 		<!-- Table -->
 		<table class="table" style="font-size:12.5px;">
-			<tr class="active"><td><strong>Normalized read counts</strong>: <a target="_blank" href="{$userUrl}/clust.newick">newick</a> | <a target="_blank" href="{$userUrl}/clust.xml">xml</a> | <a target="_blank" href="{$userUrl}/clust.pdf">pdf</a> | <a target="_blank" href="{$userUrl}/clust.jpeg">jpeg</a>&nbsp;<em>(plotted here)</em></td></tr>
-			<tr class="active"><td><strong>Copy-number</strong>: <a target="_blank" href="{$userUrl}/clust2.newick">newick</a> | <a target="_blank" href="{$userUrl}/clust2.xml">xml</a> | <a target="_blank" href="{$userUrl}/clust2.pdf">pdf</a> | <a target="_blank" href="{$userUrl}/clust2.jpeg">jpeg</a></td></tr>
-			<tr class="active"><td><strong>Correlations</strong>: <a target="_blank" href="{$userUrl}/clust3.newick">newick</a> | <a target="_blank" href="{$userUrl}/clust3.xml">xml</a> | <a target="_blank" href="{$userUrl}/clust3.pdf">pdf</a> | <a target="_blank" href="{$userUrl}/clust3.jpeg">jpeg</a></td></tr>
+			<tr class="active"><td><input type="radio" name="results-tree-view" onclick="javascript:drawTree('clust.xml');" checked>&nbsp;&nbsp;<strong>Normalized read counts</strong>: <a target="_blank" href="{$userUrl}/clust.newick">newick</a> | <a target="_blank" href="{$userUrl}/clust.xml">xml</a> | <a target="_blank" href="{$userUrl}/clust.pdf">pdf</a> | <a target="_blank" href="{$userUrl}/clust.jpeg">jpeg</a></td></tr>
+			<tr class="active"><td><input type="radio" name="results-tree-view" onclick="javascript:drawTree('clust2.xml');">&nbsp;&nbsp;<strong>Copy-number</strong>: <a target="_blank" href="{$userUrl}/clust2.newick">newick</a> | <a target="_blank" href="{$userUrl}/clust2.xml">xml</a> | <a target="_blank" href="{$userUrl}/clust2.pdf">pdf</a> | <a target="_blank" href="{$userUrl}/clust2.jpeg">jpeg</a></td></tr>
+			<tr class="active"><td><input type="radio" name="results-tree-view" onclick="javascript:drawTree('clust3.xml');">&nbsp;&nbsp;<strong>Correlations</strong>: <a target="_blank" href="{$userUrl}/clust3.newick">newick</a> | <a target="_blank" href="{$userUrl}/clust3.xml">xml</a> | <a target="_blank" href="{$userUrl}/clust3.pdf">pdf</a> | <a target="_blank" href="{$userUrl}/clust3.jpeg">jpeg</a></td></tr>
 		</table>
 	</div>
 
@@ -1303,7 +1303,7 @@ if($GINKGO_PAGE == 'admin-search')
 				{
 					// Plot tree
 					// drawTree(tree);
-					drawTree('clust3.xml');
+					drawTree('clust.xml');
 					// Remove auto-update timer
 					clearInterval(ginkgo_progress);
 					Tinycon.setBubble(0);
