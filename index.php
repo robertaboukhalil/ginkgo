@@ -37,6 +37,11 @@ $GINKGO_USER_ID	= $query[1];
 if(!$GINKGO_USER_ID)
 	$GINKGO_USER_ID	= generateID(20);
 
+// Security patch: don't allow user IDs that aren't alphanumerical
+// e.g. could use "a; echo b" as user ID; will create file "a" and write "b" to it
+if(preg_match('/[^A-Za-z0-9_-]/', $GINKGO_USER_ID))
+  exit;
+
 
 // =============================================================================
 // == Page-specific configuration ==============================================
@@ -196,14 +201,16 @@ if(isset($_POST['analyze']))
 		$fix = 0;
 
 		// Do we need to remap? This sets init to 1 if yes, 0 if not
-		$newBinParams	= ($oldParams['binMeth']   != $_POST['binMeth']) || 
-				  ($oldParams['binList']   != $_POST['binList']);
-		$newFacs	= ($oldParams['facs']      != $_POST['facs']);
-		$newSegParams	= ($oldParams['segMeth']   != $_POST['segMeth']) || ($_POST['segMethCustom'] != '');
-		$newClustering	= ($oldParams['clustMeth'] != $_POST['clustMeth']);
-		$newDistance	= ($oldParams['distMeth']  != $_POST['distMeth']);
-		$newColor	= ($oldParams['color']	   != $_POST['color']);
-		$sexChange	= ($oldParams['sex']	   != $_POST['sex']);
+		$newBinParams	= ($oldParams['binMeth']	!= $_POST['binMeth']) || 
+				  			($oldParams['binList']	!= $_POST['binList']) ||
+				  			($oldParams['rmbadbins']!= $_POST['rmbadbins']);
+		$newFacs		= ($oldParams['facs']		!= $_POST['facs']);
+		$newSegParams	= ($oldParams['segMeth']	!= $_POST['segMeth']) || ($_POST['segMethCustom'] != '');
+		$newClustering	= ($oldParams['clustMeth']	!= $_POST['clustMeth']);
+		$newDistance	= ($oldParams['distMeth']	!= $_POST['distMeth']);
+		$newColor	= ($oldParams['color']			!= $_POST['color']);
+		$sexChange	= ($oldParams['sex']			!= $_POST['sex']);
+
 		// Different cells to analyze than last time?
 		$cells = '';
 		foreach($_POST['cells'] as $cell)
@@ -266,6 +273,8 @@ if(isset($_POST['analyze']))
 	//
 	$config.= 'color=' . $_POST['color'] . "\n";
 	$config.= 'sex=' . $_POST['sex'] . "\n";
+	$_POST['rmbadbins'] = 0;
+	$config.= 'rmbadbins=' . $_POST['rmbadbins'] . "\n";
 	//
 	file_put_contents($userDir . '/config', $config);
 
@@ -274,7 +283,7 @@ if(isset($_POST['analyze']))
 	session_regenerate_id(TRUE);	
 	$handle = popen($cmd, 'r');
 	pclose($handle);
-	
+
 	// Save to cookie and file
 	setcookie("ginkgo[$GINKGO_USER_ID]", $_POST['job_name'], time()+36000000);
 	file_put_contents($userDir . '/description.txt', $_POST['job_name']);
@@ -691,6 +700,15 @@ if($GINKGO_PAGE == 'admin-search')
 										</div>
 								</td>
 							</tr>
+							<tr id="param-segmentation-maskbadbins" style="display:none;">
+								<td>Mask bad bins <i><small>(recommended)</small></i></td>
+								<td>
+									<?php /* Uncomment this later */ /*$checked = " checked"; if($config['rmbadbins'] == '0') $checked="";*/ ?>
+									<input type="checkbox" id="dashboard-rmbadbins"<?php echo $checked;?>>
+								</td>
+							</tr>
+
+
 
 							<tr class="active"><td colspan="2"><strong>Clustering Parameters</strong></td></tr>
 							<tr>
@@ -1048,6 +1066,13 @@ if($GINKGO_PAGE == 'admin-search')
 			else
 				$("#param-segmentation-custom").hide();
 		});
+		$("#param-genome").change(function() {
+			// If custom upload, show upload form
+			if( $('#param-genome').val() == 'hg19' )
+				$("#param-segmentation-maskbadbins").show();
+			else
+				$("#param-segmentation-maskbadbins").hide();
+		});
 
 		</script>
 
@@ -1199,12 +1224,19 @@ if($GINKGO_PAGE == 'admin-search')
 						if(genes != "")
 							g = 1;
 
+						//
 						binMethVal = $('#param-bins-type').val() + $('#param-bins-value').val() + $('#param-bins-sim-rlen').val() + $('#param-bins-sim-mapper').val();
 						if($('#param-bins-type').val() == 'fixed_')
 						{
 							binMethVal = $('#param-bins-type').val() + $('#param-bins-value').val();
 							binMethVal = binMethVal.substring(0, binMethVal.length - 1);
 						}
+						//
+						rmbadbins = $('#dashboard-rmbadbins').is(':checked') == true ? 1 : 0;
+						if(rmbadbins == 1)
+							binMethVal += '_rmbadbins';
+
+						// alert(binMethVal)
 
 						$.post("?q=dashboard/" + ginkgo_user_id, {
 								// General
@@ -1233,7 +1265,7 @@ if($GINKGO_PAGE == 'admin-search')
 								'job_name'	   : $('#param-job-name').val(),
 								// Color scheme
 								'color': $('#param-color-scheme').val(),
-								// Sex?
+								// Other options
 								'sex': $('#dashboard-include-sex').is(':checked') == true ? 1 : 0,
 							},
 							// If get response
