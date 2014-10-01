@@ -42,7 +42,11 @@ function getMyFiles($userID, $ext = 'bed')
 	$directory = DIR_UPLOADS . '/' . $userID . '/';
 	//$files = array_diff(scandir($directory), array('..', '.'));
 	$files = array_diff(glob($directory . '/*.' . $ext), array('..', '.'));
-	
+	$files2= array_diff(glob($directory . '/*.' . $ext . '.gz'), array('..', '.'));
+	$files = array_merge($files, $files2);
+
+	// file_put_contents('wtf', print_r($files, true));
+
 	$result = array();
 	foreach($files as $file)
 		if(pathinfo($filename, PATHINFO_EXTENSION) != $ext)
