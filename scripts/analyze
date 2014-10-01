@@ -39,13 +39,20 @@ total=`wc -l < ${dir}/${inFile}`
 if [ "$init" == "1" ]; then
 
   #Clean directory
-  rm -f ${dir}/*_mapped ${dir}/*.jpeg ${dir}/*.newick ${dir}/*.xml ${dir}/Seg* ${dir}/results.txt
+  rm -f ${dir}/*_mapped ${dir}/*.jpeg ${dir}/*.newick ${dir}/*.xml ${dir}/*.cnv ${dir}/Seg* ${dir}/results.txt
 
   #Map user bed files to appropriate bins
   cnt=0
   while read file; do
     ${home}/scripts/status ${dir}/${statFile} 1 $file $cnt $total
-    ${home}/scripts/binUnsorted ${genome}/${binMeth} `wc -l < ${genome}/${binMeth}` ${dir}/${file} `echo ${file} | sed "s/.bed//g"` ${dir}/${file}_mapped
+
+    if [[ "${file}" =~ \.gz$ ]]; then
+      ${home}/scripts/binUnsorted ${genome}/${binMeth} `wc -l < ${genome}/${binMeth}` <(zcat -cd ${dir}/${file}) `echo ${file} | awk -F ".bed" '{print $1}'` ${dir}/${file}_mapped
+    else
+      ${home}/scripts/binUnsorted ${genome}/${binMeth} `wc -l < ${genome}/${binMeth}` ${dir}/${file} `echo ${file} | awk -F ".bed" '{print $1}'` ${dir}/${file}_mapped
+      gzip ${dir}/${file} &
+    fi
+
     cnt=$(($cnt+1))
   done < ${dir}/${inFile}
 
@@ -73,7 +80,7 @@ fi
 ############################################################
 
 if [ "$process" == "1" ]; then
-  ${home}/scripts/process.R $genome $dir $statFile data $segMeth $binMeth $clustMeth $distMet $color ${ref}_mapped $f $facs $sex 
+  ${home}/scripts/process.R $genome $dir $statFile data $segMeth $binMeth $clustMeth $distMet $color ${ref}_mapped $f $facs $sex $rmbadbins
 fi
 
 ############################################################

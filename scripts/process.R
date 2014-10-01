@@ -15,6 +15,7 @@ ref <- args[[10]]
 f <- as.numeric(args[[11]])
 facs <- args[[12]]
 sex <- as.numeric(args[[13]])
+bb  <- as.numeric(args[[14]])
 
 library('ctc')
 library(DNAcopy) #segmentation
@@ -42,6 +43,17 @@ setwd(user_dir)
 raw <- read.table(dat, header=TRUE, sep="\t")
 if (f == 1) { ploidy <- read.table(facs, header=FALSE, sep="\t", as.is=TRUE) }
 
+
+
+if (bb) {
+  print("Removing bad bins...")
+  badbins <- read.table(paste(genome, "/badbins_", bm, sep=""), header=FALSE, sep="\t", as.is=TRUE)
+  GC=data.frame(GC[-badbins[,1],1])
+  loc=loc[-badbins[,1],]
+  raw=data.frame(raw[-badbins[,1],])
+}
+
+
 #Initialize color palette
 col1=col2=matrix(0,3,2)
 col1[1,]=c('darkmagenta', 'goldenrod')
@@ -62,7 +74,7 @@ CNerror <- matrix(0,5,w)
 outerColsums <- matrix(0, 91, w)
 
 #Normalize samples
-normal <- sweep(raw, 2, colMeans(raw), '/')
+normal <- sweep(raw+1, 2, colMeans(raw+1), '/')
 normal2 <- normal
 lab <- colnames(normal)
 
@@ -72,9 +84,9 @@ colnames(stats) <- c("Reads", "Bins", "Mean", "Var", "Disp", "Min", "25th", "Med
 
 #Correct GC biases
 matGC <- matrix(GC[,1], ncol=w, nrow=l ,byrow=TRUE)
-low <- lowess(matGC, log(as.matrix(normal+.0001)), f=0.05)
+low <- lowess(matGC, log(as.matrix(normal)), f=0.05)
 app <- approx(low$x, low$y, matGC)
-normal <- exp(as.matrix(log(normal+.0001)) - app$y)
+normal <- exp(as.matrix(log(normal)) - app$y)
 
 #Determine segmentation reference using:
 ##Dispersion index if stat=1
@@ -83,9 +95,9 @@ if (stat == 1) {
   F <- normal[,which.min(apply(normal, 2, sd)/apply(normal,2,mean))[1]]
 } else if (stat == 2) {
   R <- read.table(ref, header=TRUE, sep="\t", as.is=TRUE)
-  low <- lowess(GC[,1], log(R[,1]+.0001), f=0.05)
+  low <- lowess(GC[,1], log(R[,1]), f=0.05)
   app <- approx(low$x, low$y, GC[,1])
-  F <- exp(log(R[,1]+.0001) - app$y)
+  F <- exp(log(R[,1]) - app$y)
 }
 
 
@@ -130,9 +142,9 @@ for(k in 1:w){
 
   #Compute log ratio between kth sample and reference
   if (stat == 0) {
-    lr = -log2((normal[,k]+1)/(mean(normal[,k]+1)))
+    lr = -log2((normal[,k])/(mean(normal[,k])))
   } else {
-    lr = -log2((normal[,k]+1)/(F+1))
+    lr = -log2((normal[,k])/(F))
   }
     
   #Determine breakpoints and extract chrom/locations
