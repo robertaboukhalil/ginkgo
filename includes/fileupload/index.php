@@ -104,7 +104,7 @@ session_start();
 
 		// Only list .bed files
 		fileExtension = file.name.split(".").pop();
-		if(fileExtension != "bed")
+		if(fileExtension != "bed" && fileExtension != "gz")
 			continue;
 
 %}

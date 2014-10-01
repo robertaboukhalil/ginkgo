@@ -17,6 +17,7 @@
 // == Configuration ============================================================
 // =============================================================================
 
+set_time_limit(0);
 include "bootstrap.php";
 $GINKGO_MIN_NB_CELLS = 3;
 
@@ -273,7 +274,6 @@ if(isset($_POST['analyze']))
 	//
 	$config.= 'color=' . $_POST['color'] . "\n";
 	$config.= 'sex=' . $_POST['sex'] . "\n";
-	$_POST['rmbadbins'] = 0;
 	$config.= 'rmbadbins=' . $_POST['rmbadbins'] . "\n";
 	//
 	file_put_contents($userDir . '/config', $config);
@@ -395,6 +395,7 @@ if($GINKGO_PAGE == 'admin-search')
 					<ul class="nav navbar-nav">
 						<li>
 							<a class="navbar-brand dropdown-toggle" data-toggle="dropdown" href="#"><span class="glyphicon glyphicon-tree-deciduous"></span> Ginkgo <span class="caret" style="border-top-color:#ccc !important; border-bottom-color:#ccc !important;"></span></a>
+							<a class="navbar-brand" href="javascript:void(0);">[UNDER MAINTENANCE: Sept.29-Oct.1]</a>
 							<ul class="dropdown-menu" role="menu">
 								<li><a href="?q=">Home</a></li>
 								<li><a href="https://github.com/robertaboukhalil/ginkgo">Github</a></li>
@@ -405,13 +406,13 @@ if($GINKGO_PAGE == 'admin-search')
 								<li><a href="?q=results/_ctc_ni"><small><small style="color:#bdc3c7">MALBAC&nbsp;</small></small> Circulating lung tumor cells &mdash; <i>Ni et al, 2013</i></a></li>
 								<li><a href="?q=results/_oocyte_hou"><small><small style="color:#bdc3c7">MALBAC&nbsp;</small></small> Oocytes &mdash; <i>Hou et al, 2013</i></a></li>
 								<li><a href="?q=results/_sperm_lu"><small><small style="color:#bdc3c7">MALBAC&nbsp;</small></small> Sperm &mdash; <i>Lu et al, 2012</i></a></li>
-								<li><a href="?q=results/_bonemarrow_hou"><small><small style="color:#bdc3c7">MDA&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</small></small> Bone marrow &mdash; <i>Hou et al, 2012</i></a></li>
-								<li><a href="?q=results/_kidney_xu"><small><small style="color:#bdc3c7">MDA&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</small></small> Kidney &mdash; <i>Xu et al, 2012</i></a></li>
+								<li><a href="?q=results/_sperm_kirkness"><small><small style="color:#bdc3c7">MDA&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</small></small> Sperm &mdash; <i>Kirkness et al, 2013</i></a></li>
+								<li><a href="?q=results/_sperm_wang"><small><small style="color:#bdc3c7">MDA&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</small></small> Sperm &mdash; <i>Wang et al, 2012</i></a></li>
 								<li><a href="?q=results/_neuron_evrony"><small><small style="color:#bdc3c7">MDA&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</small></small> Neurons &mdash; <i>Evrony et al, 2012</i></a></li>
 
 								<?php if(count($_COOKIE['ginkgo']) > 0): ?>
 									<li class="divider"></li>
-							
+
 									<?php foreach($_COOKIE['ginkgo'] as $id => $name): ?>
 										<?php if($id != "sample"): ?>
 										<li><a href="?q=dashboard/<?php echo $id;?>"><?php echo str_replace("'", "", $name);?></a></li>
@@ -485,7 +486,7 @@ if($GINKGO_PAGE == 'admin-search')
 			<?php if($GINKGO_USER_ID != 'sample' && $GINKGO_USER_ID != 'sample2'): ?>
 			<div class="row" style="height:100%;">
 				<div class="col-lg-8">
-					<h3 style="margin-top:-5px;"><span class="badge">STEP 0</span> Upload your .bed files <small><strong>(We accept *.bed, *.zip, *.tar, *.tar.gz and *.tgz)</strong></small></h3>
+					<h3 style="margin-top:-5px;"><span class="badge">STEP 0</span> Upload your .bed files <small><strong>(We accept *.bed, *.zip, *.tar and *.tar.gz, max 1GB/file)</strong></small></h3>
 					<iframe id="upload-iframe" style="width:100%; height:100%; border:0;" src="includes/fileupload/?user_id=<?php echo $GINKGO_USER_ID; ?>"></iframe>
 					<p>
 						<div style="float:right">
@@ -647,9 +648,10 @@ if($GINKGO_PAGE == 'admin-search')
 									<option value="250000_"<?php echo $selected['250000']; ?>>250kb</option>
 									<option value="100000_"<?php echo $selected['100000']; ?>>100kb</option>
 									<option value="50000_"<?php echo $selected['50000']; ?>>50kb</option>
-									<option value="40000_"<?php echo $selected['40000']; ?>>40kb</option>
+									<!-- <option value="40000_"<?php echo $selected['40000']; ?>>40kb</option> -->
 									<option value="25000_"<?php echo $selected['25000']; ?>>25kb</option>
 									<option value="10000_"<?php echo $selected['10000']; ?>>10kb</option>
+									<!-- <option value="5000_"<?php echo $selected['5000']; ?>>5kb</option> -->
 									</select> size.
 								</td>
 							</tr>
@@ -700,10 +702,10 @@ if($GINKGO_PAGE == 'admin-search')
 										</div>
 								</td>
 							</tr>
-							<tr id="param-segmentation-maskbadbins" style="display:none;">
-								<td>Mask bad bins <i><small>(recommended)</small></i></td>
+							<tr id="param-segmentation-maskbadbins" style="">
+								<td>Mask bad bins <i><small>(experimental)</small></i></td>
 								<td>
-									<?php /* Uncomment this later */ /*$checked = " checked"; if($config['rmbadbins'] == '0') $checked="";*/ ?>
+									<?php /* Uncomment this later */ $checked = " "; if($config['rmbadbins'] == '0') $checked=""; ?>
 									<input type="checkbox" id="dashboard-rmbadbins"<?php echo $checked;?>>
 								</td>
 							</tr>
@@ -861,7 +863,7 @@ if($GINKGO_PAGE == 'admin-search')
 					<div id="results-navigation">
 						<br/>
 						<hr>
-						<?php if($GINKGO_USER_ID != 'sample' && $GINKGO_USER_ID != 'sample2'): ?>
+						<?php if($GINKGO_USER_ID != '_t10breast_navin' && $GINKGO_USER_ID != '_t16breast_liver_met_navin' && $GINKGO_USER_ID != '_neuron_mcconnell' && $GINKGO_USER_ID != '_ctc_ni' && $GINKGO_USER_ID != '_oocyte_hou' && $GINKGO_USER_ID != '_sperm_lu' && $GINKGO_USER_ID != '_sperm_kirkness' && $GINKGO_USER_ID != '_sperm_wang' && $GINKGO_USER_ID != '_neuron_evrony'): ?>
 						<div style="float:left"><a class="btn btn-lg btn-primary" href="?q=dashboard/<?php echo $GINKGO_USER_ID; ?>"><span class="glyphicon glyphicon-chevron-left"></span> Analysis Options </a></div>
 						<?php endif; ?>
 					</div>
@@ -1233,8 +1235,8 @@ if($GINKGO_PAGE == 'admin-search')
 						}
 						//
 						rmbadbins = $('#dashboard-rmbadbins').is(':checked') == true ? 1 : 0;
-						if(rmbadbins == 1)
-							binMethVal += '_rmbadbins';
+						// if(rmbadbins == 1)
+							// binMethVal += '_rmbadbins';
 
 						// alert(binMethVal)
 
@@ -1267,6 +1269,7 @@ if($GINKGO_PAGE == 'admin-search')
 								'color': $('#param-color-scheme').val(),
 								// Other options
 								'sex': $('#dashboard-include-sex').is(':checked') == true ? 1 : 0,
+								'rmbadbins': $('#dashboard-rmbadbins').is(':checked') == true ? 1 : 0,
 							},
 							// If get response
 							function(data) {
