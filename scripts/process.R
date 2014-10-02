@@ -507,7 +507,7 @@ dev.off()
 
 #Calculate correlation distance matrix for clustering
 d3 <- as.dist((1 - cor(final))/2)
-clust3=hclust(d3)
+clust3=hclust(d3, method = cm)
 clust3$labels=lab
 write(hc2Newick(clust3), file=paste(user_dir, "/clust3.newick", sep=""))
 
