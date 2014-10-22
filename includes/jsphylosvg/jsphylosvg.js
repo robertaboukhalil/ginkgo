@@ -1051,7 +1051,7 @@ Smits.PhyloCanvas.NexmlParse.prototype = {
 	
 	/* Rectangular Phylogram */
 	Rectangular : {
-		bufferX			: 130, 			// Reduces the available canvas space for tree branches, allowing
+		bufferX			: 250, 			// Reduces the available canvas space for tree branches, allowing
 										// for more space for the textual/charting components
 		paddingX		: 15,//10
 		paddingY		: 10,//20
