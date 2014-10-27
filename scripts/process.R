@@ -82,11 +82,11 @@ lab <- colnames(normal)
 rownames(stats) <- lab
 colnames(stats) <- c("Reads", "Bins", "Mean", "Var", "Disp", "Min", "25th", "Median", "75th", "Max")
 
-#Correct GC biases
-matGC <- matrix(GC[,1], ncol=w, nrow=l ,byrow=TRUE)
-low <- lowess(matGC, log(as.matrix(normal)), f=0.05)
-app <- approx(low$x, low$y, matGC)
-normal <- exp(as.matrix(log(normal)) - app$y)
+# #Correct GC biases
+# matGC <- matrix(GC[,1], ncol=w, nrow=l ,byrow=FALSE)
+# low <- lowess(matGC, log(as.matrix(normal)), f=0.05)
+# app <- approx(low$x, low$y, matGC)
+# normal <- exp(as.matrix(log(normal)) - app$y)
 
 #Determine segmentation reference using:
 ##Dispersion index if stat=1
@@ -95,7 +95,7 @@ if (stat == 1) {
   F <- normal[,which.min(apply(normal, 2, sd)/apply(normal,2,mean))[1]]
 } else if (stat == 2) {
   R <- read.table(ref, header=TRUE, sep="\t", as.is=TRUE)
-  low <- lowess(GC[,1], log(R[,1]), f=0.05)
+  low <- lowess(GC[,1], log(R[,1]+0.001), f=0.05)
   app <- approx(low$x, low$y, GC[,1])
   F <- exp(log(R[,1]) - app$y)
 }
@@ -140,13 +140,31 @@ for(k in 1:w){
   #####################  Segment Sample  #####################
   ############################################################
 
+
+  #######RA:
+  # #Compute log ratio between kth sample and reference
+  # if (stat == 0) {
+  #   lr = -log2((normal[,k])/(mean(normal[,k])))
+  # } else {
+  #   lr = -log2((normal[,k])/(F))
+  # }
+
+  # Calculate normal for current cell (previous values of normal seem wrong)
+  lowess.gc <- function(jtkx, jtky) {
+    jtklow <- lowess(jtkx, log(jtky), f=0.05); 
+    jtkz <- approx(jtklow$x, jtklow$y, jtkx)
+    return(exp(log(jtky) - jtkz$y))
+  }
+  normal[,k] = lowess.gc( GC[,1], (raw[,k]+1)/mean(raw[,k]+1) )
+
   #Compute log ratio between kth sample and reference
   if (stat == 0) {
-    lr = -log2((normal[,k])/(mean(normal[,k])))
+    lr = log2(normal[,k])
   } else {
-    lr = -log2((normal[,k])/(F))
+    lr = log2((normal[,k])/(F))
   }
-    
+  #######/RA
+
   #Determine breakpoints and extract chrom/locations
   CNA.object <- CNA(genomdat = lr, chrom = loc[,1], maploc = as.numeric(loc[,2]), data.type = 'logratio')
   CNA.smoothed <- smooth.CNA(CNA.object)
@@ -172,6 +190,25 @@ for(k in 1:w){
   }
   fixed[,k] <- fixed[,k]/mean(fixed[,k])
 
+  #######RA:
+  # fixed[,k][1:bps[2]] <- mean(normal[,k][1:bps[2]])
+  # for(i in 2:(len-1)){
+  #   fixed[,k][bps[i]:(bps[i+1]-1)] = mean(normal[,k][bps[i]:(bps[i+1]-1)])
+  # }
+  # thisShort <- segs[[2]]
+  # m <- matrix(data=0, nrow=nrow(normal), ncol=1)
+  # prevEnd <- 0
+  # for (i in 1:nrow(thisShort)) {
+  #         thisStart <- prevEnd + 1
+  #         thisEnd <- prevEnd + thisShort$num.mark[i]
+  #         m[thisStart:thisEnd, 1] <- 2^thisShort$seg.mean[i]
+  #         prevEnd = thisEnd
+  # }
+  # fixed[,k] <- m[, 1]
+  # #above:#segs <- segment(CNA.smoothed, verbose=0, min.width=5, alpha=0.02,nperm=1000,undo.splits="sdundo",undo.SD=1.0)
+  #######/RA
+
+
 
   ############################################################
   ###########  Determine Copy Number (SoS Method)  ###########
@@ -185,6 +222,7 @@ for(k in 1:w){
   outerColsums[,k] <- colSums(outerDiff, na.rm = FALSE, dims = 1)
   CNmult[,k] <- CNgrid[order(outerColsums[,k])[1:5]]
   CNerror[,k] <- round(sort(outerColsums[,k])[1:5], digits=2)
+  print(CNmult[,k])
 
   if (f == 0) {
     final[,k] <- round(fixed[,k]*CNmult[1,k])
@@ -211,7 +249,7 @@ for(k in 1:w){
 
     top=round(quantile(raw[,k], c(.995))[[1]])
 
-    plot(which(raw[,k]<top), raw[which(raw[,k]<top),k], main=paste("Genome Wide Read Distribution for Sample \"", lab[k], "\"", sep=""), xlab="Bin", ylab="Fraction of reads", type="n", ylim=c(0,top), cex.main=3, cex.axis=2, cex.lab=2)
+    plot(which(raw[,k]<top), raw[which(raw[,k]<top),k], main=paste("Genome Wide Read Distribution for Sample \"", lab[k], "\"", sep=""), xlab="Bin", ylab="Read count", type="n", ylim=c(0,top), cex.main=3, cex.axis=2, cex.lab=2)
     tu <- par('usr')
     par(xpd=FALSE)
     rect(tu[1], tu[3], tu[2], tu[4], col = "gray85")
@@ -261,7 +299,7 @@ for(k in 1:w){
       lorenz[i,2]=sum(b[2:uniq[i]])/nReads
     }
 
-    plot(lorenz, xlim=c(0,1), main=paste("Lorenz Curve of Coverage Uniformity for Sample ", lab[k], sep=""), xlab="Cumulatdiive Fraction of Genome", ylab="Cumulative Fraction of Total Reads", type="n", xaxt="n", yaxt="n", cex.main=3, cex.axis=2, cex.lab=2)
+    plot(lorenz, xlim=c(0,1), main=paste("Lorenz Curve of Coverage Uniformity for Sample ", lab[k], sep=""), xlab="Cumulative Fraction of Genome", ylab="Cumulative Fraction of Total Reads", type="n", xaxt="n", yaxt="n", cex.main=3, cex.axis=2, cex.lab=2)
     tu <- par('usr')
     par(xpd=FALSE)
     rect(tu[1], tu[3], tu[2], tu[4], col = "gray85")
@@ -284,11 +322,11 @@ for(k in 1:w){
     par(mar = c(7.0, 7.0, 7.0, 3.0))
     layout(matrix(c(1,2), 1, 2, byrow=TRUE))
 
-    low <- lowess(GC[,1], log(normal2[,k]+.0001), f=0.05)
+    low <- lowess(GC[,1], log(normal2[,k]), f=0.05)
     app <- approx(low$x, low$y, GC[,1])
     cor <- exp(log(normal2[,k]) - app$y)
     
-    try(plot(GC[,1], log(normal2[,k]), main=paste("GC Content vs. Bin Count\nSample ", lab[k], " (Uncorrected)", sep=""), type= "n", xlim=c(min(.3, min(GC[,1])), max(.6, max(GC[,1]))), xlab="GC content", ylab="Normalized Read Counts (Log Scale)", cex.main=3, cex.axis=2, cex.lab=2))
+    try(plot(GC[,1], log(normal2[,k]), main=paste("GC Content vs. Bin Count\nSample ", lab[k], " (Uncorrected)", sep=""), type= "n", xlim=c(min(.3, min(GC[,1])), max(.6, max(GC[,1]))), xlab="GC content", ylab="Normalized Read Counts (log scale)", cex.main=3, cex.axis=2, cex.lab=2))
     tu <- par('usr')
     par(xpd=FALSE)
     rect(tu[1], tu[3], tu[2], tu[4], col = "gray85")
@@ -437,15 +475,17 @@ if (sex == 0) {
 }
 
 #Calculate read distance matrix for clustering
-mat=matrix(0,nrow=w,ncol=w)
-  for (i in 1:w){
-    for (j in 1:w){
-      mat[i,j]=dist(rbind(fixed[,i], fixed[,j]), method = dm)
-    }
-  }
+
+#jk mat=matrix(0,nrow=w,ncol=w)
+#jk   for (i in 1:w){
+#jk     for (j in 1:w){
+#jk      mat[i,j]=dist(rbind(fixed[,i], fixed[,j]), method = dm)
+#jk     }
+#jk   }
 
 #Create cluster of samples
-d <- dist(mat, method = dm)
+#jk d <- dist(mat, method = dm)
+d <- dist(t(fixed), method=dm)
 clust <- hclust(d, method = cm)
 clust$labels <- lab
 write(hc2Newick(clust), file=paste(user_dir, "/clust.newick", sep=""))
@@ -473,15 +513,16 @@ writeLines(c("<?xml version='1.0'?>", "<status>", "<step>3</step>", paste("<proc
 close(statusFile)
 
 #Calculate copy number distance matrix for clustering
-mat2=matrix(0,nrow=w,ncol=w)
-  for (i in 1:w){
-    for (j in 1:w){
-      mat2[i,j]=dist(rbind(final[,i], final[,j]), method = dm)
-    }
-  }
+#jk mat2=matrix(0,nrow=w,ncol=w)
+#jk   for (i in 1:w){
+#jk     for (j in 1:w){
+#jk       mat2[i,j]=dist(rbind(final[,i], final[,j]), method = dm)
+#jk     }
+#jk   }
 
 #Create cluster of samples
-d2 <- dist(mat2, method = dm)
+#jk d2 <- dist(mat2, method = dm)
+d2 <- dist(t(final), method = dm)
 clust2 <- hclust(d2, method = cm)
 clust2$labels <- lab
 write(hc2Newick(clust2), file=paste(user_dir, "/clust2.newick", sep=""))
@@ -491,7 +532,7 @@ main_dir="/mnt/data/ginkgo/scripts"
 command=paste("java -cp ", main_dir, "/forester_1025.jar org.forester.application.phyloxml_converter -f=nn ", user_dir, "/clust2.newick ", user_dir, "/clust2.xml", sep="");
 unlink( paste(user_dir, "/clust2.xml", sep="") );
 system(command);
-### 
+###
 
 #Plot copy number cluster
 jpeg("clust2.jpeg", width=2000, height=1400)
@@ -522,12 +563,12 @@ system(command);
 #Plot correlation cluster
 jpeg("clust3.jpeg", width=2000, height=1400)
   op = par(bg = "gray85")
-  plot(clust3, xlab="Sample", hang=-1, ylab=paste("Distance (", dm, ")", sep=""), lwd=2)
+  plot(clust3, xlab="Sample", hang=-1, ylab="Distance (Pearson correlation)", lwd=2)
 dev.off()
 
 pdf("clust3.pdf", width=10, height=7)
   op = par(bg = "gray85")
-  plot(clust3, xlab="Sample", hang=-1, ylab=paste("Distance (", dm, ")", sep=""), lwd=2)
+  plot(clust3, xlab="Sample", hang=-1, ylab="Distance (Pearson correlation)", lwd=2)
 dev.off()
 
 ############################################################
@@ -547,21 +588,21 @@ colnames(fixedBPs) <- lab
 colnames(finalBPs) <- lab
 
 jpeg("heatRaw.jpeg", width=2000, height=1400)
-heatmap.2(t(rawBPs), Colv=FALSE, Rowv=as.dendrogram(clust), dendrogram="row", trace="none", xlab="Bins", ylab="Samples", cex.main=2, cex.axis=1.5, cex.lab=1.5, cexCol=.001, col=bluered(2))
+heatmap.2(t(rawBPs), Colv=FALSE, Rowv=as.dendrogram(clust), margins=c(5,20), dendrogram="row", trace="none", xlab="Bins", ylab="Samples", cex.main=2, cex.axis=1.5, cex.lab=1.5, cexCol=.001, col=bluered(2))
 dev.off()
 
 step=quantile(fixedBPs, c(.98))[[1]]
 jpeg("heatNorm.jpeg", width=2000, height=1400)
-heatmap.2(t(fixedBPs), Colv=FALSE, Rowv=as.dendrogram(clust), dendrogram="row", trace="none", xlab="Bins", ylab="Samples", cex.main=2, cex.axis=1.5, cex.lab=1.5, cexCol=.001, col=bluered(15), breaks=seq(0,step,step/15))
+heatmap.2(t(fixedBPs), Colv=FALSE, Rowv=as.dendrogram(clust), margins=c(5,20), dendrogram="row", trace="none", xlab="Bins", ylab="Samples", cex.main=2, cex.axis=1.5, cex.lab=1.5, cexCol=.001, col=bluered(15), breaks=seq(0,step,step/15))
 dev.off()
 
 step=min(20, quantile(finalBPs, c(.98))[[1]])
 jpeg("heatCN.jpeg", width=2000, height=1400)
-heatmap.2(t(finalBPs), Colv=FALSE, Rowv=as.dendrogram(clust2), dendrogram="row", trace="none", xlab="Bins", ylab="Samples", cex.main=2, cex.axis=1.5, cex.lab=1.5, cexCol=.001, col=colorRampPalette(c("white","green","green4","violet","purple"))(15), breaks=seq(0,step,step/15))
+heatmap.2(t(finalBPs), Colv=FALSE, Rowv=as.dendrogram(clust2), margins=c(5,20), dendrogram="row", trace="none", xlab="Bins", ylab="Samples", cex.main=2, cex.axis=1.5, cex.lab=1.5, cexCol=.001, col=colorRampPalette(c("white","green","green4","violet","purple"))(15), breaks=seq(0,step,step/15))
 dev.off()
 
 jpeg("heatCor.jpeg", width=2000, height=1400)
-heatmap.2(t(finalBPs), Colv=FALSE, Rowv=as.dendrogram(clust3), dendrogram="row", trace="none", xlab="Bins", ylab="Samples", cex.main=2, cex.axis=1.5, cex.lab=1.5, cexCol=.001, col=colorRampPalette(c("white","steelblue1","steelblue4","orange","sienna3"))(15), breaks=seq(0,step,step/15))
+heatmap.2(t(finalBPs), Colv=FALSE, Rowv=as.dendrogram(clust3), margins=c(5,20), dendrogram="row", trace="none", xlab="Bins", ylab="Samples", cex.main=2, cex.axis=1.5, cex.lab=1.5, cexCol=.001, col=colorRampPalette(c("white","steelblue1","steelblue4","orange","sienna3"))(15), breaks=seq(0,step,step/15))
 dev.off()
 
 statusFile<-file( paste(user_dir, "/", status, sep="") )

@@ -51,30 +51,30 @@ if (sex == 0) {
 #################  Recompute Cluster (RC) ##################
 ############################################################
 
-#Calculate read distance matrix for clustering
-mat=matrix(0,nrow=w,ncol=w)
-for (i in 1:w){
-  statusFile<-file( paste(user_dir, "/", status, sep="") )
-  writeLines(c("<?xml version='1.0'?>", "<status>", "<step>4</step>", "<processingfile>Recomputing Cluster (Read Count)</processingfile>", paste("<percentdone>", round(.47*i), "</percentdone>", sep=""), "<tree>clust.xml</tree>", "</status>"), statusFile)
-  close(statusFile)
+# #Calculate read distance matrix for clustering
+# mat=matrix(0,nrow=w,ncol=w)
+# for (i in 1:w){
+#   statusFile<-file( paste(user_dir, "/", status, sep="") )
+#   writeLines(c("<?xml version='1.0'?>", "<status>", "<step>4</step>", "<processingfile>Recomputing Cluster (Read Count)</processingfile>", paste("<percentdone>", round(.47*i), "</percentdone>", sep=""), "<tree>clust.xml</tree>", "</status>"), statusFile)
+#   close(statusFile)
 
-  for (j in 1:w){
-     mat[i,j]=dist(rbind(fixed[,i], fixed[,j]), method = dm)
-  }
-}
+#   for (j in 1:w){
+#      mat[i,j]=dist(rbind(fixed[,i], fixed[,j]), method = dm)
+#   }
+# }
 
 #Create cluster of samples
-d <- dist(mat, method = dm)
+d <- dist(t(fixed), method = dm)
 clust <- hclust(d, method = cm)
 clust$labels <- lab
 write(hc2Newick(clust), file=paste(user_dir, "/clust.newick", sep=""))
 
-###
-#main_dir="/mnt/data/ginkgo/scripts"
-#command=paste("java -cp ", main_dir, "/forester_1025.jar org.forester.application.phyloxml_converter -f=nn ", user_dir, "/clust.newick ", user_dir, "/clust.xml", sep="");
-#unlink( paste(user_dir, "/clust.xml", sep="") );
-#system(command);
-###
+##
+main_dir="/mnt/data/ginkgo/scripts"
+command=paste("java -cp ", main_dir, "/forester_1025.jar org.forester.application.phyloxml_converter -f=nn ", user_dir, "/clust.newick ", user_dir, "/clust.xml", sep="");
+unlink( paste(user_dir, "/clust.xml", sep="") );
+system(command);
+##
 
 #Plot read cluster
 jpeg("clust.jpeg", width=2000, height=1400)
@@ -92,37 +92,37 @@ dev.off()
 #################  Recompute Cluster (CN) ##################
 ############################################################
 
-#Calculate copy number distance matrix for clustering
-mat2=matrix(0,nrow=w,ncol=w)
-  for (i in 1:w){
-  statusFile<-file( paste(user_dir, "/", status, sep="") )
-  writeLines(c("<?xml version='1.0'?>", "<status>", "<step>4</step>", "<processingfile>Recomputing Cluster (Copy Number)</processingfile>", paste("<percentdone>", round(.47*i)+48, "</percentdone>", sep=""), "</status>"), statusFile)
-  close(statusFile)
-    for (j in 1:w){
-      mat2[i,j]=dist(rbind(final[,i], final[,j]), method = dm)
-    }
-  }
+# #Calculate copy number distance matrix for clustering
+# mat2=matrix(0,nrow=w,ncol=w)
+#   for (i in 1:w){
+#   statusFile<-file( paste(user_dir, "/", status, sep="") )
+#   writeLines(c("<?xml version='1.0'?>", "<status>", "<step>4</step>", "<processingfile>Recomputing Cluster (Copy Number)</processingfile>", paste("<percentdone>", round(.47*i)+48, "</percentdone>", sep=""), "</status>"), statusFile)
+#   close(statusFile)
+#     for (j in 1:w){
+#       mat2[i,j]=dist(rbind(final[,i], final[,j]), method = dm)
+#     }
+#   }
 
-#Calculate copy number distance matrix for clustering
-mat2=matrix(0,nrow=w,ncol=w)
-  for (i in 1:w){
-    for (j in 1:w){
-      mat2[i,j]=dist(rbind(final[,i], final[,j]), method = dm)
-    }
-  }
+# #Calculate copy number distance matrix for clustering
+# mat2=matrix(0,nrow=w,ncol=w)
+#   for (i in 1:w){
+#     for (j in 1:w){
+#       mat2[i,j]=dist(rbind(final[,i], final[,j]), method = dm)
+#     }
+#   }
 
 #Create cluster of samples
-d2 <- dist(mat2, method = dm)
+d2 <- dist(t(final), method = dm)
 clust2 <- hclust(d2, method = cm)
 clust2$labels <- lab
 write(hc2Newick(clust2), file=paste(user_dir, "/clust2.newick", sep=""))
 
-###
-#main_dir="/mnt/data/ginkgo/scripts"
-#command=paste("java -cp ", main_dir, "/forester_1025.jar org.forester.application.phyloxml_converter -f=nn ", user_dir, "/clust2.newick ", user_dir, "/clust2.xml", sep="");
-#unlink( paste(user_dir, "/clust2.xml", sep="") );
-#system(command);
-### 
+##
+main_dir="/mnt/data/ginkgo/scripts"
+command=paste("java -cp ", main_dir, "/forester_1025.jar org.forester.application.phyloxml_converter -f=nn ", user_dir, "/clust2.newick ", user_dir, "/clust2.xml", sep="");
+unlink( paste(user_dir, "/clust2.xml", sep="") );
+system(command);
+## 
 
 #Plot copy number cluster
 jpeg("clust2.jpeg", width=2000, height=1400)
@@ -146,12 +146,12 @@ clust3=hclust(d3)
 clust3$labels=lab
 write(hc2Newick(clust3), file=paste(user_dir, "/clust3.newick", sep=""))
 
-###
-#main_dir="/mnt/data/ginkgo/scripts"
-#command=paste("java -cp ", main_dir, "/forester_1025.jar org.forester.application.phyloxml_converter -f=nn ", user_dir, "/clust3.newick ", user_dir, "/clust3.xml", sep="");
-#unlink( paste(user_dir, "/clust3.xml", sep="") );
-#system(command);
-### 
+##
+main_dir="/mnt/data/ginkgo/scripts"
+command=paste("java -cp ", main_dir, "/forester_1025.jar org.forester.application.phyloxml_converter -f=nn ", user_dir, "/clust3.newick ", user_dir, "/clust3.xml", sep="");
+unlink( paste(user_dir, "/clust3.xml", sep="") );
+system(command);
+## 
 
 #Plot correlation cluster
 jpeg("clust3.jpeg", width=2000, height=1400)

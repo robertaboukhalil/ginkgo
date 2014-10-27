@@ -16,6 +16,11 @@ genome=${home}/genomes/${chosen_genome}
 
 ## == Analysis ===========================================
 
+if [ "$rmpseudoautosomal" == "1" ]; then
+  genome=${genome}/pseudoautosomal
+else
+  genome=${genome}/original
+fi
 
 ############################################################
 ########## Error Check and Reformat User Files #############
@@ -50,7 +55,7 @@ if [ "$init" == "1" ]; then
       ${home}/scripts/binUnsorted ${genome}/${binMeth} `wc -l < ${genome}/${binMeth}` <(zcat -cd ${dir}/${file}) `echo ${file} | awk -F ".bed" '{print $1}'` ${dir}/${file}_mapped
     else
       ${home}/scripts/binUnsorted ${genome}/${binMeth} `wc -l < ${genome}/${binMeth}` ${dir}/${file} `echo ${file} | awk -F ".bed" '{print $1}'` ${dir}/${file}_mapped
-      gzip ${dir}/${file} &
+      gzip ${dir}/${file}
     fi
 
     cnt=$(($cnt+1))
