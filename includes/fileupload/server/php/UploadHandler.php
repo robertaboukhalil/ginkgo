@@ -429,12 +429,10 @@ class UploadHandler
             $file->error = $this->get_error_message($error);
             return false;
         }
-        // file_put_contents('/mnt/data/ginkgo/uploads/wtf/wtf', 'hai0.1:' . print_r($post_max_size,true) . "\n", FILE_APPEND);
 
         $content_length = $this->fix_integer_overflow(intval(
             $this->get_server_var('CONTENT_LENGTH')
         ));
-        // file_put_contents('/mnt/data/ginkgo/uploads/wtf/wtf', "hai0.2:\n", FILE_APPEND);
 
         $post_max_size = $this->get_config_bytes(ini_get('post_max_size'));
         if ($post_max_size && ($content_length > $post_max_size)) {
@@ -442,19 +440,17 @@ class UploadHandler
             return false;
         }
 
-        // file_put_contents('/mnt/data/ginkgo/uploads/wtf/wtf', "hai0.3:".$file->name . "\n", FILE_APPEND);
-
         if (!preg_match($this->options['accept_file_types'], $file->name)) {
             $file->error = $this->get_error_message('accept_file_types');
             return false;
         }
-        // file_put_contents('/mnt/data/ginkgo/uploads/wtf/wtf', "hai0.4:\n", FILE_APPEND);
 
         if ($uploaded_file && is_uploaded_file($uploaded_file)) {
             $file_size = $this->get_file_size($uploaded_file);
         } else {
             $file_size = $content_length;
         }
+
         if ($this->options['max_file_size'] && (
                 $file_size > $this->options['max_file_size'] ||
                 $file->size > $this->options['max_file_size'])
@@ -467,9 +463,6 @@ class UploadHandler
             $file->error = $this->get_error_message('min_file_size');
             return false;
         }
-
-        // file_put_contents('/mnt/data/ginkgo/uploads/wtf/wtf', "hai0.2:\n", FILE_APPEND);
-
 
         if (is_int($this->options['max_number_of_files']) && (
                 $this->count_file_objects() >= $this->options['max_number_of_files'])
@@ -496,7 +489,6 @@ class UploadHandler
                 return false;
             }
         }
-        // file_put_contents('/mnt/data/ginkgo/uploads/wtf/wtf', '/VALIDATE' . print_r($post_max_size,true) . "\n", FILE_APPEND);
 
         return true;
     }
@@ -717,11 +709,7 @@ class UploadHandler
             $append_file = $content_range && is_file($file_path) &&
                 $file->size > $this->get_file_size($file_path);
 
-            // file_put_contents('/mnt/data/ginkgo/uploads/wtf/wtf', 'hai1' . $uploaded_file . "\n" . $file_path . "\n", FILE_APPEND);
-
             if ($uploaded_file && is_uploaded_file($uploaded_file)) {
-                // file_put_contents('/mnt/data/ginkgo/uploads/wtf/wtf', 'hai2', FILE_APPEND);
-
                 // multipart/formdata uploads (POST method uploads)
                 if ($append_file) {
                     file_put_contents(
@@ -730,11 +718,7 @@ class UploadHandler
                         FILE_APPEND
                     );
                 } else {
-                // file_put_contents('/mnt/data/ginkgo/uploads/wtf/wtf', 'hai3', FILE_APPEND);
-
                     move_uploaded_file($uploaded_file, $file_path);
-                // file_put_contents('/mnt/data/ginkgo/uploads/wtf/wtf', 'hai4', FILE_APPEND);
-
 
                     ## ========================================================================
                     ## == Added code to handle zipped files ===================================
@@ -791,7 +775,6 @@ class UploadHandler
 
                     if(substr($file_path, -7) == '.tar.gz')
                     {
-                        // file_put_contents('/mnt/data/ginkgo/uploads/4BYUwATYIhNbtA1Im9ec/wtf', $fileExtension . "\n" . $file_path . "\n" . $fileDirname);
                         // -- Extract .bed files from tar file
                         $this->options['ginkgo_zip'] = true;
                         $cmd = "tar -zxvf $file_path -C $fileDirname/ *.bed* --exclude=\"._*\"";
@@ -818,25 +801,6 @@ class UploadHandler
                             // unlink($file_path);
                         }
                     }
-
-
-
-
-
-                    // if($fileExtension == "tgz" || $fileExtension == "tar.gz" || $fileExtension == "gz")
-                    // {
-                        // file_put_contents('/mnt/data/ginkgo/uploads/4BYUwATYIhNbtA1Im9ec/wtf', $fileExtension . "\n" . $file_path . "\n" . $fileDirname);
-    					// // -- Extract .bed files from tar file
-    					// $this->options['ginkgo_zip'] = true;
-    					// $cmd = "tar -zxvf $file_path -C $fileDirname/ *.bed* --exclude=\"._*\"";
-    					// // -- Add redirection so we can get stderr.
-    					// // session_regenerate_id(TRUE);	
-    					// $handle = popen($cmd, 'r');
-    					// $out = stream_get_contents($handle);
-    					// pclose($handle);
-    					// // -- Delete archive after extracting
-    					// unlink($file_path);
-    				// }
 
                 }
 
