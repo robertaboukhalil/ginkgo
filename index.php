@@ -76,6 +76,43 @@ if(file_exists($descFile = $userDir . '/description.txt'))
 // == Template configuration ===================================================
 // =============================================================================
 
+// -- Panel for info -----------------------------------------------------------
+if($GINKGO_PAGE == "results")
+{
+	$configFile = $userDir . "/config";
+	if(file_exists($configFile)) {
+		$f = file($configFile);
+		$config = array();
+		foreach($f as $index => $val) {
+			$values = explode("=", $val, 2);
+			$config[$values[0]] = str_replace("'", "", trim($values[1]));
+		}
+	}	
+}
+$tmpBinMeth = split('_', $config['binMeth']);
+$binInfo    = $tmpBinMeth[0] . ' bins of ' . $tmpBinMeth[1]/1000 . 'kb size <small><small>(' . $tmpBinMeth[3] . '/' . $tmpBinMeth[2] . 'bp reads)</small></small>';
+$clusteringInfo = $config['clustMeth'] . ' linkage, ' . str_replace('euclidian','euclidean',$config['distMeth']) . ' distance';
+$segInfo    = 'normalized read counts';
+if($config['segMeth'] == '1')
+	$segInfo = 'sample with lowest IOD';
+if($config['segMeth'] == '2')
+	$segInfo = 'uploaded reference sample';
+$genome = $config['chosen_genome'];
+
+$PANEL_INFO = <<<PANEL
+	<!-- Panel: Summary of parameters used -->
+	<div class="panel panel-primary">
+		<div class="panel-heading"><h3 class="panel-title"><span class="glyphicon glyphicon-list-alt"></span> Analysis Parameters</h3></div>
+		<div class="panel-body">
+			<b>Genome:</b> $genome<br/>
+			<b>Binning:</b> $binInfo<br/>
+			<b>Segmentation:</b> using $segInfo<br/>
+			<b>Clustering:</b> $clusteringInfo<br/>
+		</div>
+	</div>
+PANEL;
+
+
 // -- Panel for permalink ------------------------------------------------------
 $PANEL_LATER = <<<PANEL
 	<!-- Panel: Save for later -->
@@ -101,12 +138,12 @@ PANEL;
 $PANEL_DOWNLOAD = <<<PANEL
 	<!-- Panel: Download results -->
 	<div id="results-download" class="panel panel-default" style="display:none;">
-		<div class="panel-heading"><span class="glyphicon glyphicon-tree-deciduous"></span> Download tree</div>
+		<div class="panel-heading"><span class="glyphicon glyphicon-tree-deciduous"></span> Tree display</div>
 		<!-- Table -->
 		<table class="table" style="font-size:12.5px;">
-			<tr class="active"><td><input type="radio" name="results-tree-view" onclick="javascript:drawTree('clust.xml');" checked>&nbsp;&nbsp;<strong>Normalized read counts</strong>: <a target="_blank" href="{$userUrl}/clust.newick">newick</a> | <a target="_blank" href="{$userUrl}/clust.xml">xml</a> | <a target="_blank" href="{$userUrl}/clust.pdf">pdf</a> | <a target="_blank" href="{$userUrl}/clust.jpeg">jpeg</a></td></tr>
-			<tr class="active"><td><input type="radio" name="results-tree-view" onclick="javascript:drawTree('clust2.xml');">&nbsp;&nbsp;<strong>Copy-number</strong>: <a target="_blank" href="{$userUrl}/clust2.newick">newick</a> | <a target="_blank" href="{$userUrl}/clust2.xml">xml</a> | <a target="_blank" href="{$userUrl}/clust2.pdf">pdf</a> | <a target="_blank" href="{$userUrl}/clust2.jpeg">jpeg</a></td></tr>
-			<tr class="active"><td><input type="radio" name="results-tree-view" onclick="javascript:drawTree('clust3.xml');">&nbsp;&nbsp;<strong>Correlations</strong>: <a target="_blank" href="{$userUrl}/clust3.newick">newick</a> | <a target="_blank" href="{$userUrl}/clust3.xml">xml</a> | <a target="_blank" href="{$userUrl}/clust3.pdf">pdf</a> | <a target="_blank" href="{$userUrl}/clust3.jpeg">jpeg</a></td></tr>
+			<tr class="active"><td><input type="radio" name="results-tree-view" onclick="javascript:drawTree('clust.xml');" checked>&nbsp;&nbsp;<strong>Normalized read counts</strong> (<a target="_blank" href="{$userUrl}/clust.newick">newick</a> | <a target="_blank" href="{$userUrl}/clust.xml">xml</a> | <a target="_blank" href="{$userUrl}/clust.pdf">pdf</a> | <a target="_blank" href="{$userUrl}/clust.jpeg">jpeg</a>)</td></tr>
+			<tr class="active"><td><input type="radio" name="results-tree-view" onclick="javascript:drawTree('clust2.xml');">&nbsp;&nbsp;<strong>Copy-number</strong> (<a target="_blank" href="{$userUrl}/clust2.newick">newick</a> | <a target="_blank" href="{$userUrl}/clust2.xml">xml</a> | <a target="_blank" href="{$userUrl}/clust2.pdf">pdf</a> | <a target="_blank" href="{$userUrl}/clust2.jpeg">jpeg</a>)</td></tr>
+			<tr class="active"><td><input type="radio" name="results-tree-view" onclick="javascript:drawTree('clust3.xml');">&nbsp;&nbsp;<strong>Correlations</strong> (<a target="_blank" href="{$userUrl}/clust3.newick">newick</a> | <a target="_blank" href="{$userUrl}/clust3.xml">xml</a> | <a target="_blank" href="{$userUrl}/clust3.pdf">pdf</a> | <a target="_blank" href="{$userUrl}/clust3.jpeg">jpeg</a>)</td></tr>
 		</table>
 	</div>
 
@@ -204,7 +241,8 @@ if(isset($_POST['analyze']))
 		// Do we need to remap? This sets init to 1 if yes, 0 if not
 		$newBinParams	= ($oldParams['binMeth']	!= $_POST['binMeth']) || 
 				  			($oldParams['binList']	!= $_POST['binList']) ||
-				  			($oldParams['rmbadbins']!= $_POST['rmbadbins']);
+				  			($oldParams['rmbadbins']!= $_POST['rmbadbins']) ||
+				  			($oldParams['rmpseudoautosomal']!= $_POST['rmpseudoautosomal']);
 		$newFacs		= ($oldParams['facs']		!= $_POST['facs']);
 		$newSegParams	= ($oldParams['segMeth']	!= $_POST['segMeth']) || ($_POST['segMethCustom'] != '');
 		$newClustering	= ($oldParams['clustMeth']	!= $_POST['clustMeth']);
@@ -275,6 +313,7 @@ if(isset($_POST['analyze']))
 	$config.= 'color=' . $_POST['color'] . "\n";
 	$config.= 'sex=' . $_POST['sex'] . "\n";
 	$config.= 'rmbadbins=' . $_POST['rmbadbins'] . "\n";
+	$config.= 'rmpseudoautosomal=' . $_POST['rmpseudoautosomal'] . "\n";
 	//
 	file_put_contents($userDir . '/config', $config);
 
@@ -362,6 +401,7 @@ if($GINKGO_PAGE == 'admin-search')
 			html, body  { height:100%; }
 			td          { vertical-align:middle !important; }
 			code input  { border:none; color:#c7254e; background-color:#f9f2f4; width:100%; }
+			code textarea  { border:none; color:#c7254e; background-color:#f9f2f4; width:100%; resize:none; }
 			svgCanvas   { fill:none; pointer-events:all; }
 			.jumbotron  { padding:50px 30px 15px 30px; }
 			.glyphicon  { vertical-align:top; }
@@ -395,7 +435,7 @@ if($GINKGO_PAGE == 'admin-search')
 					<ul class="nav navbar-nav">
 						<li>
 							<a class="navbar-brand dropdown-toggle" data-toggle="dropdown" href="#"><span class="glyphicon glyphicon-tree-deciduous"></span> Ginkgo <span class="caret" style="border-top-color:#ccc !important; border-bottom-color:#ccc !important;"></span></a>
-							<a class="navbar-brand" href="javascript:void(0);">[UNDER MAINTENANCE: Sept.29-Oct.1]</a>
+							<!-- <a class="navbar-brand" href="javascript:void(0);">[UNDER MAINTENANCE: Oct. 15-17]</a> -->
 							<ul class="dropdown-menu" role="menu">
 								<li><a href="?q=">Home</a></li>
 								<li><a href="https://github.com/robertaboukhalil/ginkgo">Github</a></li>
@@ -486,7 +526,7 @@ if($GINKGO_PAGE == 'admin-search')
 			<?php if($GINKGO_USER_ID != 'sample' && $GINKGO_USER_ID != 'sample2'): ?>
 			<div class="row" style="height:100%;">
 				<div class="col-lg-8">
-					<h3 style="margin-top:-5px;"><span class="badge">STEP 0</span> Upload your .bed files <small><strong>(We accept *.bed, *.zip, *.tar and *.tar.gz, max 1GB/file)</strong></small></h3>
+					<h3 style="margin-top:-5px;"><span class="badge">STEP 0</span> Upload your .bed files <small><strong>(We accept *.bed and *.bed.gz, max 1GB/file)</strong></small></h3>
 					<iframe id="upload-iframe" style="width:100%; height:100%; border:0;" src="includes/fileupload/?user_id=<?php echo $GINKGO_USER_ID; ?>"></iframe>
 					<p>
 						<div style="float:right">
@@ -507,9 +547,11 @@ if($GINKGO_PAGE == 'admin-search')
 							<div id="help-makebed-content" class="panel-collapse collapse in">
 								<div class="panel-body">
 									<p>Open a terminal and navigate to your data folder:</p>
-									<div style="background-color:#f9f2f4">
-										<code>$ <input type="text" value="bowtie2 file > file.bam"></code>
-										<code>$ <input type="text" value="bamToBed -i file.bam > file.bed"></code>
+									<div style="background-color:#f9f2f4;">
+										<code>$ <input type="text" value="bowtie2 ref.fa reads.fq > reads.sam"></code>
+										<!-- <code>$ <input type="text" value="samtools view -Sb reads.sam -q 20 -o reads.bam"></code> -->
+										<code>$ <textarea cols="25" rows="2">samtools view -Sb reads.sam -q 20 -o reads.bam</textarea></code>
+										<code>$ <input type="text" value="bamToBed -i reads.bam > reads.bed"></code>
 									</div>
 								</div>
 							</div>
@@ -646,6 +688,7 @@ if($GINKGO_PAGE == 'admin-search')
 									<select id="param-bins-value" class="input-mini" style="margin-top:8px; font-size:11px; padding-top:3px; padding-bottom:0; height:25px; ">
 									<option value="500000_"<?php echo $selected['500000']; ?>>500kb</option>
 									<option value="250000_"<?php echo $selected['250000']; ?>>250kb</option>
+									<option value="175000_"<?php echo $selected['175000']; ?>>175kb</option>
 									<option value="100000_"<?php echo $selected['100000']; ?>>100kb</option>
 									<option value="50000_"<?php echo $selected['50000']; ?>>50kb</option>
 									<!-- <option value="40000_"<?php echo $selected['40000']; ?>>40kb</option> -->
@@ -660,6 +703,7 @@ if($GINKGO_PAGE == 'admin-search')
 								<td>
 									<?php $selected = array(); $selected[$binMeth[2]] = ' selected'; ?>
 									Bins based on simulations of <select id="param-bins-sim-rlen" class="input-mini" style="margin-top:8px; font-size:11px; padding-top:3px; padding-bottom:0; height:25px; ">
+									<option value="150_"<?php echo $selected['150']; ?>>150</option>
 									<option value="101_"<?php echo $selected['101']; ?>>101</option>
 									<option value="76_"<?php echo $selected['76']; ?>>76</option>
 									<option value="48_"<?php echo $selected['48']; ?>>48</option>
@@ -702,14 +746,22 @@ if($GINKGO_PAGE == 'admin-search')
 										</div>
 								</td>
 							</tr>
-							<tr id="param-segmentation-maskbadbins" style="">
-								<td>Mask bad bins <i><small>(experimental)</small></i></td>
+
+							<tr id="param-segmentation-maskbadbins" style="display:none">
+								<td>Mask bad bins <i><small>(experimental)</small></i><br/><i><small>Removes bins with consistent read pileups from the analysis (e.g. at chromosome boundaries)</small></i></td>
 								<td>
 									<?php /* Uncomment this later */ $checked = " "; if($config['rmbadbins'] == '0') $checked=""; ?>
 									<input type="checkbox" id="dashboard-rmbadbins"<?php echo $checked;?>>
 								</td>
 							</tr>
 
+							<tr id="param-segmentation-pseudoautosomal" style="display:none">
+								<td>Mask Y-chr pseudoautosomal regions <i><small>(experimental)</small></i><br/><i><small>Description</small></i></td>
+								<td>
+									<?php /* Uncomment this later */ $checked = " "; if($config['rmpseudoautosomal'] == '0') $checked=""; ?>
+									<input type="checkbox" id="dashboard-rmpseudoautosomal"<?php echo $checked;?>>
+								</td>
+							</tr>
 
 
 							<tr class="active"><td colspan="2"><strong>Clustering Parameters</strong></td></tr>
@@ -718,10 +770,10 @@ if($GINKGO_PAGE == 'admin-search')
 								<td>
 									<?php $selected = array(); $selected[$config['clustMeth']] = ' selected'; ?>
 									Use <select id="param-clustering" class="input-small" style="margin-top:8px; font-size:11px; padding-top:3px; padding-bottom:0; height:25px; ">
+									<option value="ward"<?php echo $selected['ward']; ?>>ward</option>
 									<option value="single"<?php echo $selected['single']; ?>>single</option>
 									<option value="complete"<?php echo $selected['complete']; ?>>complete</option>
 									<option value="average"<?php echo $selected['average']; ?>>average</option>
-									<option value="ward"<?php echo $selected['ward']; ?>>ward</option>
 									</select> clustering.
 								</td>
 							</tr>
@@ -871,9 +923,9 @@ if($GINKGO_PAGE == 'admin-search')
 				</div>
 
 				<div class="col-lg-4">
-					<br><br><br>
+					<h3 style="margin-bottom:-15px;">&nbsp;</h3>
 					<?php echo $PANEL_LATER; ?>
-					<br>
+					<?php echo $PANEL_INFO; ?>
 					<?php echo $PANEL_DOWNLOAD; ?>
 					<br>
 				</div>
@@ -1071,10 +1123,18 @@ if($GINKGO_PAGE == 'admin-search')
 		$("#param-genome").change(function() {
 			// If custom upload, show upload form
 			if( $('#param-genome').val() == 'hg19' )
+			{
 				$("#param-segmentation-maskbadbins").show();
+				$("#param-segmentation-pseudoautosomal").show();
+			}
 			else
+			{
 				$("#param-segmentation-maskbadbins").hide();
+				$("#param-segmentation-pseudoautosomal").hide();
+			}
 		});
+		$("#param-segmentation").change()
+		$("#param-genome").change()
 
 		</script>
 
@@ -1235,6 +1295,7 @@ if($GINKGO_PAGE == 'admin-search')
 						}
 						//
 						rmbadbins = $('#dashboard-rmbadbins').is(':checked') == true ? 1 : 0;
+						rmpseudoautosomal = $('#dashboard-rmpseudoautosomal').is(':checked') == true ? 1 : 0;
 						// if(rmbadbins == 1)
 							// binMethVal += '_rmbadbins';
 
@@ -1270,6 +1331,7 @@ if($GINKGO_PAGE == 'admin-search')
 								// Other options
 								'sex': $('#dashboard-include-sex').is(':checked') == true ? 1 : 0,
 								'rmbadbins': $('#dashboard-rmbadbins').is(':checked') == true ? 1 : 0,
+								'rmpseudoautosomal': $('#dashboard-rmpseudoautosomal').is(':checked') == true ? 1 : 0,
 							},
 							// If get response
 							function(data) {
@@ -1308,7 +1370,7 @@ if($GINKGO_PAGE == 'admin-search')
 				else if(step == "2")
 					desc = "Computing quality control statistics";
 				else if(step == "3")
-					desc = "Processing and clustering samples";
+					desc = "Calling copy number events";
 				else if(step == "4")
 					desc = "Re-clustering with new parameters";
 
@@ -1511,6 +1573,18 @@ if($GINKGO_PAGE == 'admin-search')
 				if(xmlFile == "")
 					return;
 
+				// maxBL = 0
+				// $( xmlFile.getElementsByTagName("branch_length") ).each(function(index, value)
+				// {
+				// 	currBL = parseInt(value.childNodes[0].nodeValue)
+				// 	if(currBL > maxBL)
+				// 	{
+				// 		maxBL = currBL
+				// 		// maxBLindex = 
+				// 	}
+				// });
+				// alert(maxBL)
+
 				$( xmlFile.getElementsByTagName("branch_length") ).each(function(index, value)
 				{
 					currElement = xmlFile.getElementsByTagName("branch_length")[index];
@@ -1518,6 +1592,11 @@ if($GINKGO_PAGE == 'admin-search')
 					//
 					if(currVal < 1)
 						currElement.childNodes[0].nodeValue = '2';
+
+					if(currVal > 200)
+						currElement.childNodes[0].nodeValue = 40;
+
+					// currElement.childNodes[0].nodeValue /= maxBL
 				});
 
 				// Annotate the phyloXML file
