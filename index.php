@@ -135,6 +135,7 @@ PANEL;
 }
 
 // -- Panel for downloading tree -----------------------------------------------
+$binBoundariesUrl = './genomes/' . $config['chosen_genome'] . '/' . ($config['rmpseudoautosomal'] == '1' ? 'pseudoautosomal' : 'original') . '/' . $config['binMeth'];
 $PANEL_DOWNLOAD = <<<PANEL
 	<!-- Panel: Download results -->
 	<div id="results-download" class="panel panel-default" style="display:none;">
@@ -151,6 +152,7 @@ $PANEL_DOWNLOAD = <<<PANEL
 		<div class="panel-heading"><span class="glyphicon glyphicon-file"></span> Download processed data</div>
 		<!-- Table -->
 		<table class="table" style="font-size:12.5px;">
+			<tr class="active"><td><a target="_blank" href="{$binBoundariesUrl}"><strong>Bin Boundaries</strong></a></td></tr>
 			<tr class="active"><td><a target="_blank" href="{$userUrl}/SegStats"><strong>SegStats</strong></a> <a href="javascript:void(0);" onclick="javascript:$('#desc-5').toggle();"><span class="glyphicon glyphicon-question-sign"></span></a><span id="desc-5" style="display:none;">: basic bin count statistics for every sample. Rows correspond to samples.</span></td></tr>
 			<tr class="active"><td><a target="_blank" href="{$userUrl}/SegBreaks"><strong>SegBreaks</strong></a> <a href="javascript:void(0);" onclick="javascript:$('#desc-1').toggle();"><span class="glyphicon glyphicon-question-sign"></span></a><span id="desc-1" style="display:none;">: a binary matrix that encodes whether a sample has breakpoints at every bin position. Rows correspond to bins and columns correspond to cell samples.</span></td></tr>
 			<tr class="active"><td><a target="_blank" href="{$userUrl}/SegCopy"><strong>SegCopy</strong></a> <a href="javascript:void(0);" onclick="javascript:$('#desc-2').toggle();"><span class="glyphicon glyphicon-question-sign"></span></a><span id="desc-2" style="display:none;">: copy number state for each sample at every bin position. Rows correspond to bins and columns correspond to cell samples.</span></td></tr>
@@ -364,7 +366,7 @@ if(file_exists($configFile)) {
 //
 if($GINKGO_PAGE == 'admin-search')
 {
-	$file = DIR_ROOT . '/genomes/' . $config['chosen_genome'] . '/genes_' . $config['binMeth'];
+	$file = DIR_ROOT . '/genomes/' . $config['chosen_genome'] . '/' . ($config['rmpseudoautosomal'] == '1' ? 'pseudoautosomal' : 'original') . '/genes_' . $config['binMeth'];
 	$gene = escapeshellarg($_GET['gene']);
 	$bin  = escapeshellarg($_GET['binNumber']);
 
@@ -1510,7 +1512,7 @@ if($GINKGO_PAGE == 'admin-search')
 				$('#results-QA-table_length').css('display', 'none');
 
 
-				$.get('genomes/<?php echo $config["chosen_genome"] ?>/bounds_<?php echo $config["binMeth"]; ?>', function(data){
+				$.get('genomes/<?php echo $config["chosen_genome"] . "/" . ($config["rmpseudoautosomal"] == "1" ? "pseudoautosomal" : "original"); ?>/bounds_<?php echo $config["binMeth"]; ?>', function(data){
 					chromBoundaries = data.split('\n');
 					for(i=0; i<chromBoundaries.length; i++) {
 						tmp = chromBoundaries[i].split('\t');
@@ -1666,7 +1668,7 @@ if($GINKGO_PAGE == 'admin-search')
 			}
 
 			// -- Load file that specifies bin # <--> chr:pos
-			$.get('genomes/<?php echo $config["chosen_genome"] ?>/<?php echo $config["binMeth"]; ?>', function(data){
+			$.get('genomes/<?php echo $config["chosen_genome"] . "/" . ($config["rmpseudoautosomal"] == "1" ? "pseudoautosomal" : "original"); ?>/<?php echo $config["binMeth"]; ?>', function(data){
 
 				binToPos = data.split('\n');
 				// Note i=1 b/c skipping header
