@@ -491,7 +491,6 @@ if(cm == "NJ"){
   clust <- nj(d)
   clust$tip.label <- lab
   write.tree(clust, file=paste(user_dir, "/clust.newick", sep=""))
-  cm = "ward"
 }else{
   clust <- hclust(d, method = cm)
   clust$labels <- lab  
@@ -529,11 +528,21 @@ close(statusFile)
 #jk   }
 
 #Create cluster of samples
-#jk d2 <- dist(mat2, method = dm)
 d2 <- dist(t(final), method = dm)
-clust2 <- hclust(d2, method = cm)
-clust2$labels <- lab
-write(hc2Newick(clust2), file=paste(user_dir, "/clust2.newick", sep=""))
+#clust2 <- hclust(d2, method = cm)
+#clust2$labels <- lab
+#write(hc2Newick(clust2), file=paste(user_dir, "/clust2.newick", sep=""))
+if(cm == "NJ"){
+  library(ape)
+  clust2 <- nj(d2)
+  clust2$tip.label <- lab
+  write.tree(clust2, file=paste(user_dir, "/clust2.newick", sep=""))
+}else{
+  clust2 <- hclust(d2, method = cm)
+  clust2$labels <- lab  
+  write(hc2Newick(clust2), file=paste(user_dir, "/clust2.newick", sep=""))
+}
+
 
 ###
 main_dir="/mnt/data/ginkgo/scripts"
@@ -556,9 +565,19 @@ dev.off()
 
 #Calculate correlation distance matrix for clustering
 d3 <- as.dist((1 - cor(final))/2)
-clust3=hclust(d3, method = cm)
-clust3$labels=lab
-write(hc2Newick(clust3), file=paste(user_dir, "/clust3.newick", sep=""))
+#clust3=hclust(d3, method = cm)
+#clust3$labels=lab
+#write(hc2Newick(clust3), file=paste(user_dir, "/clust3.newick", sep=""))
+if(cm == "NJ"){
+  library(ape)
+  clust3 <- nj(d3)
+  clust3$tip.label <- lab
+  write.tree(clust3, file=paste(user_dir, "/clust3.newick", sep=""))
+}else{
+  clust3 <- hclust(d3, method = cm)
+  clust3$labels <- lab  
+  write(hc2Newick(clust3), file=paste(user_dir, "/clust3.newick", sep=""))
+}
 
 
 ###
@@ -602,7 +621,8 @@ phylo2hclust <- function(phy) {
   clustR = root(phy, outgroup=1, resolve.root=TRUE)
   # If edge lengths are exactly 0, chronopl will delete those edges.....
   clustRE= clustR$edge.length
-  clustRE[which(clustRE <= 0)] = clustRE[which(clustRE <= 0)]+ 1e-6
+  clustRE[which(clustRE == 0)] = clustRE[which(clustRE == 0)]+ 1e-4
+  clustRE[which(clustRE < 0)] = 1e-4
   clustR$edge.length = clustRE
   # Chronopl to make tree ultrametric
   clustU = chronopl(clustR, 0)
