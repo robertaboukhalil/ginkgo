@@ -486,9 +486,17 @@ if (sex == 0) {
 #Create cluster of samples
 #jk d <- dist(mat, method = dm)
 d <- dist(t(fixed), method=dm)
-clust <- hclust(d, method = cm)
-clust$labels <- lab
-write(hc2Newick(clust), file=paste(user_dir, "/clust.newick", sep=""))
+if(cm == "NJ"){
+  library(ape)
+  clust <- nj(d)
+  clust$tip.label <- lab
+  write.tree(clust, file=paste(user_dir, "/clust.newick", sep=""))
+  cm = "ward"
+}else{
+  clust <- hclust(d, method = cm)
+  clust$labels <- lab  
+  write(hc2Newick(clust), file=paste(user_dir, "/clust.newick", sep=""))
+}
 
 ###
 main_dir="/mnt/data/ginkgo/scripts"
@@ -586,6 +594,29 @@ finalBPs=final[unique(sort((which(breaks==1)%%l))),]
 colnames(rawBPs) <- lab
 colnames(fixedBPs) <- lab
 colnames(finalBPs) <- lab
+
+
+# RA: Need to root NJ tree, make tree ultrametric by extending branch lengths then convert to hclust object!
+phylo2hclust <- function(phy) {
+  # Root tree
+  clustR = root(phy, outgroup=1, resolve.root=TRUE)
+  # If edge lengths are exactly 0, chronopl will delete those edges.....
+  clustRE= clustR$edge.length
+  clustRE[which(clustRE <= 0)] = clustRE[which(clustRE <= 0)]+ 1e-6
+  clustR$edge.length = clustRE
+  # Chronopl to make tree ultrametric
+  clustU = chronopl(clustR, 0)
+  phy  = as.hclust(clustU)
+  return(phy)
+}
+
+#
+if(cm == "NJ"){
+  clust  = phylo2hclust(clust)
+  clust2 = phylo2hclust(clust2)
+  clust3 = phylo2hclust(clust3)
+}
+
 
 jpeg("heatRaw.jpeg", width=2000, height=1400)
 heatmap.2(t(rawBPs), Colv=FALSE, Rowv=as.dendrogram(clust), margins=c(5,20), dendrogram="row", trace="none", xlab="Bins", ylab="Samples", cex.main=2, cex.axis=1.5, cex.lab=1.5, cexCol=.001, col=bluered(2))
