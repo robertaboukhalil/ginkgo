@@ -772,11 +772,12 @@ if($GINKGO_PAGE == 'admin-search')
 								<td>
 									<?php $selected = array(); $selected[$config['clustMeth']] = ' selected'; ?>
 									Use <select id="param-clustering" class="input-small" style="margin-top:8px; font-size:11px; padding-top:3px; padding-bottom:0; height:25px; ">
-									<option value="ward"<?php echo $selected['ward']; ?>>ward</option>
-									<option value="single"<?php echo $selected['single']; ?>>single</option>
-									<option value="complete"<?php echo $selected['complete']; ?>>complete</option>
-									<option value="average"<?php echo $selected['average']; ?>>average</option>
-									</select> clustering.
+									<option value="ward"<?php echo $selected['ward']; ?>>ward linkage</option>
+									<option value="single"<?php echo $selected['single']; ?>>single linkage</option>
+									<option value="complete"<?php echo $selected['complete']; ?>>complete linkage</option>
+									<option value="average"<?php echo $selected['average']; ?>>average linkage</option>
+									<option value="NJ"<?php echo $selected['NJ']; ?>>neighbor-joining</option>
+									</select>.
 								</td>
 							</tr>
 							<tr>
