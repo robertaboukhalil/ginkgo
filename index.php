@@ -437,7 +437,7 @@ if($GINKGO_PAGE == 'admin-search')
 					<ul class="nav navbar-nav">
 						<li>
 							<a class="navbar-brand dropdown-toggle" data-toggle="dropdown" href="#"><span class="glyphicon glyphicon-tree-deciduous"></span> Ginkgo <span class="caret" style="border-top-color:#ccc !important; border-bottom-color:#ccc !important;"></span></a>
-							<a class="navbar-brand" href="javascript:void(0);">[UNDER MAINTENANCE: Oct. 30-Nov.2]</a>
+							<!-- <a class="navbar-brand" href="javascript:void(0);">[UNDER MAINTENANCE: Oct. 30-Nov.2]</a> -->
 							<ul class="dropdown-menu" role="menu">
 								<li><a href="?q=">Home</a></li>
 								<li><a href="https://github.com/robertaboukhalil/ginkgo">Github</a></li>
