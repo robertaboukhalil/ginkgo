@@ -51,6 +51,7 @@ if (bb) {
   GC=data.frame(GC[-badbins[,1],1])
   loc=loc[-badbins[,1],]
   raw=data.frame(raw[-badbins[,1],])
+  bounds <- read.table(paste(genome, "/bounds_", bm, "_badbins", sep=""), header=FALSE, sep="\t")
 }
 
 
@@ -119,6 +120,8 @@ cat(out, "\n")
 
 
 for(k in 1:w){
+
+  cat('===',k,'===\n')
 
   statusFile <- file( paste(user_dir, "/", status, sep="") )
   writeLines(c("<?xml version='1.0'?>", "<status>", "<step>3</step>", paste("<processingfile>", lab[k], "</processingfile>", sep=""), paste("<percentdone>", (k*100)%/%(w+4), "</percentdone>", sep=""), "<tree>clust.xml</tree>", "</status>"), statusFile)
@@ -264,8 +267,9 @@ for(k in 1:w){
 
     temp=sort(raw[,k])[round(l*.01) : (l-round(l*.01))] 
     reads <- hist(temp, breaks=100, plot=FALSE)
-    plot(reads, col='black', main=paste("Frequency of Bin Counts for Sample ", lab[k], "\n(both tails trimmed 1%)", sep=""), xlab="Read Count (reads/bin)", xaxt="n", cex.main=3, cex.axis=2, cex.lab=2)
-    axis(side=1, at=seq(min(temp), round(diff(range(temp))/20)*22, round(diff(range(temp))/20)), cex.axis=2)
+    # plot(reads, col='black', main=paste("Frequency of Bin Counts for Sample ", lab[k], "\n(both tails trimmed 1%)", sep=""), xlab="Read Count (reads/bin)", xaxt="n", cex.main=3, cex.axis=2, cex.lab=2)
+    plot(reads, col='black', main=paste("Frequency of Bin Counts for Sample ", lab[k], "\n(both tails trimmed 1%)", sep=""), xlab="Read Count (reads/bin)", cex.main=3, cex.axis=2, cex.lab=2)
+    # axis(side=1, at=seq(min(temp), round(diff(range(temp))/20)*22, round(diff(range(temp))/20)), cex.axis=2)
     tu <- par('usr')
     par(xpd=FALSE)
     clip(tu[1], mean(temp)-(diff(reads$mids)/2), tu[3], tu[4])
@@ -353,8 +357,7 @@ for(k in 1:w){
     if (f == 0) {
       reads <- hist(normal[,k]*CNmult[1,k], breaks=seq(0,ceiling(max(normal[,k]*CNmult[1,k])),.05), plot=FALSE)
       plot(reads, col='gray50', main=paste("Frequency of Bin Counts for Sample \"", lab[k], "\"\nNormalized and Scaled by Predicted CN (", CNmult[1,k], ")", sep=""), xlab="Copy Number", xlim=c(0,10), cex.main=3, cex.axis=2, cex.lab=2)
-    } 
-    else {
+    } else {
       reads <- hist(normal[,k]*ploidy[which(lab[k]==ploidy[,1]),2], breaks=seq(0,ceiling(max(normal[,k]*ploidy[which(lab[k]==ploidy[,1]),2])),.05), plot=FALSE)
       plot(reads, col='gray50', main=paste("Frequency of Bin Counts for Sample \"", lab[k], "\"\nNormalized and Scaled by Provided Ploidy (", ploidy[which(lab[k]==ploidy[,1]),2], ")", sep=""), xlab="Copy Number", xlim=c(0,10), cex.main=3, cex.axis=2, cex.lab=2) 
      }
