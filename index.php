@@ -528,7 +528,7 @@ if($GINKGO_PAGE == 'admin-search')
 			<?php if($GINKGO_USER_ID != 'sample' && $GINKGO_USER_ID != 'sample2'): ?>
 			<div class="row" style="height:100%;">
 				<div class="col-lg-8">
-					<h3 style="margin-top:-5px;"><span class="badge">STEP 0</span> Upload your .bed files <small><strong>(We accept *.bed and *.bed.gz, max 1GB/file)</strong></small></h3>
+					<h3 style="margin-top:-5px;"><span class="badge">STEP 0</span> Upload your .bed files <small><strong>(We accept *.bed and *.bed.gz, max 1GB/file, min 3 cells)</strong></small></h3>
 					<iframe id="upload-iframe" style="width:100%; height:100%; border:0;" src="includes/fileupload/?user_id=<?php echo $GINKGO_USER_ID; ?>"></iframe>
 					<p>
 						<div style="float:right">
