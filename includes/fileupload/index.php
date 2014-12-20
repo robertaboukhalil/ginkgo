@@ -37,8 +37,9 @@ session_start();
                     <span>Start upload</span>
                 </button>-->
                 <button type="reset" class="btn btn-warning cancel">
-                    <i class="glyphicon glyphicon-ban-circle"></i>
-                    <span>Cancel upload</span>
+                    <!-- <i class="glyphicon glyphicon-ban-circle"></i> -->
+                    <!-- <span>Cancel upload</span> -->
+                    Cancel upload
                 </button>
 <!--                <button type="button" class="btn btn-danger delete">-->
 <!--                    <i class="glyphicon glyphicon-trash"></i>-->
@@ -80,14 +81,16 @@ session_start();
         <td width="20%">
             {% if (!o.files.error && !i && !o.options.autoUpload) { %}
                 <button class="btn btn-primary start">
-                    <i class="glyphicon glyphicon-upload"></i>
-                    <span>Start</span>
+                    <!-- <i class="glyphicon glyphicon-upload"></i> -->
+                    <!-- <span>Start</span> -->
+                    Start
                 </button>
             {% } %}
             {% if (!i) { %}
                 <button class="btn btn-warning cancel">
-                    <i class="glyphicon glyphicon-ban-circle"></i>
-                    <span>Cancel</span>
+                    <!-- <i class="glyphicon glyphicon-ban-circle"></i> -->
+                    <!-- <span>Cancel</span> -->
+                    Cancel
                 </button>
             {% } %}
         </td>
@@ -127,14 +130,16 @@ session_start();
         <td width="40%">
             {% if (file.deleteUrl) { %}
                 <button class="btn btn-danger delete" data-type="{%=file.deleteType%}" data-url="{%=file.deleteUrl%}"{% if (file.deleteWithCredentials) { %} data-xhr-fields='{"withCredentials":true}'{% } %}>
-                    <i class="glyphicon glyphicon-trash"></i>
-                    <span>Delete</span>
+                    <!-- <i class="glyphicon glyphicon-trash"></i> -->
+                    Delete
+                    <!-- <span>Delete</span> -->
                 </button>
                 <input type="checkbox" name="delete" value="1" class="toggle">
             {% } else { %}
                 <button class="btn btn-warning cancel">
                     <i class="glyphicon glyphicon-ban-circle"></i>
-                    <span>Cancel</span>
+                    Cancel
+                    <!-- <span>Cancel</span> -->
                 </button>
             {% } %}
         </td>
