@@ -52,8 +52,20 @@ if [ "$init" == "1" ]; then
     ${home}/scripts/status ${dir}/${statFile} 1 $file $cnt $total
 
     if [[ "${file}" =~ \.gz$ ]]; then
+      firstLineChr=$(zcat ${dir}/${file} | head -n 1 | cut -f1 | grep "chr")
+      if [[ "${firstLineChr}" == "" ]]; then
+        awk '{print "chr"$0}' <(zcat ${dir}/${file}) > ${dir}/${file}_tmp
+        mv ${dir}/${file}_tmp ${dir}/${file/.gz/}
+        gzip -f ${dir}/${file/.gz/}
+      fi
       ${home}/scripts/binUnsorted ${genome}/${binMeth} `wc -l < ${genome}/${binMeth}` <(zcat -cd ${dir}/${file}) `echo ${file} | awk -F ".bed" '{print $1}'` ${dir}/${file}_mapped
     else
+      # firstLineChr="$(grep "chr" ${file} | head -n 1)"
+      firstLineChr=$( head -n 1 ${dir}/${file} | cut -f1 | grep "chr")
+      if [[ "${firstLineChr}" == "" ]]; then
+        awk '{print "chr"$0}' ${dir}/${file} > ${dir}/${file}_tmp
+        mv ${dir}/${file}_tmp ${dir}/${file}
+      fi
       ${home}/scripts/binUnsorted ${genome}/${binMeth} `wc -l < ${genome}/${binMeth}` ${dir}/${file} `echo ${file} | awk -F ".bed" '{print $1}'` ${dir}/${file}_mapped
       gzip ${dir}/${file}
     fi
