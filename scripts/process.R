@@ -16,6 +16,7 @@ f <- as.numeric(args[[11]])
 facs <- args[[12]]
 sex <- as.numeric(args[[13]])
 bb  <- as.numeric(args[[14]])
+maxPloidy = 6
 
 library('ctc')
 library(DNAcopy) #segmentation
@@ -72,7 +73,7 @@ final <- matrix(0,l,w)
 stats <- matrix(0,w,10)
 CNmult <- matrix(0,5,w)
 CNerror <- matrix(0,5,w)
-outerColsums <- matrix(0, 91, w)
+outerColsums <- matrix(0, (20*(maxPloidy-1.5)+1), w)
 
 #Normalize samples
 normal <- sweep(raw+1, 2, colMeans(raw+1), '/')
@@ -218,7 +219,7 @@ for(k in 1:w){
   ############################################################
 
   #Determine Copy Number     
-  CNgrid <- seq(1.5, 6.0, by=0.05)
+  CNgrid <- seq(1.5, maxPloidy, by=0.05)
   outerRaw <- fixed[,k] %o% CNgrid
   outerRound <- round(outerRaw)
   outerDiff <- (outerRaw - outerRound) ^ 2
@@ -376,15 +377,15 @@ for(k in 1:w){
   jpeg(filename=paste(lab[k], "_SoS.jpeg", sep=""), width=2500, height=1500)
     par(mar = c(7.0, 7.0, 7.0, 3.0))
 
-    plot(CNgrid, outerColsums[,k], xlim=c(1,6), type= "n", xaxt="n", main="Sum of Squares Error Across Potential Copy Number States", xlab="Copy Number Multiplier", ylab="Sum of Squares Error", cex.main=3, cex.axis=2, cex.lab=2)
+    plot(CNgrid, outerColsums[,k], xlim=c(1,maxPloidy), type= "n", xaxt="n", main="Sum of Squares Error Across Potential Copy Number States", xlab="Copy Number Multiplier", ylab="Sum of Squares Error", cex.main=3, cex.axis=2, cex.lab=2)
     tu <- par('usr')
     par(xpd=FALSE)
     rect(tu[1], tu[3], tu[2], tu[4], col = "gray85")
-    abline(v=seq(1, 6, .25), col="white", lwd=2)
+    abline(v=seq(1, maxPloidy, .25), col="white", lwd=2)
     abline(h=axTicks(2), col="white", lwd=2)
     points(CNgrid, outerColsums[,k], "b", xaxt="n", lwd=3.5)
     points(CNmult[1,k], CNerror[1,k], pch=23, cex=4, lwd=3.5, col=col1[cp,2])
-    axis(side=1, at=1:6, cex.axis=2)
+    axis(side=1, at=1:maxPloidy, cex.axis=2)
     legend("topright", inset=.05, legend=c("Lowest SoS Error"), fill=col1[cp,2], cex=2.5)
 
   dev.off()
