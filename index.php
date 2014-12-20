@@ -532,7 +532,7 @@ if($GINKGO_PAGE == 'admin-search')
 					<iframe id="upload-iframe" style="width:100%; height:100%; border:0;" src="includes/fileupload/?user_id=<?php echo $GINKGO_USER_ID; ?>"></iframe>
 					<p>
 						<div style="float:right">
-							<a class="btn btn-lg btn-primary" href="?q=dashboard/<?php echo $GINKGO_USER_ID; ?>">Next step <span class="glyphicon glyphicon-chevron-right"></span></a>
+							<a id="fileupload-next-step" class="btn btn-lg btn-primary" href="?q=dashboard/<?php echo $GINKGO_USER_ID; ?>">Next step <span class="glyphicon glyphicon-chevron-right"></span></a>
 						</div>
 					</p>
 				</div>
@@ -1184,6 +1184,7 @@ if($GINKGO_PAGE == 'admin-search')
 		================================================== -->
 		<script language="javascript">
 		var ginkgo_user_id = "<?php echo $GINKGO_USER_ID; ?>";
+		window.history.pushState("", "", "?q=/" + ginkgo_user_id);
 		var g = null;
 
 		// -------------------------------------------------------------------------
