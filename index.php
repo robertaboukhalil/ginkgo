@@ -1184,7 +1184,9 @@ if($GINKGO_PAGE == 'admin-search')
 		================================================== -->
 		<script language="javascript">
 		var ginkgo_user_id = "<?php echo $GINKGO_USER_ID; ?>";
+		<?php if($GINKGO_PAGE == 'home' && $query[1] == ""): ?>
 		window.history.pushState("", "", "?q=/" + ginkgo_user_id);
+		<?php endif; ?>
 		var g = null;
 
 		// -------------------------------------------------------------------------
