@@ -425,6 +425,8 @@ class UploadHandler
     }
 
     protected function validate($uploaded_file, $file, $error, $index) {
+
+
         if ($error) {
             $file->error = $this->get_error_message($error);
             return false;
@@ -435,11 +437,15 @@ class UploadHandler
         ));
 
         $post_max_size = $this->get_config_bytes(ini_get('post_max_size'));
+        $post_max_size = 4294967296;
+
+
+        // file_put_contents('/mnt/data/ginkgo/uploads/xsssJjGlhUmgW5Psb0dY/test', '.' . "\n" . $error . "\n" . $post_max_size . "\n" . $this->get_server_var('CONTENT_LENGTH') . ' vs. ' . $this->fix_integer_overflow(intval($this->get_server_var('CONTENT_LENGTH'))));
+
         if ($post_max_size && ($content_length > $post_max_size)) {
             $file->error = $this->get_error_message('post_max_size');
             return false;
         }
-
         if (!preg_match($this->options['accept_file_types'], $file->name)) {
             $file->error = $this->get_error_message('accept_file_types');
             return false;
@@ -698,6 +704,8 @@ class UploadHandler
         $file->size = $this->fix_integer_overflow(intval($size));
         $file->type = $type;
 
+        // file_put_contents('/mnt/data/ginkgo/uploads/xsssJjGlhUmgW5Psb0dY/test2', "--" . $file->name . "\n>" . $file->size . "\n>" . $size . "\n>" . $file->type);
+
         if ($this->validate($uploaded_file, $file, $error, $index))
         {
             $this->handle_form_data($file, $index);
@@ -823,8 +831,8 @@ class UploadHandler
             } else {
                 $file->size = $file_size;
                 if (!$content_range && $this->options['discard_aborted_uploads']) {
-                    unlink($file_path);
-                    $file->error = 'abort';
+                    // unlink($file_path);
+                    // $file->error = 'ok';
                 }
             }
             $this->set_additional_file_properties($file);
@@ -1035,6 +1043,11 @@ class UploadHandler
             preg_split('/[^0-9]+/', $this->get_server_var('HTTP_CONTENT_RANGE')) : null;
         $size =  $content_range ? $content_range[3] : null;
         $files = array();
+
+
+        // file_put_contents('/mnt/data/ginkgo/uploads/xsssJjGlhUmgW5Psb0dY/test3', "\n" . print_r($_FILES, true) . "\n" . print_r($content_range, true));
+
+
         if ($upload && is_array($upload['tmp_name'])) {
             // param_name is an array identifier like "files[]",
             // $_FILES is a multi-dimensional array:

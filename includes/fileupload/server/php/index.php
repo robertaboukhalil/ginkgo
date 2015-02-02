@@ -10,6 +10,10 @@
  * http://www.opensource.org/licenses/MIT
  */
 
+// ini_set('post_max_size','4294967296');
+// ini_set('upload_max_filesize','4294967296');
+
+
 set_time_limit(0);
 error_reporting(E_ALL | E_STRICT);
 require('UploadHandler.php');
