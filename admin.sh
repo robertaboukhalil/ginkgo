@@ -24,3 +24,9 @@ do
     echo -e $n"\t"$SAMPLE"\t["$step"\t"$percent"%]\t"$progress"%\t"$progressBar;
   fi;
 done | column -t
+
+
+#
+echo -e "\n\n"
+ls -lh /tmp/php*
+
