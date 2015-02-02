@@ -17,6 +17,8 @@
 // == Configuration ============================================================
 // =============================================================================
 
+
+
 set_time_limit(0);
 include "bootstrap.php";
 $GINKGO_MIN_NB_CELLS = 3;
@@ -38,6 +40,7 @@ $GINKGO_USER_ID	= $query[1];
 if(!$GINKGO_USER_ID)
 	$GINKGO_USER_ID	= generateID(20);
 
+
 // Security patch: don't allow user IDs that aren't alphanumerical
 // e.g. could use "a; echo b" as user ID; will create file "a" and write "b" to it
 if(preg_match('/[^A-Za-z0-9_-]/', $GINKGO_USER_ID))
@@ -55,6 +58,7 @@ if($GINKGO_PAGE == "dashboard")
 // Step 4 (results)
 if($GINKGO_PAGE == "results")
   $CURR_CELL = $query[2];
+
 
 
 // =============================================================================
@@ -161,7 +165,6 @@ $PANEL_DOWNLOAD = <<<PANEL
 		</table>
 	</div>
 PANEL;
-
 
 // =============================================================================
 // == Upload facs / binning file ===============================================
@@ -420,6 +423,17 @@ if($GINKGO_PAGE == 'admin-search')
 		<script type="text/javascript" src="includes/tinycon/tinycon.min.js"></script>
 		<link rel="icon" href="includes/tinycon/ginkgo.ico" />
 
+		<script>
+		  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+		  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+		  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+		  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+		  ga('create', 'UA-31249083-2', 'auto');
+		  ga('send', 'pageview');
+
+		</script>
+
 	</head>
 
 	<body>
@@ -649,9 +663,9 @@ if($GINKGO_PAGE == 'admin-search')
 					<div id="params-email" style="margin:20px;">
 						<p>If you want to be notified once the analysis is done, enter your e-mail here:<br/></p>
 						<div class="input-group">
-							<?php $email = 'my@email.com'; if($config['email'] != '') $email = $config['email']; ?>
+							<?php /*$email = 'my@email.com';*/ if($config['email'] != '') $email = $config['email']; ?>
 							<span class="input-group-addon"><span class="glyphicon glyphicon-envelope"></span></span>
-							<input id="email" class="form-control" type="text" placeholder="<?php echo $email; ?>">
+							<input id="email" class="form-control" type="text" placeholder="my@email.com" value="<?php echo $email; ?>">
 						</div>
 					</div>
 					<br/><br/>
@@ -1344,7 +1358,7 @@ if($GINKGO_PAGE == 'admin-search')
 								if(data == "OK")
 									window.location = "<?php echo URL_ROOT . "/?q=results/"; ?>" + ginkgo_user_id;
 								else
-									alert(data)
+									alert('Error 87: ' + data)
 							}
 						);
 					}
