@@ -1206,6 +1206,9 @@ if($GINKGO_PAGE == 'admin-search')
 		<script type="text/javascript" language="javascript" src="includes/datatables/1.10.4/jquery.dataTables.1.10.4.min.js"></script>
 		<script type="text/javascript" language="javascript" src="includes/datatables/1.10.4/dataTables.tableTools.2.2.3.min.js"></script>
 
+		<!-- <link rel="stylesheet" type="text/css" href="includes/datatables/1.10.4/dataTables.fixedHeader.css"> -->
+		<script type="text/javascript" language="javascript" src="includes/datatables/1.10.4/dataTables.fixedHeader.min.js"></script>
+
 		<!-- CNV profiles
 		================================================== -->
 		<script type="text/javascript" language="javascript" src="includes/dygraph/dygraph-combined.js"></script>
@@ -1469,13 +1472,13 @@ if($GINKGO_PAGE == 'admin-search')
 				// Turn string into array of lines
 				lineNb = 0;
 				table = '<thead> ' + '\n' +
-						'	<tr> ' + '\n' +
-						'		<th style="text-align:center" width="15%">Cell</th> ' + '\n' +
-						'		<th style="text-align:center" width="25%">CNV Profile</th> ' + '\n' +
-						'		<th style="text-align:center" width="15%"># Reads</th> ' + '\n' +
-						'		<th style="text-align:center" width="15%">Mean read count</th> ' + '\n' +
-						'		<th style="text-align:center" width="15%">Read count variance</th> ' + '\n' +
-						'		<th style="text-align:center" width="15%">Index of dispersion</th> ' + '\n' +
+						'	<tr style="background-color: white !important"> ' + '\n' +
+						'		<th style="text-align:center; vertical-align:middle" width="15%">Cell</th> ' + '\n' +
+						'		<th style="text-align:center; vertical-align:middle" width="25%">CNV Profile</th> ' + '\n' +
+						'		<th style="text-align:center; vertical-align:middle" width="15%"># Reads</th> ' + '\n' +
+						'		<th style="text-align:center; vertical-align:middle" width="15%">Mean read count</th> ' + '\n' +
+						'		<th style="text-align:center; vertical-align:middle" width="15%">Read count variance</th> ' + '\n' +
+						'		<th style="text-align:center; vertical-align:middle" width="15%">Index of dispersion</th> ' + '\n' +
 						'	</tr> ' + '\n' +
 						'	</thead>\n';
 				table += '<tbody>';
@@ -1543,13 +1546,16 @@ if($GINKGO_PAGE == 'admin-search')
 							}
 						}],
 
-						dom: 'T<"clear">lfrtip',
+						// dom: 'T<"clear">lfrtip',
+						// dom: 'T<"top"><"bottom"lfrtip><"clear">',
+						dom: '<"top"><"bottom"lfrtipT><"clear">',
 						tableTools: {
 							"sRowSelect": "os",
 							"aButtons": [ "select_all", "select_none" ]
 						}
 
 					});
+    			new $.fn.dataTable.FixedHeader( oTable );
 				$('#results-QA-table_length').css('display', 'none');
 
 
