@@ -899,11 +899,21 @@ if($GINKGO_PAGE == 'admin-search')
 					<!-- Panel: Summary -->
 					<div id="results-summary" class="panel panel-default">
 						<div class="panel-heading"><span class="glyphicon glyphicon-certificate"></span> Summary</div>
-						<div style="height:350px; overflow:auto;"><table class="table" id="results-QA-table" style="display:none;"></table></div>
+						<div style="height:350px; overflow:auto;">
+							<table class="table" id="results-QA-table" style="display:none;"></table>
+						</div>
 						<table class="table">
-							<tr><td><b>Download detailed quality assessment:</b> 
-								<a target="_blank" href="<?php echo URL_UPLOADS . '/' . $GINKGO_USER_ID . '/SegStats'; ?>">.txt</a>		
-							</td></tr>
+							<!--<tr><td><b>Download detailed quality assessment:</b> 
+								<a target="_blank" href="<?php echo URL_UPLOADS . '/' . $GINKGO_USER_ID . '/SegStats'; ?>">.txt</a>
+							</td></tr>-->
+							<tr>
+								<td style="width:50%; vertical-align:middle">
+									With selected cells:
+									<a aria-controls="results-QA-table" class="DTTT_button DTTT_button_text"><span>Plot Lorenz</span></a>
+									<a aria-controls="results-QA-table" class="DTTT_button DTTT_button_text"><span>Plot GC bias</span></a>
+								</td>
+								<td id="results-summary-btns" style="width:50% vertical-align:middle; padding-top:20px;"></td>
+							</tr>
 						</table>
 					</div>
 
@@ -1552,7 +1562,15 @@ if($GINKGO_PAGE == 'admin-search')
 						tableTools: {
 							"sRowSelect": "os",
 							"aButtons": [ "select_all", "select_none" ]
-						}
+						},
+						"initComplete": function() {
+							// $('#results-summary-btns').appendChild( $('div.DTTT_container')[0] );
+							// $('div.DTTT_container')[0].appendTo('#results-summary-btns')
+							// console.log($('div.DTTT_container')[0].innerHTML)
+							// $('#results-summary-btns').html( $('div.DTTT_container')[0].innerHTML )
+							$('div.DTTT_container').appendTo("#results-summary-btns");
+							// alert(245)
+						},
 
 					});
     			new $.fn.dataTable.FixedHeader( oTable );
