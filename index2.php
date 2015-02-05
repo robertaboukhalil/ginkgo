@@ -356,7 +356,11 @@ if(isset($_POST['analyze-subset']))
 	file_put_contents($userDir . '/' . $analysisID . '.config', $configTxt);
 
 	// Start analysis
-	$cmd = "./scripts/analyze-subset.R $GINKGO_USER_ID $analysisID $genome {$config['binMeth']} >> $userDir/ginkgo-" . $analysisID . ".out 2>&1  &";
+	$PAR = 'original';
+	if($config['rmpseudoautosomal'] == '1')
+		$PAR = 'pseudoautosomal';
+
+	$cmd = "./scripts/analyze-subset.R $GINKGO_USER_ID $analysisID $genome {$config['binMeth']} $PAR >> $userDir/ginkgo-" . $analysisID . ".out 2>&1  &";
 	session_regenerate_id(TRUE);	
 	$handle = popen($cmd, 'r');
 	pclose($handle);

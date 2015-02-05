@@ -9,6 +9,7 @@ userID			= args[[1]]
 analysisID		= args[[2]]
 genome			= args[[3]]
 bm				= args[[4]]
+pseudoautosomal = args[[5]]
 
 #
 setwd(paste('/mnt/data/ginkgo/uploads/', userID, sep=''))
@@ -26,10 +27,10 @@ w <- dim(raw)[2] #Number of samples
 normal <- sweep(raw+1, 2, colMeans(raw+1), '/')
 normal2 = normal
 #
-GC <- read.table(paste("../../genomes/", genome, "/original/GC_", bm, sep=""), header=FALSE, sep="\t", as.is=TRUE)
+GC <- read.table(paste("../../genomes/", genome, "/", pseudoautosomal, "/GC_", bm, sep=""), header=FALSE, sep="\t", as.is=TRUE)
 
 # --
-bounds <- read.table(paste("../../genomes/", genome, "/original/bounds_", bm, sep=""), header=FALSE, sep="\t")
+bounds <- read.table(paste("../../genomes/", genome, "/", pseudoautosomal, "/bounds_", bm, sep=""), header=FALSE, sep="\t")
 final  <- read.table('SegCopy', header=TRUE, sep="\t")
 fixed  <- read.table('SegFixed', header=TRUE, sep="\t")
 maxPloidy = 6
