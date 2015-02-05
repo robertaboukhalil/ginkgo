@@ -28,5 +28,5 @@ done | column -t
 
 #
 echo -e "\n\n"
-ls -lh /tmp/php*
+ls -lh /tmp/php* 2>/dev/null
 
