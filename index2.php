@@ -365,6 +365,14 @@ if(isset($_POST['analyze-subset']))
 	exit;
 }
 
+if($GINKGO_PAGE == "results-subset")
+{
+	if(file_exists('uploads/' . $GINKGO_USER_ID . '/' . $query[2] . '.done'))
+		echo '<img src="./uploads/' . $GINKGO_USER_ID . '/' . $query[2] . '.jpeg?uniq=' . rand(1e6,2e6) . '">';
+	else
+		echo 'Generating figure...<meta http-equiv="refresh" content="1">';
+	exit;
+}
 
 
 
