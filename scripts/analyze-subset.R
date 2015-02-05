@@ -109,6 +109,55 @@ if(analysisType == "lorenz")
 # ------------------------------------------------------------------------------
 if(analysisType == "gc")
 {
+	plottedFirst = 0
+	jpeg(filename=paste(analysisID,".jpeg", sep=""), width=2500, height=1250)
+	par(mar = c(7.0, 7.0, 7.0, 3.0))
+	layout(matrix(c(1,2), 1, 2, byrow=TRUE))
+
+	for(k in cellIDs)
+	{
+		low <- lowess(GC[,1], log(normal2[,k]), f=0.05)
+		app <- approx(low$x, low$y, GC[,1])
+		cor <- exp(log(normal2[,k]) - app$y)
+
+		if(plottedFirst == 0) {
+			try(plot(GC[,1], log(normal2[,k]), main=paste("GC Content vs. Bin Count\nSample (Uncorrected)", sep=""), type= "n", xlim=c(min(.3, min(GC[,1])), max(.6, max(GC[,1]))), xlab="GC content", ylab="Normalized Read Counts (log scale)", cex.main=3, cex.axis=2, cex.lab=2))
+			try(plot(GC[,1], log(cor), main=paste("GC Content vs. Bin Count\nSample (Corrected)", sep=""), type= "n", xlim=c(min(.3, min(GC[,1])), max(.6, max(GC[,1]))), xlab="GC content", ylab="Normalized Read Counts (log scale)", cex.main=3, cex.axis=2, cex.lab=2))
+		} else {
+			try(points(GC[,1], log(normal2[,k]), type= "n"))
+			try(points(GC[,1], log(cor)))
+		}
+
+		points(GC[,1], log(normal2[,k]))
+		points(app, col=col1[cp,2])
+		points(GC[,1], log(cor))
+
+		if(plottedFirst == 0)
+		{
+			tu <- par('usr')
+			par(xpd=FALSE)
+			rect(tu[1], tu[3], tu[2], tu[4], col = "gray85")
+			abline(v=axTicks(1), col="white", lwd=2)
+			abline(h=axTicks(2), col="white", lwd=2)
+			legend("bottomright", inset=.05, legend="Lowess Fit", fill=col1[cp,2], cex=2.5)
+
+			tu <- par('usr')
+			par(xpd=FALSE)
+			rect(tu[1], tu[3], tu[2], tu[4], col = "gray85")
+			abline(v=axTicks(1), col="white", lwd=2)
+			abline(h=axTicks(2), col="white", lwd=2)
+
+		}
+	}
+
+	#Plot GC correction
+
+
+
+
+
+	dev.off()
+	file.create(paste(analysisID,'.done', sep=""))
 
 }
 
