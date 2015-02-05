@@ -7,6 +7,9 @@
 args			= commandArgs(TRUE)
 userID			= args[[1]]
 analysisID		= args[[2]]
+genome			= args[[3]]
+bm				= args[[4]]
+
 #
 setwd(paste('/mnt/data/ginkgo/uploads/', userID, sep=''))
 # cat(userID,'\n',analysisID,'\n',sep='')
@@ -23,8 +26,7 @@ w <- dim(raw)[2] #Number of samples
 normal <- sweep(raw+1, 2, colMeans(raw+1), '/')
 normal2 = normal
 #
-bm = 'variable_500000_101_bowtie'
-GC <- read.table(paste("../../genomes/hg19/original/GC_", bm, sep=""), header=FALSE, sep="\t", as.is=TRUE)
+GC <- read.table(paste("../../genomes/", genome, "/original/GC_", bm, sep=""), header=FALSE, sep="\t", as.is=TRUE)
 
 
 
@@ -145,7 +147,45 @@ if(analysisType == "gc")
 }
 
 
+# ------------------------------------------------------------------------------
+# -- Plot GC curves
+# ------------------------------------------------------------------------------
+if(analysisType == "cnvprofiles")
+{
+	nbCells = length(selectedCells)
+	jpeg(filename=paste(analysisID, ".jpeg", sep=""), width=500, height=500*nbCells)
+    layout(matrix(c(nbCells,1), nbCells, 1, byrow=TRUE))
 
+
+
+    k = 1
+	plot(normal[,k]*CNmult[1,k], main="Integer Copy Number Profiles", ylim=c(0, 8), type="n", xlab="Bin", ylab="Copy Number", cex.main=3, cex.axis=2, cex.lab=2)
+
+	tu <- par('usr')
+	par(xpd=FALSE)
+	rect(tu[1], tu[3], tu[2], tu[4], col = "gray85")
+
+	flag=1
+	abline(h=0:19, lty=2)
+
+	points(normal[(0:bounds[1,2]),k]*CNmult[1,k], ylim=c(0, 6), pch=20, cex=2, col=alpha(col1[cp,flag], .2))
+	points(final[(0:bounds[1,2]),k], ylim=c(0, 8), pch=20, cex=2, col=alpha(col2[cp,flag], .2))
+	for (i in 1:(dim(bounds)[1]-1)){
+		points((bounds[i,2]:bounds[(i+1),2]), normal[(bounds[i,2]:bounds[(i+1),2]),k]*CNmult[1,k], ylim=c(0, 6), pch=20, cex=2, col=alpha(col2[cp,flag], .2))
+		points((bounds[i,2]:bounds[(i+1),2]), final[(bounds[i,2]:bounds[(i+1),2]),k], ylim=c(0, 8), pch=20, cex=2, col=alpha(col1[cp,flag], .2))
+		if (flag == 1) { flag = 2} else {flag = 1}
+	}
+	points((bounds[(i+1),2]:l), normal[(bounds[(i+1),2]:l),k]*CNmult[1,k], ylim=c(0, 8), pch=20, cex=2, col=alpha(col2[cp,flag], .2))
+	points((bounds[(i+1),2]:l), final[(bounds[(i+1),2]:l),k], ylim=c(0, 6), pch=20, cex=2, col=alpha(col1[cp,flag], .2))
+
+	dev.off()
+
+
+
+
+	dev.off()
+	file.create(paste(analysisID,'.done', sep=""))
+}
 
 
 
