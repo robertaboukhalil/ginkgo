@@ -28,7 +28,11 @@ normal2 = normal
 #
 GC <- read.table(paste("../../genomes/", genome, "/original/GC_", bm, sep=""), header=FALSE, sep="\t", as.is=TRUE)
 
-
+# --
+bounds <- read.table(paste("../../genomes/", genome, "/original/bounds_", bm, sep=""), header=FALSE, sep="\t")
+final  <- read.table('SegCopy', header=TRUE, sep="\t")
+fixed  <- read.table('SegFixed', header=TRUE, sep="\t")
+maxPloidy = 6
 
 # --
 cellIDs = c()
@@ -39,7 +43,7 @@ if(is.null(cellIDs))
 	stop("Error")
 
 # -- Initialize color palette
-cp = 2
+cp = 3
 col1 = col2 = matrix(0,3,2)
 col1[1,] = c('darkmagenta', 'goldenrod')
 col1[2,] = c('darkorange', 'dodgerblue')
@@ -152,36 +156,51 @@ if(analysisType == "gc")
 # ------------------------------------------------------------------------------
 if(analysisType == "cnvprofiles")
 {
-	nbCells = length(selectedCells)
-	jpeg(filename=paste(analysisID, ".jpeg", sep=""), width=500, height=500*nbCells)
-    layout(matrix(c(nbCells,1), nbCells, 1, byrow=TRUE))
+	library(scales)   # for alpha() opacity used in points() function
 
+	nbCells = length(cellIDs)
+	jpeg(filename=paste(analysisID, ".jpeg", sep=""), width=1000, height=200*nbCells)
+	# layout(matrix(c(nbCells,1), nbCells, 1, byrow=TRUE))
+	par(mfrow=c(nbCells,1)) 
 
+	#
+	for(k in cellIDs)
+	{
+		# -- New cell
+		plot(normal[,k], main=selectedCells[k,1], ylim=c(0, 8), type="n", xlab="Bin", ylab="Copy Number", cex.main=2, cex.axis=1.5, cex.lab=1.5)
+		#
+		tu <- par('usr')
+		par(xpd=FALSE)
+		rect(tu[1], tu[3], tu[2], tu[4], col = "gray85")
+		abline(h=0:19, lty=2)
 
-    k = 1
-	plot(normal[,k]*CNmult[1,k], main="Integer Copy Number Profiles", ylim=c(0, 8), type="n", xlab="Bin", ylab="Copy Number", cex.main=3, cex.axis=2, cex.lab=2)
+		# -- Calculate CNmult (because not saved anywhere)
+		CNmult <- matrix(0,5,w)
+		outerColsums <- matrix(0, (20*(maxPloidy-1.5)+1), w)
 
-	tu <- par('usr')
-	par(xpd=FALSE)
-	rect(tu[1], tu[3], tu[2], tu[4], col = "gray85")
+		CNgrid <- seq(1.5, maxPloidy, by=0.05)
+		outerRaw <- fixed[,k] %o% CNgrid
+		outerRound <- round(outerRaw)
+		outerDiff <- (outerRaw - outerRound) ^ 2
+		outerColsums[,k] <- colSums(outerDiff, na.rm = FALSE, dims = 1)
+		CNmult[,k] <- CNgrid[order(outerColsums[,k])[1:5]]
 
-	flag=1
-	abline(h=0:19, lty=2)
-
-	points(normal[(0:bounds[1,2]),k]*CNmult[1,k], ylim=c(0, 6), pch=20, cex=2, col=alpha(col1[cp,flag], .2))
-	points(final[(0:bounds[1,2]),k], ylim=c(0, 8), pch=20, cex=2, col=alpha(col2[cp,flag], .2))
-	for (i in 1:(dim(bounds)[1]-1)){
-		points((bounds[i,2]:bounds[(i+1),2]), normal[(bounds[i,2]:bounds[(i+1),2]),k]*CNmult[1,k], ylim=c(0, 6), pch=20, cex=2, col=alpha(col2[cp,flag], .2))
-		points((bounds[i,2]:bounds[(i+1),2]), final[(bounds[i,2]:bounds[(i+1),2]),k], ylim=c(0, 8), pch=20, cex=2, col=alpha(col1[cp,flag], .2))
-		if (flag == 1) { flag = 2} else {flag = 1}
+		# -- Plot
+		flag=1
+		points(normal[(0:bounds[1,2]),k]*CNmult[1,k], ylim=c(0, 6), pch=20, cex=1.5, col=alpha(col1[cp,flag], .2))
+		points(final[(0:bounds[1,2]),k], ylim=c(0, 8), pch=20, cex=1.5, col=alpha(col2[cp,flag], .2))
+		for (i in 1:(dim(bounds)[1]-1))
+		{
+			points((bounds[i,2]:bounds[(i+1),2]), normal[(bounds[i,2]:bounds[(i+1),2]),k]*CNmult[1,k], ylim=c(0, 6), pch=20, cex=1.5, col=alpha(col2[cp,flag], 0.2))
+			points((bounds[i,2]:bounds[(i+1),2]), final[(bounds[i,2]:bounds[(i+1),2]),k], ylim=c(0, 8), pch=20, cex=1.5, col=alpha(col1[cp,flag], 0.2))
+			if (flag == 1)
+				flag = 2
+			else
+				flag = 1
+		}
+		points((bounds[(i+1),2]:l), normal[(bounds[(i+1),2]:l),k]*CNmult[1,k], ylim=c(0, 8), pch=20, cex=1.5, col=alpha(col2[cp,flag], .2))
+		points((bounds[(i+1),2]:l), final[(bounds[(i+1),2]:l),k], ylim=c(0, 6), pch=20, cex=1.5, col=alpha(col1[cp,flag], .2))
 	}
-	points((bounds[(i+1),2]:l), normal[(bounds[(i+1),2]:l),k]*CNmult[1,k], ylim=c(0, 8), pch=20, cex=2, col=alpha(col2[cp,flag], .2))
-	points((bounds[(i+1),2]:l), final[(bounds[(i+1),2]:l),k], ylim=c(0, 6), pch=20, cex=2, col=alpha(col1[cp,flag], .2))
-
-	dev.off()
-
-
-
 
 	dev.off()
 	file.create(paste(analysisID,'.done', sep=""))
