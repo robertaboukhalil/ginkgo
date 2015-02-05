@@ -339,6 +339,36 @@ if(isset($_POST['analyze']))
 
 
 // =============================================================================
+// == Launch analysis **on subset of cells** ===================================
+// =============================================================================
+if(isset($_POST['analyze-subset']))
+{
+	// Job settings
+	$selectedCells = $_POST['selectedCells'];
+	$analysisType  = $_POST['analysisType'];
+	//
+	$analysisID    = generateID(10);
+
+	// Save job settings
+	$configTxt = $analysisType . "\n";
+	foreach($selectedCells as $cell)
+		$configTxt .= $cell . "\n";
+	file_put_contents($userDir . '/' . $analysisID . '.config', $configTxt);
+
+	// Start analysis
+	$cmd = "./scripts/analyze-subset.R $GINKGO_USER_ID $analysisID >> $userDir/ginkgo-" . $analysisID . ".out 2>&1  &";
+	session_regenerate_id(TRUE);	
+	$handle = popen($cmd, 'r');
+	pclose($handle);
+
+	echo $analysisID;
+	exit;
+}
+
+
+
+
+// =============================================================================
 // == If analysis under way, redirect to status page ===========================
 // =============================================================================
 
@@ -427,6 +457,10 @@ if($GINKGO_PAGE == 'admin-search')
 			.bs-callout-danger { background-color:#fcf2f2; border-color:#dFb5b4; }
 			.bs-callout-warning { background-color:#fefbed; border-color:#f1e7bc; }
 			.bs-callout-info { background-color:#f0f7fd; border-color:#d0e3f0; } 
+			/* */
+			#results-QA-table tr td:first-child { text-align: center; }
+			#results-QA-table tr td:first-child:before { content: "\f096"; font-family: FontAwesome; }
+			#results-QA-table tr.selected td:first-child:before { content: "\f046"; }
 		</style>
 
 		<!-- Tinycon styles/javascript -->
@@ -906,13 +940,41 @@ if($GINKGO_PAGE == 'admin-search')
 							<!--<tr><td><b>Download detailed quality assessment:</b> 
 								<a target="_blank" href="<?php echo URL_UPLOADS . '/' . $GINKGO_USER_ID . '/SegStats'; ?>">.txt</a>
 							</td></tr>-->
+							<script>
+							function analyze_subset(analysisType)
+							{
+								// -- Generate list of selected cells
+								var selectedCells = [];
+								$('.selected').each(function(){
+									selectedCells.push(this.children[1].textContent)
+								});
+
+								if(selectedCells.length == 0)
+									return
+
+								// -- Submit subset analysis
+								$.post("?q=analyze-subset/" + ginkgo_user_id, {
+										'analyze-subset'	: 1,
+										'selectedCells'		: selectedCells,
+										'analysisType'		: analysisType,
+									},
+									function(data)
+									{
+										if(data != '-1')
+											window.open('?q=results-subset/<?php echo $GINKGO_USER_ID; ?>/' + data, '_blank')
+									}
+								);
+							}
+							</script>
+							
 							<tr>
-								<td style="width:50%; vertical-align:middle">
-									With selected cells:
-									<a aria-controls="results-QA-table" class="DTTT_button DTTT_button_text"><span>Plot Lorenz</span></a>
-									<a aria-controls="results-QA-table" class="DTTT_button DTTT_button_text"><span>Plot GC bias</span></a>
+								<td style="width:75%; vertical-align:middle">
+									With selected cells, plot:
+									<a aria-controls="results-QA-table" class="DTTT_button DTTT_button_text" onclick="javascript:analyze_subset('cnvprofiles')"><span>CNV profiles</span></a>
+									<a aria-controls="results-QA-table" class="DTTT_button DTTT_button_text" onclick="javascript:analyze_subset('lorenz')"><span>Lorenz curve</span></a>
+									<a aria-controls="results-QA-table" class="DTTT_button DTTT_button_text" onclick="javascript:analyze_subset('gc')"><span>GC bias</span></a>
 								</td>
-								<td id="results-summary-btns" style="width:50% vertical-align:middle; padding-top:20px;"></td>
+								<td id="results-summary-btns" style="width:25% vertical-align:middle; padding-top:20px;"></td>
 							</tr>
 						</table>
 					</div>
@@ -1213,6 +1275,7 @@ if($GINKGO_PAGE == 'admin-search')
 		================================================== -->
 		<!-- <script type="text/javascript" language="javascript" src="includes/datatables/jquery.dataTables.min.js"></script> -->
 		<link rel="stylesheet" type="text/css" href="includes/datatables/1.10.4/dataTables.tableTools.css">
+		<link rel="stylesheet" type="text/css" href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.0.3/css/font-awesome.css">
 		<script type="text/javascript" language="javascript" src="includes/datatables/1.10.4/jquery.dataTables.1.10.4.min.js"></script>
 		<script type="text/javascript" language="javascript" src="includes/datatables/1.10.4/dataTables.tableTools.2.2.3.min.js"></script>
 
@@ -1483,7 +1546,8 @@ if($GINKGO_PAGE == 'admin-search')
 				lineNb = 0;
 				table = '<thead> ' + '\n' +
 						'	<tr style="background-color: white !important"> ' + '\n' +
-						'		<th style="text-align:center; vertical-align:middle" width="15%">Cell</th> ' + '\n' +
+						'		<th style="text-align:center; vertical-align:middle" width="5%"></th> ' + '\n' +
+						'		<th style="text-align:center; vertical-align:middle" width="10%">Cell</th> ' + '\n' +
 						'		<th style="text-align:center; vertical-align:middle" width="25%">CNV Profile</th> ' + '\n' +
 						'		<th style="text-align:center; vertical-align:middle" width="15%"># Reads</th> ' + '\n' +
 						'		<th style="text-align:center; vertical-align:middle" width="15%">Mean read count</th> ' + '\n' +
@@ -1519,8 +1583,9 @@ if($GINKGO_PAGE == 'admin-search')
 
 					//
 					newLine =	'<tr' + rowClass + '>' + 
-									'<td width="15%" style="text-align:center"><a href="' + cellUrl + '">' + cell + '</a></td>' + 
-									'<td width="25%" style="text-align:center"><a href="' + cellUrl + '"><img height="40" src="' + cnvProfileUrl + '"></a></td>' + 
+									'<td width="5%" style="text-align:center"></td>' + 
+									'<td width="10%" style="text-align:center"><a href="' + cellUrl + '">' + cell + '</a></td>' + 
+									'<td width="25%" style="text-align:center"><a href="' + cellUrl + '"><img height="35" src="' + cnvProfileUrl + '"></a></td>' + 
 									'<td width="15%" style="text-align:center">' + numberWithCommas(arrLine[1].replace(/"/g, '')) + '</td>' + 
 									'<td width="15%" style="text-align:center">' + numberWithCommas(arrLine[3].replace(/"/g, '')) + '</td>' + 
 									'<td width="15%" style="text-align:center">' + numberWithCommas(arrLine[4].replace(/"/g, '')) + '</td>' + 
@@ -1548,7 +1613,7 @@ if($GINKGO_PAGE == 'admin-search')
 						"iDisplayLength":10,
 						"bPaginate":false,
 						"aoColumnDefs": [ {
-							"aTargets": [2,3,4],
+							"aTargets": [3,4,5],
 							"fnCreatedCell": function (nTd, sData, oData, iRow, iCol) {
 								var $currencyCell = $(nTd);
 								var commaValue = $currencyCell.text().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,");
@@ -1556,12 +1621,25 @@ if($GINKGO_PAGE == 'admin-search')
 							}
 						}],
 
+
+				        columns: [
+				            { data: null, defaultContent: '', orderable: false },
+				            { data: 'cell' },
+				            { data: 'cnv_profile', orderable: false },
+				            { data: 'nbreads' },
+				            { data: 'avgReadsPerBin' },
+				            { data: 'varReadsPerBin' },
+				            { data: 'indexOfDispersion' }
+				        ],
+						order: [ 1, 'asc' ],
+
 						// dom: 'T<"clear">lfrtip',
 						// dom: 'T<"top"><"bottom"lfrtip><"clear">',
 						dom: '<"top"><"bottom"lfrtipT><"clear">',
 						tableTools: {
-							"sRowSelect": "os",
-							"aButtons": [ "select_all", "select_none" ]
+							"sRowSelect"	: "multi",
+							"sRowSelector"	: 'td:first-child',
+							"aButtons"		: [ "select_all", "select_none" ]
 						},
 						"initComplete": function() {
 							// $('#results-summary-btns').appendChild( $('div.DTTT_container')[0] );
@@ -1573,7 +1651,7 @@ if($GINKGO_PAGE == 'admin-search')
 						},
 
 					});
-    			new $.fn.dataTable.FixedHeader( oTable );
+    			// new $.fn.dataTable.FixedHeader( oTable );
 				$('#results-QA-table_length').css('display', 'none');
 
 
