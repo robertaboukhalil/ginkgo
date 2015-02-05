@@ -81,7 +81,7 @@ if(file_exists($descFile = $userDir . '/description.txt'))
 // =============================================================================
 
 // -- Panel for info -----------------------------------------------------------
-if($GINKGO_PAGE == "results")
+if($GINKGO_PAGE == "results" || $GINKGO_PAGE == "analyze-subset")
 {
 	$configFile = $userDir . "/config";
 	if(file_exists($configFile)) {
@@ -356,7 +356,7 @@ if(isset($_POST['analyze-subset']))
 	file_put_contents($userDir . '/' . $analysisID . '.config', $configTxt);
 
 	// Start analysis
-	$cmd = "./scripts/analyze-subset.R $GINKGO_USER_ID $analysisID >> $userDir/ginkgo-" . $analysisID . ".out 2>&1  &";
+	$cmd = "./scripts/analyze-subset.R $GINKGO_USER_ID $analysisID $genome {$config['binMeth']} >> $userDir/ginkgo-" . $analysisID . ".out 2>&1  &";
 	session_regenerate_id(TRUE);	
 	$handle = popen($cmd, 'r');
 	pclose($handle);
