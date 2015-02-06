@@ -123,6 +123,11 @@ for (( i=1; i<=$nbCols; i++ )); do
 done
 
 
+#### Add columns to SegCopy
+paste ${genome}/${binMeth} ${dir}/SegCopy > ${dir}/SegCopy.tmp
+awk 'BEGIN{ prevChr="";prevNucl=0;  } { printf($1"\t"); if(NR==1){printf("START\t");}else{ if(prevChr!=$1){printf("1\t");}else{printf(prevNucl"\t");} } for(i=2;i<=NF;++i)printf($i"\t"); print ""; prevChr=$1; prevNucl=$2-1; }' ${dir}/SegCopy.tmp > ${dir}/SegCopy
+
+
 
 ############################################################
 ############# Email notification of completion #############
@@ -131,3 +136,5 @@ done
 if [ "$email" != "" ]; then
 	echo -e "Your analysis on Ginkgo is complete! Check out your results at $permalink" | mail -s "Your Analysis Results" $email -- -F "Ginkgo"
 fi
+
+
