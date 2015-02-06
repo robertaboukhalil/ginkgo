@@ -379,7 +379,6 @@ if($GINKGO_PAGE == "results-subset")
 }
 
 
-//
 // =============================================================================
 // == Prepare file for UCSC custom track =======================================
 // =============================================================================
@@ -395,15 +394,14 @@ if(isset($_POST['ucsc']))
 	$configTxt = "browser position {$range}\n";
 
 	$CMD  = <<<CM
-awk -v CELL='"{$cell}"' 'BEGIN{ print "track name=Amplifications description="CELL; }{  if(NR==1){ for(i=1;i<=NF;i++){if(\$i==CELL)cellID=i;} }else{ if(\$cellID>2)print \$1"\t"\$2"\t"\$3;  }  }' ./uploads/{$GINKGO_USER_ID}/SegCopy3;
-awk -v CELL='"{$cell}"' 'BEGIN{ print "track name=Deletions description="CELL; }{  if(NR==1){ for(i=1;i<=NF;i++){if(\$i==CELL)cellID=i;} }else{ if(\$cellID<2)print \$1"\t"\$2"\t"\$3;  }  }' ./uploads/{$GINKGO_USER_ID}/SegCopy3;
+awk -v CELL='"{$cell}"' 'BEGIN{ print "track name=Amplifications description="CELL; }{  if(NR==1){ for(i=1;i<=NF;i++){if(\$i==CELL)cellID=i;} }else{ if(\$cellID>2)print \$1"\t"\$2"\t"\$3;  }  }' ./uploads/{$GINKGO_USER_ID}/SegCopy;
+awk -v CELL='"{$cell}"' 'BEGIN{ print "track name=Deletions description="CELL; }{  if(NR==1){ for(i=1;i<=NF;i++){if(\$i==CELL)cellID=i;} }else{ if(\$cellID<2)print \$1"\t"\$2"\t"\$3;  }  }' ./uploads/{$GINKGO_USER_ID}/SegCopy;
 CM;
 
 	file_put_contents($userDir . '/' . $analysisID . '.ucsc', "browser position {$range}\n".shell_exec($CMD));
 	echo $analysisID;
 	exit;
 }
-
 
 
 
@@ -2007,12 +2005,8 @@ if($GINKGO_PAGE == 'admin-search')
 					'range'	: range,
 					'cell'	: '<?php echo $CURR_CELL; ?>',
 				},
-				function(data)
-				{
-					// alert('<?php echo $userUrl; ?>/' + data)
+				function(data) {
 					window.open('https://genome.ucsc.edu/cgi-bin/hgTracks?db=<?php echo $config["chosen_genome"]; ?>&position=' + range + '&hgt.customText=<?php echo $userUrl; ?>/' + data + '.ucsc', '_blank')
-					// if(data != '-1')
-						// window.open('?q=results-subset/<?php echo $GINKGO_USER_ID; ?>/' + data, '_blank')
 				}
 			);
 
