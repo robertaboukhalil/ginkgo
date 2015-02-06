@@ -379,6 +379,33 @@ if($GINKGO_PAGE == "results-subset")
 }
 
 
+//
+// =============================================================================
+// == Prepare file for UCSC custom track =======================================
+// =============================================================================
+if(isset($_POST['ucsc']))
+{
+	// Job settings
+	$cell  = $_POST['cell'];
+	$range = $_POST['range'];
+	//
+	$analysisID    = generateID(10);
+
+	// Save job settings
+	$configTxt = "browser position {$range}\n";
+
+	$CMD  = <<<CM
+awk -v CELL='"{$cell}"' 'BEGIN{ print "track name=Amplifications description="CELL; }{  if(NR==1){ for(i=1;i<=NF;i++){if(\$i==CELL)cellID=i;} }else{ if(\$cellID>2)print \$1"\t"\$2"\t"\$3;  }  }' ./uploads/{$GINKGO_USER_ID}/SegCopy3;
+awk -v CELL='"{$cell}"' 'BEGIN{ print "track name=Deletions description="CELL; }{  if(NR==1){ for(i=1;i<=NF;i++){if(\$i==CELL)cellID=i;} }else{ if(\$cellID<2)print \$1"\t"\$2"\t"\$3;  }  }' ./uploads/{$GINKGO_USER_ID}/SegCopy3;
+CM;
+
+	file_put_contents($userDir . '/' . $analysisID . '.ucsc', "browser position {$range}\n".shell_exec($CMD));
+	echo $analysisID;
+	exit;
+}
+
+
+
 
 // =============================================================================
 // == If analysis under way, redirect to status page ===========================
@@ -1069,7 +1096,7 @@ if($GINKGO_PAGE == 'admin-search')
 						<div class="panel-heading">
 							<span class="glyphicon glyphicon-align-center"></span> Interactive Profile Viewer
 							<div style="float:right; margin-top:-5px;">
-								<a class="btn btn-sm btn-primary" href="#" onclick="javascript:viewRegionUCSC()">View region in UCSC browser</a>
+								<a id="results-ucsc-btn" class="btn btn-sm btn-primary" href="#" onclick="javascript:viewRegionUCSC()">View region in UCSC browser</a>
 							</div>
 						</div>
 						<!-- Table -->
@@ -1945,6 +1972,10 @@ if($GINKGO_PAGE == 'admin-search')
 		// =====================================================================
 		function viewRegionUCSC()
 		{
+			btnOrigTxt = $("#results-ucsc-btn").text()
+			$("#results-ucsc-btn").text('Loading...')
+			$("#results-ucsc-btn").attr('disabled', true) // .prop() doesn't work since it's an <a> button
+
 			//
 			binRange = g.xAxisRange()
 			posStart = binToPos[ Math.ceil(binRange[0]) ]
@@ -1970,7 +2001,23 @@ if($GINKGO_PAGE == 'admin-search')
 					}
 				}
 
-			window.open('https://genome.ucsc.edu/cgi-bin/hgTracks?db=<?php echo $config["chosen_genome"]; ?>&position=' + range, '_blank')
+			// -- Submit subset analysis
+			$.post("?q=ucsc/" + ginkgo_user_id, {
+					'ucsc'	: 1,
+					'range'	: range,
+					'cell'	: '<?php echo $CURR_CELL; ?>',
+				},
+				function(data)
+				{
+					// alert('<?php echo $userUrl; ?>/' + data)
+					window.open('https://genome.ucsc.edu/cgi-bin/hgTracks?db=<?php echo $config["chosen_genome"]; ?>&position=' + range + '&hgt.customText=<?php echo $userUrl; ?>/' + data + '.ucsc', '_blank')
+					// if(data != '-1')
+						// window.open('?q=results-subset/<?php echo $GINKGO_USER_ID; ?>/' + data, '_blank')
+				}
+			);
+
+			$("#results-ucsc-btn").text(btnOrigTxt)
+			$("#results-ucsc-btn").attr('disabled', false)
 		}
 
 		//
