@@ -126,6 +126,16 @@ done
 #### Add columns to SegCopy
 paste ${genome}/${binMeth} ${dir}/SegCopy > ${dir}/SegCopy.tmp
 awk 'BEGIN{ prevChr="";prevNucl=0;  } { printf($1"\t"); if(NR==1){printf("START\t");}else{ if(prevChr!=$1){printf("1\t");}else{printf(prevNucl"\t");} } for(i=2;i<=NF;++i)printf($i"\t"); print ""; prevChr=$1; prevNucl=$2-1; }' ${dir}/SegCopy.tmp > ${dir}/SegCopy
+#
+paste ${genome}/${binMeth} ${dir}/SegBreaks > ${dir}/SegBreaks.tmp
+awk 'BEGIN{ prevChr="";prevNucl=0;  } { printf($1"\t"); if(NR==1){printf("START\t");}else{ if(prevChr!=$1){printf("1\t");}else{printf(prevNucl"\t");} } for(i=2;i<=NF;++i)printf($i"\t"); print ""; prevChr=$1; prevNucl=$2-1; }' ${dir}/SegBreaks.tmp > ${dir}/SegBreaks
+#
+paste ${genome}/${binMeth} ${dir}/SegNorm > ${dir}/SegNorm.tmp
+awk 'BEGIN{ prevChr="";prevNucl=0;  } { printf($1"\t"); if(NR==1){printf("START\t");}else{ if(prevChr!=$1){printf("1\t");}else{printf(prevNucl"\t");} } for(i=2;i<=NF;++i)printf($i"\t"); print ""; prevChr=$1; prevNucl=$2-1; }' ${dir}/SegNorm.tmp > ${dir}/SegNorm
+#
+paste ${genome}/${binMeth} ${dir}/SegFixed > ${dir}/SegFixed.tmp
+awk 'BEGIN{ prevChr="";prevNucl=0;  } { printf($1"\t"); if(NR==1){printf("START\t");}else{ if(prevChr!=$1){printf("1\t");}else{printf(prevNucl"\t");} } for(i=2;i<=NF;++i)printf($i"\t"); print ""; prevChr=$1; prevNucl=$2-1; }' ${dir}/SegFixed.tmp > ${dir}/SegFixed
+
 
 
 
