@@ -641,39 +641,66 @@ if($GINKGO_PAGE == 'admin-search')
 					<?php echo $PANEL_PREVIOUS; ?>
 					<?php echo $PANEL_LATER; ?>
 
+
+
+<style>
+.codesample {
+	background-color:#f9f2f4;
+	font-family: Monaco, monospace, serif;
+	font-size: 90%;
+	color: #C7254E;
+	padding: 10px;
+}
+</style>
 					<!-- Panel: Help -->
 					<div class="panel panel-primary">
 						<div class="panel-heading"><h3 class="panel-title"><span class="glyphicon glyphicon-question-sign"></span> Help</h3></div>
-						<div class="panel-body"><div class="panel-group" id="help-makebed"><div class="panel panel-default">
-							<div class="panel-heading"><h4 class="panel-title"><a class="accordion-toggle" data-toggle="collapse" data-parent="#help-makebed" href="#help-makebed-content">How to make .bed files</a></h4></div>
-							<div id="help-makebed-content" class="panel-collapse collapse in">
-								<div class="panel-body">
-									<p>Open a terminal and navigate to your data folder:</p>
-									<div style="background-color:#f9f2f4;">
-										<code>$ <input type="text" value="bowtie2 ref.fa reads.fq > reads.sam"></code>
-										<!-- <code>$ <input type="text" value="samtools view -Sb reads.sam -q 20 -o reads.bam"></code> -->
-										<code>$ <textarea cols="25" rows="2">samtools view -Sb reads.sam -q 20 -o reads.bam</textarea></code>
-										<code>$ <input type="text" value="bamToBed -i reads.bam > reads.bed"></code>
+						<div class="panel-body">
+
+							<div class="panel-group" id="help-bedfmt">
+								<div class="panel panel-default">
+									<div class="panel-heading"><h4 class="panel-title"><a class="accordion-toggle" data-toggle="collapse" data-parent="#help-bedfmt" href="#help-bedfmt-content">Sample .bed file</a></h4></div>
+									<div id="help-bedfmt-content" class="panel-collapse collapse in"><div class="panel-body">
+										<table class="table">
+											<thead><tr><th>chrom</th><th>chromStart</th><th>chromEnd</th></tr></thead>
+											<tbody><tr><td>chr1</td><td>555485</td><td>555533</td></tr><tr><td>chr1</td><td>676584</td><td>676632</td></tr><tr><td>chr1</td><td>745136</td><td>745184</td></tr></tbody>
+										</table>
+									</div></div>
+								</div>
+							</div>
+
+							<br/>
+							<div class="panel-group" id="help-makebed">
+								<div class="panel panel-default">
+									<div class="panel-heading"><h4 class="panel-title"><a class="accordion-toggle" data-toggle="collapse" data-parent="#help-makebed" href="#help-makebed-content">How to make .bed files</a></h4></div>
+									<div id="help-makebed-content" class="panel-collapse collapse in">
+										<div class="panel-body">
+											<p>If your mapped reads are saved in the file <strong>reads.bam</strong>:</p>
+											<div class="codesample">bamToBed -i reads.bam > reads.bed</div>
+										</div>
+									</div>
+								</div>
+							</div>
+
+							<br/>
+							<div class="panel-group" id="help-details">
+								<div class="panel panel-default">
+									<div class="panel-heading"><h4 class="panel-title"><a class="accordion-toggle" data-toggle="collapse" data-parent="#help-details" href="#help-details-content">Detailed instructions</a></h4></div>
+									<div id="help-details-content" class="panel-collapse collapse out">
+										<div class="panel-body">
+											<p>If you do not have a reference genome index, download <strong>reference.fa</strong> from the <a href="http://bowtie-bio.sourceforge.net/bowtie2/index.shtml" target="_blank">Bowtie2 website</a> (menu on right, under <i>Indexes</i>). Once done:</p>
+											<div class="codesample">bowtie2-build reference.fa reference</div>
+											<br/><p>Once you have the reference genome, map your reads (in <strong>reads.fastq</strong>) to the genome, and output the results to <strong>reads.sam</strong>:</p>
+											<div class="codesample">bowtie2 -x reference -U reads.fastq -S reads.sam</div>
+											<br/><p>Convert <strong>reads.sam</strong> to <strong>reads.bam</strong>:</p>
+											<div class="codesample">samtools view -Sb reads.sam -q 20 -o reads.bam</div>
+											<br/><p>Convert <strong>reads.bam</strong> to <strong>reads.bed</strong>:</p>
+											<div class="codesample">bamToBed -i reads.bam > reads.bed</div>
+										</div>
 									</div>
 								</div>
 							</div>
 						</div>
-					</div>
-
-					<br/>
-					<div class="panel-group" id="help-bedfmt"><div class="panel panel-default">
-						<div class="panel-heading"><h4 class="panel-title"><a class="accordion-toggle" data-toggle="collapse" data-parent="#help-bedfmt" href="#help-bedfmt-content">What a .bed file should look like</a></h4></div>
-						<div id="help-bedfmt-content" class="panel-collapse collapse in">
-							<div class="panel-body">
-								<p><table class="table">
-									<thead><tr><th>chrom</th><th>chromStart</th><th>chromEnd</th></tr></thead>
-									<tbody><tr><td>chr1</td><td>555485</td><td>555533</td></tr><tr><td>chr1</td><td>676584</td><td>676632</td></tr><tr><td>chr1</td><td>745136</td><td>745184</td></tr></tbody>
-								</table></p>
-							</div>
-						</div>
-					</div>
-				</div>
-			</div>
 			<?php else: ?>
 			<script>
 			window.location = '?q=results/<?php echo $GINKGO_USER_ID; ?>';
