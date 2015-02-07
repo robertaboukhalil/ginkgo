@@ -11,29 +11,32 @@ genome			= args[[3]]
 bm				= args[[4]]
 pseudoautosomal = args[[5]]
 
-#
+# --
 setwd(paste('/mnt/data/ginkgo/uploads/', userID, sep=''))
-# cat(userID,'\n',analysisID,'\n',sep='')
+maxPloidy = 6
 
 # --
 selectedCells	= read.table( paste(analysisID, '.config', sep=''), header=TRUE)
 analysisType	= colnames(selectedCells)[1]
 
 # --
-raw <- read.table('data', header=TRUE, sep="\t")
-l <- dim(raw)[1] #Number of bins
-w <- dim(raw)[2] #Number of samples
+raw = read.table('data', header=TRUE, sep="\t")
+l = dim(raw)[1] # Number of bins
+w = dim(raw)[2] # Number of samples
 #
-normal <- sweep(raw+1, 2, colMeans(raw+1), '/')
+normal = sweep(raw+1, 2, colMeans(raw+1), '/')
 normal2 = normal
 #
-GC <- read.table(paste("../../genomes/", genome, "/", pseudoautosomal, "/GC_", bm, sep=""), header=FALSE, sep="\t", as.is=TRUE)
+GC = read.table(paste("../../genomes/", genome, "/", pseudoautosomal, "/GC_", bm, sep=""), header=FALSE, sep="\t", as.is=TRUE)
+#
+bounds = read.table(paste("../../genomes/", genome, "/", pseudoautosomal, "/bounds_", bm, sep=""), header=FALSE, sep="\t")
+final  = read.table('SegCopy', header=TRUE, sep="\t")
+fixed  = read.table('SegFixed', header=TRUE, sep="\t")
+#
+final  = final[,-c(1,2,3)]
+fixed  = fixed[,-c(1,2,3)]
 
-# --
-bounds <- read.table(paste("../../genomes/", genome, "/", pseudoautosomal, "/bounds_", bm, sep=""), header=FALSE, sep="\t")
-final  <- read.table('SegCopy', header=TRUE, sep="\t")
-fixed  <- read.table('SegFixed', header=TRUE, sep="\t")
-maxPloidy = 6
+
 
 # --
 cellIDs = c()
@@ -87,7 +90,7 @@ if(analysisType == "lorenz")
 
 		if(plottedFirst == 0)
 		{
-			tu <- par('usr')
+			tu = par('usr')
 			par(xpd=FALSE)
 			rect(tu[1], tu[3], tu[2], tu[4], col = "gray85")
 			abline(h=seq(0,1,.1), col="white", lwd=2)
@@ -97,7 +100,7 @@ if(analysisType == "lorenz")
 			axis(side=3, at=seq(0,1,.1), tcl=.5, cex.axis=2, labels=FALSE)
 			axis(side=4, at=seq(0,1,.1), tcl=.5, cex.axis=2, labels=FALSE)
 			lines(c(0,1), c(0,1), lwd=2.5)
-			tu <- par('usr')
+			tu = par('usr')
 			par(xpd=FALSE)
 
 		}
@@ -124,9 +127,9 @@ if(analysisType == "gc")
 	plottedFirst = 0
 	for(k in cellIDs)
 	{
-		low <- lowess(GC[,1], log(normal2[,k]), f=0.05)
-		app <- approx(low$x, low$y, GC[,1])
-		cor <- exp(log(normal2[,k]) - app$y)
+		low = lowess(GC[,1], log(normal2[,k]), f=0.05)
+		app = approx(low$x, low$y, GC[,1])
+		cor = exp(log(normal2[,k]) - app$y)
 
 		if(plottedFirst == 0)
 			try(plot(GC[,1], log(normal2[,k]), main="GC Content vs. Bin Counts", type= "n", xlim=c(min(.3, min(GC[,1])), max(.6, max(GC[,1]))), xlab="GC content", ylab="Normalized Read Counts (log scale)", cex.main=2, cex.axis=1.5, cex.lab=1.5))
@@ -135,7 +138,7 @@ if(analysisType == "gc")
 
 		if(plottedFirst == 0)
 		{
-			tu <- par('usr')
+			tu = par('usr')
 			par(xpd=FALSE)
 			rect(tu[1], tu[3], tu[2], tu[4], col = "gray85")
 			abline(v=axTicks(1), col="white", lwd=2)
@@ -170,21 +173,21 @@ if(analysisType == "cnvprofiles")
 		# -- New cell
 		plot(normal[,k], main=selectedCells[k,1], ylim=c(0, 8), type="n", xlab="Bin", ylab="Copy Number", cex.main=2, cex.axis=1.5, cex.lab=1.5)
 		#
-		tu <- par('usr')
+		tu = par('usr')
 		par(xpd=FALSE)
 		rect(tu[1], tu[3], tu[2], tu[4], col = "gray85")
 		abline(h=0:19, lty=2)
 
 		# -- Calculate CNmult (because not saved anywhere)
-		CNmult <- matrix(0,5,w)
-		outerColsums <- matrix(0, (20*(maxPloidy-1.5)+1), w)
+		CNmult = matrix(0,5,w)
+		outerColsums = matrix(0, (20*(maxPloidy-1.5)+1), w)
 
-		CNgrid <- seq(1.5, maxPloidy, by=0.05)
-		outerRaw <- fixed[,k] %o% CNgrid
-		outerRound <- round(outerRaw)
-		outerDiff <- (outerRaw - outerRound) ^ 2
-		outerColsums[,k] <- colSums(outerDiff, na.rm = FALSE, dims = 1)
-		CNmult[,k] <- CNgrid[order(outerColsums[,k])[1:5]]
+		CNgrid = seq(1.5, maxPloidy, by=0.05)
+		outerRaw = fixed[,k] %o% CNgrid
+		outerRound = round(outerRaw)
+		outerDiff = (outerRaw - outerRound) ^ 2
+		outerColsums[,k] = colSums(outerDiff, na.rm = FALSE, dims = 1)
+		CNmult[,k] = CNgrid[order(outerColsums[,k])[1:5]]
 
 		# -- Plot
 		flag=1
