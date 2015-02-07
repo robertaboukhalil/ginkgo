@@ -394,8 +394,8 @@ if(isset($_POST['ucsc']))
 	$configTxt = "browser position {$range}\n";
 
 	$CMD  = <<<CM
-awk -v CELL='"{$cell}"' 'BEGIN{ print "track name=Amplifications description="CELL; }{  if(NR==1){ for(i=1;i<=NF;i++){if(\$i==CELL)cellID=i;} }else{ if(\$cellID>2)print \$1"\t"\$2"\t"\$3;  }  }' ./uploads/{$GINKGO_USER_ID}/SegCopy;
-awk -v CELL='"{$cell}"' 'BEGIN{ print "track name=Deletions description="CELL; }{  if(NR==1){ for(i=1;i<=NF;i++){if(\$i==CELL)cellID=i;} }else{ if(\$cellID<2)print \$1"\t"\$2"\t"\$3;  }  }' ./uploads/{$GINKGO_USER_ID}/SegCopy;
+awk -v CELL='"{$cell}"' 'BEGIN{ print "track name=Amplifications description="CELL" color=0,0,255,"; }{  if(NR==1){ for(i=1;i<=NF;i++){if(\$i==CELL)cellID=i;} }else{ if(\$cellID>2)print \$1"\t"\$2"\t"\$3;  }  }' ./uploads/{$GINKGO_USER_ID}/SegCopy;
+awk -v CELL='"{$cell}"' 'BEGIN{ print "track name=Deletions description="CELL" color=255,0,0,"; }{  if(NR==1){ for(i=1;i<=NF;i++){if(\$i==CELL)cellID=i;} }else{ if(\$cellID<2)print \$1"\t"\$2"\t"\$3;  }  }' ./uploads/{$GINKGO_USER_ID}/SegCopy;
 CM;
 
 	file_put_contents($userDir . '/' . $analysisID . '.ucsc', "browser position {$range}\n".shell_exec($CMD));
@@ -1622,7 +1622,7 @@ if($GINKGO_PAGE == 'admin-search')
 					newLine =	'<tr' + rowClass + '>' + 
 									'<td width="5%" style="text-align:center"></td>' + 
 									'<td width="10%" style="text-align:center"><a href="' + cellUrl + '">' + cell + '</a></td>' + 
-									'<td width="25%" style="text-align:center"><a href="' + cellUrl + '"><img height="35" src="' + cnvProfileUrl + '"></a></td>' + 
+									'<td width="25%" style="text-align:center"><a href="' + cellUrl + '" alt=""><img height="35" src="' + cnvProfileUrl + '"></a></td>' + 
 									'<td width="15%" style="text-align:center">' + numberWithCommas(arrLine[1].replace(/"/g, '')) + '</td>' + 
 									'<td width="15%" style="text-align:center">' + numberWithCommas(arrLine[3].replace(/"/g, '')) + '</td>' + 
 									'<td width="15%" style="text-align:center">' + numberWithCommas(arrLine[4].replace(/"/g, '')) + '</td>' + 
