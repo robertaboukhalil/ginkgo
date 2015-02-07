@@ -139,7 +139,13 @@ PANEL;
 }
 
 // -- Panel for downloading tree -----------------------------------------------
-$binBoundariesUrl = './genomes/' . $config['chosen_genome'] . '/' . ($config['rmpseudoautosomal'] == '1' ? 'pseudoautosomal' : 'original') . '/' . $config['binMeth'];
+$dloadFileSizes = array(
+						'SegStats' => humanFileSize("{$userDir}/SegStats"),
+						'SegBreaks' => humanFileSize("{$userDir}/SegBreaks"),
+						'SegCopy' => humanFileSize("{$userDir}/SegCopy"),
+						'SegNorm' => humanFileSize("{$userDir}/SegNorm"),
+						'SegFixed' => humanFileSize("{$userDir}/SegFixed"),
+					);
 $PANEL_DOWNLOAD = <<<PANEL
 	<!-- Panel: Download results -->
 	<div id="results-download" class="panel panel-default" style="display:none;">
@@ -156,12 +162,11 @@ $PANEL_DOWNLOAD = <<<PANEL
 		<div class="panel-heading"><span class="glyphicon glyphicon-file"></span> Download processed data</div>
 		<!-- Table -->
 		<table class="table" style="font-size:12.5px;">
-			<tr class="active"><td><a target="_blank" href="{$binBoundariesUrl}"><strong>Bin Boundaries</strong></a></td></tr>
-			<tr class="active"><td><a target="_blank" href="{$userUrl}/SegStats"><strong>SegStats</strong></a> <a href="javascript:void(0);" onclick="javascript:$('#desc-5').toggle();"><span class="glyphicon glyphicon-question-sign"></span></a><span id="desc-5" style="display:none;">: basic bin count statistics for every sample. Rows correspond to samples.</span></td></tr>
-			<tr class="active"><td><a target="_blank" href="{$userUrl}/SegBreaks"><strong>SegBreaks</strong></a> <a href="javascript:void(0);" onclick="javascript:$('#desc-1').toggle();"><span class="glyphicon glyphicon-question-sign"></span></a><span id="desc-1" style="display:none;">: a binary matrix that encodes whether a sample has breakpoints at every bin position. Rows correspond to bins and columns correspond to cell samples.</span></td></tr>
-			<tr class="active"><td><a target="_blank" href="{$userUrl}/SegCopy"><strong>SegCopy</strong></a> <a href="javascript:void(0);" onclick="javascript:$('#desc-2').toggle();"><span class="glyphicon glyphicon-question-sign"></span></a><span id="desc-2" style="display:none;">: copy number state for each sample at every bin position. Rows correspond to bins and columns correspond to cell samples.</span></td></tr>
-			<tr class="active"><td><a target="_blank" href="{$userUrl}/SegNorm"><strong>SegNorm</strong></a> <a href="javascript:void(0);" onclick="javascript:$('#desc-4').toggle();"><span class="glyphicon glyphicon-question-sign"></span></a><span id="desc-4" style="display:none;">: normalized bin counts for each sample at every bin position. Rows correspond to bins and columns correspond to cell samples.</span></td></tr>
-			<tr class="active"><td><a target="_blank" href="{$userUrl}/SegFixed"><strong>SegFixed</strong></a> <a href="javascript:void(0);" onclick="javascript:$('#desc-3').toggle();"><span class="glyphicon glyphicon-question-sign"></span></a><span id="desc-3" style="display:none;">: normalized and segmented bin counts for each sample at every bin position. Rows correspond to bins and columns correspond to cell samples.</span></td></tr>
+			<tr class="active"><td><a target="_blank" href="{$userUrl}/SegStats"><strong>Statistics</strong></a>: Bin count statistics for each cell <strong>({$dloadFileSizes['SegStats']})</strong>.</span></td></tr>
+			<tr class="active"><td><a target="_blank" href="{$userUrl}/SegBreaks"><strong>Breakpoints</strong></a>: Matrix that encodes whether a cell has a breakpoint at a bin position; rows = bins, columns = cells <strong>({$dloadFileSizes['SegBreaks']}).</strong></span></td></tr>
+			<tr class="active"><td><a target="_blank" href="{$userUrl}/SegCopy"><strong>Copy Number</strong></a>: Copy number state for each cell at every bin position; rows = bins, columns = cells <strong>({$dloadFileSizes['SegCopy']}).</strong></span></td></tr>
+			<tr class="active"><td><a target="_blank" href="{$userUrl}/SegNorm"><strong>Normalized Counts</strong></a>: Normalized bin counts for each cell at every bin position; rows = bins, columns = cells <strong>({$dloadFileSizes['SegNorm']}).</strong></span></td></tr>
+			<tr class="active"><td><a target="_blank" href="{$userUrl}/SegFixed"><strong>Normalized and Segmented Counts</strong></a>: Normalized and segmented bin counts for each cell at every bin position; rows = bins, columns = cells <strong>({$dloadFileSizes['SegFixed']}).</strong></span></td></tr>
 		</table>
 	</div>
 PANEL;
