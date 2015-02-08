@@ -688,13 +688,22 @@ if($GINKGO_PAGE == 'admin-search')
 									<div class="panel-heading"><h4 class="panel-title"><a class="accordion-toggle" data-toggle="collapse" data-parent="#help-details" href="#help-details-content">Detailed instructions</a></h4></div>
 									<div id="help-details-content" class="panel-collapse collapse out">
 										<div class="panel-body">
-											<p>If you do not have a reference genome index, download <strong>reference.fa</strong> from the <a href="http://bowtie-bio.sourceforge.net/bowtie2/index.shtml" target="_blank">Bowtie2 website</a> (menu on right, under <i>Indexes</i>). Once done:</p>
-											<div class="codesample">bowtie2-build reference.fa reference</div>
-											<br/><p>Once you have the reference genome, map your reads (in <strong>reads.fastq</strong>) to the genome, and output the results to <strong>reads.sam</strong>:</p>
-											<div class="codesample">bowtie2 -x reference -U reads.fastq -S reads.sam</div>
-											<br/><p>Convert <strong>reads.sam</strong> to <strong>reads.bam</strong>:</p>
+											<p>
+												<strong>Step 1</strong><br/>
+												If you do not have a reference genome index (e.g. hg19), download it from the <a href="http://bowtie-bio.sourceforge.net/bowtie2/index.shtml" target="_blank">Bowtie2 website</a> (menu on right, under <i>Indexes</i>).
+												Then, map your reads (in <strong>reads.fastq</strong>) to the genome, and output the results to <strong>reads.sam</strong>:</p>
+											<div class="codesample">bowtie2 -x hg19 -U reads.fastq -S reads.sam</div>
+											<br/>
+											<p>If you have paired-end reads, use the following command instead:</p>
+											<div class="codesample">bowtie2 -x hg19 -1 reads_r1.fastq -2 reads_r2.fastq -S reads.sam</div>
+											<br/>
+											<p>
+												<strong>Step 2</strong><br/>
+												Convert <strong>reads.sam</strong> to <strong>reads.bam</strong>:</p>
 											<div class="codesample">samtools view -Sb reads.sam -q 20 -o reads.bam</div>
-											<br/><p>Convert <strong>reads.bam</strong> to <strong>reads.bed</strong>:</p>
+											<br/><p>
+											<strong>Step 3</strong><br/>
+											Convert <strong>reads.bam</strong> to <strong>reads.bed</strong>:</p>
 											<div class="codesample">bamToBed -i reads.bam > reads.bed</div>
 										</div>
 									</div>
