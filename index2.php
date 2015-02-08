@@ -1018,46 +1018,20 @@ if($GINKGO_PAGE == 'admin-search')
 							<!--<tr><td><b>Download detailed quality assessment:</b> 
 								<a target="_blank" href="<?php echo URL_UPLOADS . '/' . $GINKGO_USER_ID . '/SegStats'; ?>">.txt</a>
 							</td></tr>-->
-							<script>
-							function analyze_subset(analysisType)
-							{
-								// -- Generate list of selected cells
-								var selectedCells = [];
-								$('.selected').each(function(){
-									selectedCells.push(this.children[1].textContent)
-								});
-
-								if(selectedCells.length == 0)
-									return
-
-								// -- Submit subset analysis
-								$.post("?q=analyze-subset/" + ginkgo_user_id, {
-										'analyze-subset'	: 1,
-										'selectedCells'		: selectedCells,
-										'analysisType'		: analysisType,
-									},
-									function(data)
-									{
-										if(data != '-1')
-											window.open('?q=results-subset/<?php echo $GINKGO_USER_ID; ?>/' + data, '_blank')
-									}
-								);
-							}
-							</script>
-							
 							<tr>
 								<td style="width:75%; vertical-align:middle">
 									With selected cells, plot:
 									<a aria-controls="results-QA-table" class="DTTT_button DTTT_button_text" onclick="javascript:analyze_subset('cnvprofiles')"><span>CNV profiles</span></a>
 									<a aria-controls="results-QA-table" class="DTTT_button DTTT_button_text" onclick="javascript:analyze_subset('lorenz')"><span>Lorenz curve</span></a>
 									<a aria-controls="results-QA-table" class="DTTT_button DTTT_button_text" onclick="javascript:analyze_subset('gc')"><span>GC bias</span></a>
+									<a aria-controls="results-QA-table" class="DTTT_button DTTT_button_text" onclick="javascript:analyze_subset('gc')"><span alt="Median absolute deviation of neighboring bins">MAD</span></a>
 								</td>
 								<td id="results-summary-btns" style="width:25% vertical-align:middle; padding-top:20px;"></td>
 							</tr>
 						</table>
 					</div>
 
-					<br/>
+					<!-- <br/> -->
 
 					<!-- Panel: More results -->
 					<div id="results-heatmaps" class="panel panel-default" style="display:none;">
@@ -1100,6 +1074,8 @@ if($GINKGO_PAGE == 'admin-search')
 					</div>
 					<br><br><br><br>
 				</div>
+
+				<div class="clearfix visible-sm"></div>
 
 				<div class="col-lg-4">
 					<h3 style="margin-bottom:-15px;">&nbsp;</h3>
@@ -1535,6 +1511,34 @@ if($GINKGO_PAGE == 'admin-search')
 			  }
 			});
 		});
+
+
+		function analyze_subset(analysisType)
+		{
+			// -- Generate list of selected cells
+			var selectedCells = [];
+			$('.selected').each(function(){
+				selectedCells.push(this.children[1].textContent)
+			});
+
+			if(selectedCells.length == 0)
+				return
+
+			// -- Submit subset analysis
+			$.post("?q=analyze-subset/" + ginkgo_user_id, {
+					'analyze-subset'	: 1,
+					'selectedCells'		: selectedCells,
+					'analysisType'		: analysisType,
+				},
+				function(data)
+				{
+					if(data != '-1')
+						window.open('?q=results-subset/<?php echo $GINKGO_USER_ID; ?>/' + data, '_blank')
+				}
+			);
+		}
+		
+
 
 		// -------------------------------------------------------------------------
 		// -- Refresh progress -----------------------------------------------------
