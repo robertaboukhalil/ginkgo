@@ -216,7 +216,47 @@ if(analysisType == "cnvprofiles")
 # ------------------------------------------------------------------------------
 if(analysisType == "mad")
 {
-	
+	library(plyr)
+	# library(reshape2)
+	library(DNAcopy) #segmentation
+	library(inline) #use of c++
+	library(gplots) #visual plotting of tables
+	library(scales)
+
+	#Calculate MAD
+	a = matrix(0, w, 4)
+	rownames(a) <- colnames(normal)
+	for (i in 1:w)
+	{
+		a[i,1]=mad(normal[-1,i] - normal[1:(l-1),i])
+		a[i,2]=mad(normal[-(1:2),i] - normal[1:(l-2),i])
+		a[i,3]=mad(normal[-(1:3),i] - normal[1:(l-3),i])
+		a[i,4]=mad(normal[-(1:4),i] - normal[1:(l-4),i])
+	}
+
+	jpeg(filename=paste(analysisID, ".jpeg", sep=""), width=500, height=500)
+
+	# Plot
+	temp=cbind(a, array("Kirkness", dim(a)[1]))
+	mat=data.frame(off1=as.numeric(temp[,1]), off2=as.numeric(temp[,2]), off3=as.numeric(temp[,3]), off4=as.numeric(temp[,4]), ID=temp[,5])
+	par(mar = c(7.0, 7.0, 5.0, 3.0))
+	boxplot(mat$off1 ~ mat$ID, las=2, main="Median Absolute Deviation of Neighboring Bins", ylab="Median Absolute Deviation (MAD)", border=c("white"), cex.axis=2, cex.lab=2, cex.main=3, ylim=c(0, ceiling(max(a))) )
+
+	tu <- par('usr')
+	par(xpd=FALSE)
+	rect(tu[1], tu[3], tu[2], tu[4], col="gray70", border="gray70", xpd=TRUE)
+	rect(tu[1], tu[3], tu[2], tu[4], col="gray65", border="gray65", xpd=TRUE)
+	rect(tu[1], tu[3], tu[2], tu[4], col="gray70", border="gray70", xpd=TRUE)
+	rect(tu[1], tu[3], tu[2], tu[4], col=NULL)
+	abline(h=seq(0,4,.5), col="white")
+	par(new=TRUE)
+	boxplot(mat$off1 ~ mat$ID, las=2, yaxt="n", outline=FALSE, col="#448766", names="", cex.axis=2, cex.lab=2, cex.main=3, ylim=c(0, ceiling(max(a))) )
+	mtext("Median Absolute Deviation (MAD)", side=2, line=7, at=.5, cex=3)
+
+	dev.off()
+	file.create(paste(analysisID,'.done', sep=""))
+
+
 }
 
 

@@ -1024,7 +1024,7 @@ if($GINKGO_PAGE == 'admin-search')
 									<a aria-controls="results-QA-table" class="DTTT_button DTTT_button_text" onclick="javascript:analyze_subset('cnvprofiles')"><span>CNV profiles</span></a>
 									<a aria-controls="results-QA-table" class="DTTT_button DTTT_button_text" onclick="javascript:analyze_subset('lorenz')"><span>Lorenz curve</span></a>
 									<a aria-controls="results-QA-table" class="DTTT_button DTTT_button_text" onclick="javascript:analyze_subset('gc')"><span>GC bias</span></a>
-									<a aria-controls="results-QA-table" class="DTTT_button DTTT_button_text" onclick="javascript:analyze_subset('gc')"><span alt="Median absolute deviation of neighboring bins">MAD</span></a>
+									<a aria-controls="results-QA-table" class="DTTT_button DTTT_button_text" onclick="javascript:analyze_subset('mad')"><span>MAD</span></a>
 								</td>
 								<td id="results-summary-btns" style="width:25% vertical-align:middle; padding-top:20px;"></td>
 							</tr>
