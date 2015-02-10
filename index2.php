@@ -145,6 +145,8 @@ $dloadFileSizes = array(
 						'SegCopy' => humanFileSize("{$userDir}/SegCopy"),
 						'SegNorm' => humanFileSize("{$userDir}/SegNorm"),
 						'SegFixed' => humanFileSize("{$userDir}/SegFixed"),
+						'CNV1' => humanFileSize("{$userDir}/CNV1"),
+						'CNV2' => humanFileSize("{$userDir}/CNV2"),
 					);
 $rnd = rand(1e6,2e6);
 $PANEL_DOWNLOAD = <<<PANEL
@@ -168,6 +170,8 @@ $PANEL_DOWNLOAD = <<<PANEL
 			<tr class="active"><td><a target="_blank" href="{$userUrl}/SegCopy?uniq={$rnd}"><strong>Copy Number</strong></a>: Copy number state for each cell at every bin position; rows = bins, columns = cells <strong>({$dloadFileSizes['SegCopy']}).</strong></span></td></tr>
 			<tr class="active"><td><a target="_blank" href="{$userUrl}/SegNorm?uniq={$rnd}"><strong>Normalized Counts</strong></a>: Normalized bin counts for each cell at every bin position; rows = bins, columns = cells <strong>({$dloadFileSizes['SegNorm']}).</strong></span></td></tr>
 			<tr class="active"><td><a target="_blank" href="{$userUrl}/SegFixed?uniq={$rnd}"><strong>Normalized and Segmented Counts</strong></a>: Normalized and segmented bin counts for each cell at every bin position; rows = bins, columns = cells <strong>({$dloadFileSizes['SegFixed']}).</strong></span></td></tr>
+			<tr class="active"><td><a target="_blank" href="{$userUrl}/CNV1?uniq={$rnd}"><strong>Copy number events</strong></a>: List of regions with copy number events <strong>({$dloadFileSizes['CNV1']}).</strong></span></td></tr>
+			<tr class="active"><td><a target="_blank" href="{$userUrl}/CNV2?uniq={$rnd}"><strong>Copy number regions</strong></a>: List of regions of amplifications (+1) and deletions (-1) <strong>({$dloadFileSizes['CNV2']}).</strong></span></td></tr>
 		</table>
 	</div>
 PANEL;
