@@ -146,6 +146,7 @@ $dloadFileSizes = array(
 						'SegNorm' => humanFileSize("{$userDir}/SegNorm"),
 						'SegFixed' => humanFileSize("{$userDir}/SegFixed"),
 					);
+$rnd = rand(1e6,2e6);
 $PANEL_DOWNLOAD = <<<PANEL
 	<!-- Panel: Download results -->
 	<div id="results-download" class="panel panel-default" style="display:none;">
@@ -162,11 +163,11 @@ $PANEL_DOWNLOAD = <<<PANEL
 		<div class="panel-heading"><span class="glyphicon glyphicon-file"></span> Download processed data</div>
 		<!-- Table -->
 		<table class="table" style="font-size:12.5px;">
-			<tr class="active"><td><a target="_blank" href="{$userUrl}/SegStats"><strong>Statistics</strong></a>: Bin count statistics for each cell <strong>({$dloadFileSizes['SegStats']})</strong>.</span></td></tr>
-			<tr class="active"><td><a target="_blank" href="{$userUrl}/SegBreaks"><strong>Breakpoints</strong></a>: Matrix that encodes whether a cell has a breakpoint at a bin position; rows = bins, columns = cells <strong>({$dloadFileSizes['SegBreaks']}).</strong></span></td></tr>
-			<tr class="active"><td><a target="_blank" href="{$userUrl}/SegCopy"><strong>Copy Number</strong></a>: Copy number state for each cell at every bin position; rows = bins, columns = cells <strong>({$dloadFileSizes['SegCopy']}).</strong></span></td></tr>
-			<tr class="active"><td><a target="_blank" href="{$userUrl}/SegNorm"><strong>Normalized Counts</strong></a>: Normalized bin counts for each cell at every bin position; rows = bins, columns = cells <strong>({$dloadFileSizes['SegNorm']}).</strong></span></td></tr>
-			<tr class="active"><td><a target="_blank" href="{$userUrl}/SegFixed"><strong>Normalized and Segmented Counts</strong></a>: Normalized and segmented bin counts for each cell at every bin position; rows = bins, columns = cells <strong>({$dloadFileSizes['SegFixed']}).</strong></span></td></tr>
+			<tr class="active"><td><a target="_blank" href="{$userUrl}/SegStats?uniq={$rnd}"><strong>Statistics</strong></a>: Bin count statistics for each cell <strong>({$dloadFileSizes['SegStats']})</strong>.</span></td></tr>
+			<tr class="active"><td><a target="_blank" href="{$userUrl}/SegBreaks?uniq={$rnd}"><strong>Breakpoints</strong></a>: Matrix that encodes whether a cell has a breakpoint at a bin position; rows = bins, columns = cells <strong>({$dloadFileSizes['SegBreaks']}).</strong></span></td></tr>
+			<tr class="active"><td><a target="_blank" href="{$userUrl}/SegCopy?uniq={$rnd}"><strong>Copy Number</strong></a>: Copy number state for each cell at every bin position; rows = bins, columns = cells <strong>({$dloadFileSizes['SegCopy']}).</strong></span></td></tr>
+			<tr class="active"><td><a target="_blank" href="{$userUrl}/SegNorm?uniq={$rnd}"><strong>Normalized Counts</strong></a>: Normalized bin counts for each cell at every bin position; rows = bins, columns = cells <strong>({$dloadFileSizes['SegNorm']}).</strong></span></td></tr>
+			<tr class="active"><td><a target="_blank" href="{$userUrl}/SegFixed?uniq={$rnd}"><strong>Normalized and Segmented Counts</strong></a>: Normalized and segmented bin counts for each cell at every bin position; rows = bins, columns = cells <strong>({$dloadFileSizes['SegFixed']}).</strong></span></td></tr>
 		</table>
 	</div>
 PANEL;
@@ -1907,7 +1908,7 @@ if($GINKGO_PAGE == 'admin-search')
 				allCellProfiles.push(
 					g = new Dygraph(
 						document.getElementById("cell_cnv"),
-						"uploads/" + ginkgo_user_id + "/" + cellName + ".cnv",
+						"uploads/" + ginkgo_user_id + "/" + cellName + ".cnv?uniq=" + Math.round(Math.random()*10000),
 						{
 							// Settings
 							rollPeriod: 0,
