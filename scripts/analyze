@@ -122,8 +122,9 @@ for (( i=1; i<=$nbCols; i++ )); do
   cut -f$i $dir/SegCopy | tail -n+2 | awk '{if(NR==1) print "1,"$1; else print NR","prev"\n"NR","$1;prev=$1; }' > $dir/$currCell.cnv
 done
 
-
-#### Add columns to SegCopy
+############################################################
+## Add columns to SegCopy
+############################################################
 paste ${genome}/${binMeth} ${dir}/SegCopy > ${dir}/SegCopy.tmp
 awk 'BEGIN{ prevChr="";prevNucl=0;  } { printf($1"\t"); if(NR==1){printf("START\t");}else{ if(prevChr!=$1){printf("1\t");}else{printf(prevNucl"\t");} } for(i=2;i<=NF;++i)printf($i"\t"); print ""; prevChr=$1; prevNucl=$2-1; }' ${dir}/SegCopy.tmp > ${dir}/SegCopy
 #
@@ -136,6 +137,12 @@ awk 'BEGIN{ prevChr="";prevNucl=0;  } { printf($1"\t"); if(NR==1){printf("START\
 paste ${genome}/${binMeth} ${dir}/SegFixed > ${dir}/SegFixed.tmp
 awk 'BEGIN{ prevChr="";prevNucl=0;  } { printf($1"\t"); if(NR==1){printf("START\t");}else{ if(prevChr!=$1){printf("1\t");}else{printf(prevNucl"\t");} } for(i=2;i<=NF;++i)printf($i"\t"); print ""; prevChr=$1; prevNucl=$2-1; }' ${dir}/SegFixed.tmp > ${dir}/SegFixed
 
+
+############################################################
+## 
+############################################################
+
+${home}/scripts/CNVcaller ${dir}/SegCopy ${dir}/CNV1 ${dir}/CNV2
 
 
 

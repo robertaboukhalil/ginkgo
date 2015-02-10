@@ -237,10 +237,10 @@ if(analysisType == "mad")
 	jpeg(filename=paste(analysisID, ".jpeg", sep=""), width=500, height=500)
 
 	# Plot
-	temp=cbind(a, array("Kirkness", dim(a)[1]))
+	temp=cbind(a, array("", dim(a)[1]))
 	mat=data.frame(off1=as.numeric(temp[,1]), off2=as.numeric(temp[,2]), off3=as.numeric(temp[,3]), off4=as.numeric(temp[,4]), ID=temp[,5])
 	par(mar = c(7.0, 7.0, 5.0, 3.0))
-	boxplot(mat$off1 ~ mat$ID, las=2, main="Median Absolute Deviation of Neighboring Bins", ylab="Median Absolute Deviation (MAD)", border=c("white"), cex.axis=2, cex.lab=2, cex.main=3, ylim=c(0, ceiling(max(a))) )
+	boxplot(mat$off1 ~ mat$ID, las=2, main="Median Absolute Deviation\nof Neighboring Bins", ylab="Median Absolute Deviation (MAD)", border=c("white"), cex.axis=1.5, cex.lab=1.5, cex.main=2, ylim=c(0, ceiling(max(a))) )
 
 	tu <- par('usr')
 	par(xpd=FALSE)
@@ -250,7 +250,7 @@ if(analysisType == "mad")
 	rect(tu[1], tu[3], tu[2], tu[4], col=NULL)
 	abline(h=seq(0,4,.5), col="white")
 	par(new=TRUE)
-	boxplot(mat$off1 ~ mat$ID, las=2, yaxt="n", outline=FALSE, col="#448766", names="", cex.axis=2, cex.lab=2, cex.main=3, ylim=c(0, ceiling(max(a))) )
+	boxplot(mat$off1 ~ mat$ID, las=2, yaxt="n", outline=FALSE, col="#448766", names="", cex.axis=1.5, cex.lab=1.5, cex.main=2, ylim=c(0, ceiling(max(a))) )
 	mtext("Median Absolute Deviation (MAD)", side=2, line=7, at=.5, cex=3)
 
 	dev.off()
