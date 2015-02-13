@@ -1298,7 +1298,7 @@ if($GINKGO_PAGE == 'admin-search')
 		<script type="text/javascript" language="javascript" src="includes/datatables/1.10.4/jquery.dataTables.1.10.4.min.js"></script>
 		<script type="text/javascript" language="javascript" src="includes/datatables/1.10.4/dataTables.tableTools.2.2.3.min.js"></script>
 
-		<!-- <link rel="stylesheet" type="text/css" href="includes/datatables/1.10.4/dataTables.fixedHeader.css"> -->
+		<link rel="stylesheet" type="text/css" href="includes/datatables/1.10.4/dataTables.fixedHeader.css">
 		<script type="text/javascript" language="javascript" src="includes/datatables/1.10.4/dataTables.fixedHeader.min.js"></script>
 
 		<!-- CNV profiles
@@ -1666,7 +1666,6 @@ if($GINKGO_PAGE == 'admin-search')
 							}
 						}],
 
-
 				        columns: [
 				            { data: null, defaultContent: '', orderable: false },
 				            { data: 'cell' },
@@ -1678,8 +1677,6 @@ if($GINKGO_PAGE == 'admin-search')
 				        ],
 						order: [ 1, 'asc' ],
 
-						// dom: 'T<"clear">lfrtip',
-						// dom: 'T<"top"><"bottom"lfrtip><"clear">',
 						dom: '<"top"><"bottom"lfrtipT><"clear">',
 						tableTools: {
 							"sRowSelect"	: "multi",
@@ -1687,19 +1684,16 @@ if($GINKGO_PAGE == 'admin-search')
 							"aButtons"		: [ "select_all", "select_none" ]
 						},
 						"initComplete": function() {
-							// $('#results-summary-btns').appendChild( $('div.DTTT_container')[0] );
-							// $('div.DTTT_container')[0].appendTo('#results-summary-btns')
-							// console.log($('div.DTTT_container')[0].innerHTML)
-							// $('#results-summary-btns').html( $('div.DTTT_container')[0].innerHTML )
 							$('div.DTTT_container').appendTo("#results-summary-btns");
-							// alert(245)
 						},
 
 					});
-    			// new $.fn.dataTable.FixedHeader( oTable );
+
+    			// Fix header
+    			new $.fn.dataTable.FixedHeader( oTable );
 				$('#results-QA-table_length').css('display', 'none');
 
-
+				//
 				$.get('genomes/<?php echo $config["chosen_genome"] . "/" . ($config["rmpseudoautosomal"] == "1" ? "pseudoautosomal" : "original"); ?>/bounds_<?php echo $config["binMeth"]; ?>', function(data){
 					chromBoundaries = data.split('\n');
 					for(i=0; i<chromBoundaries.length; i++) {
