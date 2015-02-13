@@ -12,11 +12,14 @@ define('DIR_UPLOADS', DIR_ROOT . '/uploads');
 define('URL_ROOT', 'http://qb.cshl.edu/ginkgo');
 define('URL_UPLOADS', URL_ROOT . '/uploads');
 
+// Minimum number of cells to perform an analysis
+$GINKGO_MIN_NB_CELLS = 3;
+
 
 // =============================================================================
 // == Misc. configuration ======================================================
 // =============================================================================
-
+set_time_limit(0);
 error_reporting(E_ALL);
 session_start();
 
