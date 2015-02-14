@@ -1689,12 +1689,14 @@ if($GINKGO_PAGE == 'admin-search')
 
 					});
 
-    			// Fix header
-    			new $.fn.dataTable.FixedHeader( oTable );
+    			// Fix header (there's a bug about this that makes it appear in the middle of the page)
+    			// new $.fn.dataTable.FixedHeader( oTable );
 				$('#results-QA-table_length').css('display', 'none');
 
 				//
-				$.get('genomes/<?php echo $config["chosen_genome"] . "/" . ($config["rmpseudoautosomal"] == "1" ? "pseudoautosomal" : "original"); ?>/bounds_<?php echo $config["binMeth"]; ?>', function(data){
+				$.get('genomes/<?php echo $config["chosen_genome"] . "/" . ($config["rmpseudoautosomal"] == "1" ? "pseudoautosomal" : "original"); ?>/bounds_<?php echo $config["binMeth"]; ?>', function(data)
+				{
+					
 					chromBoundaries = data.split('\n');
 					for(i=0; i<chromBoundaries.length; i++) {
 						tmp = chromBoundaries[i].split('\t');
