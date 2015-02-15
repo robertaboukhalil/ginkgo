@@ -1693,38 +1693,35 @@ if($GINKGO_PAGE == 'admin-search')
     			// new $.fn.dataTable.FixedHeader( oTable );
 				$('#results-QA-table_length').css('display', 'none');
 
-				//
-				$.get('genomes/<?php echo $config["chosen_genome"] . "/" . ($config["rmpseudoautosomal"] == "1" ? "pseudoautosomal" : "original"); ?>/bounds_<?php echo $config["binMeth"]; ?>', function(data)
-				{
-					
-					chromBoundaries = data.split('\n');
-					for(i=0; i<chromBoundaries.length; i++) {
-						tmp = chromBoundaries[i].split('\t');
-						chromBoundaries[i] = chromBoundaries[i].replace(tmp[0]+'\t', '')
-					}
-					loadCellProfile('cnv');
-
-					// // Chromosome annotations
-					// n = 0;
-					// allAnnotations = [];
-					// for(j in chromBoundaries)
-					// {
-					// 	chr = parseInt(j);
-					// 	if(chromBoundaries[chr] != "")
-					// 	{
-					// 		allAnnotations.push(
-					// 		{
-					// 			// series: allCells[n],
-					// 			x: (parseInt(chromBoundaries[chr])-1),
-					// 			shortText: (chr+1),
-					// 			text: "<-- chr" + (chr+1)
-					// 		}
-					// 		);
-					// 	}
-					// }
-
-					// allCellProfiles[n].setAnnotations(allAnnotations);
-				});
+				// //
+				// $.get('genomes/<?php echo $config["chosen_genome"] . "/" . ($config["rmpseudoautosomal"] == "1" ? "pseudoautosomal" : "original"); ?>/bounds_<?php echo $config["binMeth"]; ?>', function(data)
+				// {
+				// 	chromBoundaries = data.split('\n');
+				// 	for(i=0; i<chromBoundaries.length; i++) {
+				// 		tmp = chromBoundaries[i].split('\t');
+				// 		chromBoundaries[i] = chromBoundaries[i].replace(tmp[0]+'\t', '')
+				// 	}
+				// 	loadCellProfile('cnv');
+				// 	// // Chromosome annotations
+				// 	// n = 0;
+				// 	// allAnnotations = [];
+				// 	// for(j in chromBoundaries)
+				// 	// {
+				// 	// 	chr = parseInt(j);
+				// 	// 	if(chromBoundaries[chr] != "")
+				// 	// 	{
+				// 	// 		allAnnotations.push(
+				// 	// 		{
+				// 	// 			// series: allCells[n],
+				// 	// 			x: (parseInt(chromBoundaries[chr])-1),
+				// 	// 			shortText: (chr+1),
+				// 	// 			text: "<-- chr" + (chr+1)
+				// 	// 		}
+				// 	// 		);
+				// 	// 	}
+				// 	// }
+				// 	// allCellProfiles[n].setAnnotations(allAnnotations);
+				// });
 			});
 		}
 
