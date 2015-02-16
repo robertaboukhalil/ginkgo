@@ -410,7 +410,7 @@ CM;
 // =============================================================================
 
 // Load status.xml if exists and check if analysis under way
-if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
+if($GINKGO_PAGE == "" || $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 	$statusFile = DIR_UPLOADS . '/' . $GINKGO_USER_ID . '/status.xml';
 	if(file_exists($statusFile)) {
 		$status = simplexml_load_file($statusFile);
@@ -1298,7 +1298,7 @@ if($GINKGO_PAGE == 'admin-search')
 		<script type="text/javascript" language="javascript" src="includes/datatables/1.10.4/jquery.dataTables.1.10.4.min.js"></script>
 		<script type="text/javascript" language="javascript" src="includes/datatables/1.10.4/dataTables.tableTools.2.2.3.min.js"></script>
 
-		<link rel="stylesheet" type="text/css" href="includes/datatables/1.10.4/dataTables.fixedHeader.css">
+		<!-- <link rel="stylesheet" type="text/css" href="includes/datatables/1.10.4/dataTables.fixedHeader.css"> -->
 		<script type="text/javascript" language="javascript" src="includes/datatables/1.10.4/dataTables.fixedHeader.min.js"></script>
 
 		<!-- CNV profiles
@@ -1693,35 +1693,16 @@ if($GINKGO_PAGE == 'admin-search')
     			// new $.fn.dataTable.FixedHeader( oTable );
 				$('#results-QA-table_length').css('display', 'none');
 
-				// //
-				// $.get('genomes/<?php echo $config["chosen_genome"] . "/" . ($config["rmpseudoautosomal"] == "1" ? "pseudoautosomal" : "original"); ?>/bounds_<?php echo $config["binMeth"]; ?>', function(data)
-				// {
-				// 	chromBoundaries = data.split('\n');
-				// 	for(i=0; i<chromBoundaries.length; i++) {
-				// 		tmp = chromBoundaries[i].split('\t');
-				// 		chromBoundaries[i] = chromBoundaries[i].replace(tmp[0]+'\t', '')
-				// 	}
-				// 	loadCellProfile('cnv');
-				// 	// // Chromosome annotations
-				// 	// n = 0;
-				// 	// allAnnotations = [];
-				// 	// for(j in chromBoundaries)
-				// 	// {
-				// 	// 	chr = parseInt(j);
-				// 	// 	if(chromBoundaries[chr] != "")
-				// 	// 	{
-				// 	// 		allAnnotations.push(
-				// 	// 		{
-				// 	// 			// series: allCells[n],
-				// 	// 			x: (parseInt(chromBoundaries[chr])-1),
-				// 	// 			shortText: (chr+1),
-				// 	// 			text: "<-- chr" + (chr+1)
-				// 	// 		}
-				// 	// 		);
-				// 	// 	}
-				// 	// }
-				// 	// allCellProfiles[n].setAnnotations(allAnnotations);
-				// });
+				// Plot CNV profile of current cell
+				$.get('genomes/<?php echo $config["chosen_genome"] . "/" . ($config["rmpseudoautosomal"] == "1" ? "pseudoautosomal" : "original"); ?>/bounds_<?php echo $config["binMeth"]; ?>', function(data)
+				{
+					chromBoundaries = data.split('\n');
+					for(i=0; i<chromBoundaries.length; i++) {
+						tmp = chromBoundaries[i].split('\t');
+						chromBoundaries[i] = chromBoundaries[i].replace(tmp[0]+'\t', '')
+					}
+					loadCellProfile('cnv');
+				});
 			});
 		}
 
