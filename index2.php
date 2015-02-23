@@ -1814,7 +1814,7 @@ if($GINKGO_PAGE == 'admin-search')
 			}
 
 			// -- Load file that specifies bin # <--> chr:pos
-			$.get('genomes/<?php echo $config["chosen_genome"] . "/" . ($config["rmpseudoautosomal"] == "1" ? "pseudoautosomal" : "original"); ?>/<?php echo $config["binMeth"]; ?>', function(data){
+			$.get('genomes/<?php echo $config["chosen_genome"] . "/" . ($config["rmpseudoautosomal"] == "1" ? "pseudoautosomal" : "original"); ?>/<?php echo $config["binMeth"]; ?>?uniq=' + Math.round(Math.random()*10000), function(data){
 
 				binToPos = data.split('\n');
 				// Note i=1 b/c skipping header
