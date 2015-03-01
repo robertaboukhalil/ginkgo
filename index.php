@@ -17,11 +17,7 @@
 // == Configuration ============================================================
 // =============================================================================
 
-
-
-set_time_limit(0);
 include "bootstrap.php";
-$GINKGO_MIN_NB_CELLS = 3;
 
 
 // =============================================================================
@@ -60,7 +56,6 @@ if($GINKGO_PAGE == "results")
   $CURR_CELL = $query[2];
 
 
-
 // =============================================================================
 // == Session management =======================================================
 // =============================================================================
@@ -81,7 +76,7 @@ if(file_exists($descFile = $userDir . '/description.txt'))
 // =============================================================================
 
 // -- Panel for info -----------------------------------------------------------
-if($GINKGO_PAGE == "results")
+if($GINKGO_PAGE == "results" || $GINKGO_PAGE == "analyze-subset")
 {
 	$configFile = $userDir . "/config";
 	if(file_exists($configFile)) {
@@ -139,7 +134,16 @@ PANEL;
 }
 
 // -- Panel for downloading tree -----------------------------------------------
-$binBoundariesUrl = './genomes/' . $config['chosen_genome'] . '/' . ($config['rmpseudoautosomal'] == '1' ? 'pseudoautosomal' : 'original') . '/' . $config['binMeth'];
+$dloadFileSizes = array(
+	'SegStats' => humanFileSize("{$userDir}/SegStats"),
+	'SegBreaks' => humanFileSize("{$userDir}/SegBreaks"),
+	'SegCopy' => humanFileSize("{$userDir}/SegCopy"),
+	'SegNorm' => humanFileSize("{$userDir}/SegNorm"),
+	'SegFixed' => humanFileSize("{$userDir}/SegFixed"),
+	'CNV1' => humanFileSize("{$userDir}/CNV1"),
+	'CNV2' => humanFileSize("{$userDir}/CNV2"),
+);
+$rnd = rand(1e6,2e6);
 $PANEL_DOWNLOAD = <<<PANEL
 	<!-- Panel: Download results -->
 	<div id="results-download" class="panel panel-default" style="display:none;">
@@ -156,15 +160,17 @@ $PANEL_DOWNLOAD = <<<PANEL
 		<div class="panel-heading"><span class="glyphicon glyphicon-file"></span> Download processed data</div>
 		<!-- Table -->
 		<table class="table" style="font-size:12.5px;">
-			<tr class="active"><td><a target="_blank" href="{$binBoundariesUrl}"><strong>Bin Boundaries</strong></a></td></tr>
-			<tr class="active"><td><a target="_blank" href="{$userUrl}/SegStats"><strong>SegStats</strong></a> <a href="javascript:void(0);" onclick="javascript:$('#desc-5').toggle();"><span class="glyphicon glyphicon-question-sign"></span></a><span id="desc-5" style="display:none;">: basic bin count statistics for every sample. Rows correspond to samples.</span></td></tr>
-			<tr class="active"><td><a target="_blank" href="{$userUrl}/SegBreaks"><strong>SegBreaks</strong></a> <a href="javascript:void(0);" onclick="javascript:$('#desc-1').toggle();"><span class="glyphicon glyphicon-question-sign"></span></a><span id="desc-1" style="display:none;">: a binary matrix that encodes whether a sample has breakpoints at every bin position. Rows correspond to bins and columns correspond to cell samples.</span></td></tr>
-			<tr class="active"><td><a target="_blank" href="{$userUrl}/SegCopy"><strong>SegCopy</strong></a> <a href="javascript:void(0);" onclick="javascript:$('#desc-2').toggle();"><span class="glyphicon glyphicon-question-sign"></span></a><span id="desc-2" style="display:none;">: copy number state for each sample at every bin position. Rows correspond to bins and columns correspond to cell samples.</span></td></tr>
-			<tr class="active"><td><a target="_blank" href="{$userUrl}/SegNorm"><strong>SegNorm</strong></a> <a href="javascript:void(0);" onclick="javascript:$('#desc-4').toggle();"><span class="glyphicon glyphicon-question-sign"></span></a><span id="desc-4" style="display:none;">: normalized bin counts for each sample at every bin position. Rows correspond to bins and columns correspond to cell samples.</span></td></tr>
-			<tr class="active"><td><a target="_blank" href="{$userUrl}/SegFixed"><strong>SegFixed</strong></a> <a href="javascript:void(0);" onclick="javascript:$('#desc-3').toggle();"><span class="glyphicon glyphicon-question-sign"></span></a><span id="desc-3" style="display:none;">: normalized and segmented bin counts for each sample at every bin position. Rows correspond to bins and columns correspond to cell samples.</span></td></tr>
+			<tr class="active"><td><a target="_blank" href="{$userUrl}/SegStats?uniq={$rnd}"><strong>Statistics</strong></a>: Bin count statistics for each cell <strong>({$dloadFileSizes['SegStats']})</strong>.</span></td></tr>
+			<tr class="active"><td><a target="_blank" href="{$userUrl}/SegBreaks?uniq={$rnd}"><strong>Breakpoints</strong></a>: Matrix that encodes whether a cell has a breakpoint at a bin position; rows = bins, columns = cells <strong>({$dloadFileSizes['SegBreaks']}).</strong></span></td></tr>
+			<tr class="active"><td><a target="_blank" href="{$userUrl}/SegCopy?uniq={$rnd}"><strong>Copy Number</strong></a>: Copy number state for each cell at every bin position; rows = bins, columns = cells <strong>({$dloadFileSizes['SegCopy']}).</strong></span></td></tr>
+			<tr class="active"><td><a target="_blank" href="{$userUrl}/SegNorm?uniq={$rnd}"><strong>Normalized Counts</strong></a>: Normalized bin counts for each cell at every bin position; rows = bins, columns = cells <strong>({$dloadFileSizes['SegNorm']}).</strong></span></td></tr>
+			<tr class="active"><td><a target="_blank" href="{$userUrl}/SegFixed?uniq={$rnd}"><strong>Normalized and Segmented Counts</strong></a>: Normalized and segmented bin counts for each cell at every bin position; rows = bins, columns = cells <strong>({$dloadFileSizes['SegFixed']}).</strong></span></td></tr>
+			<tr class="active"><td><a target="_blank" href="{$userUrl}/CNV1?uniq={$rnd}"><strong>Copy number events</strong></a>: List of regions with copy number events <strong>({$dloadFileSizes['CNV1']}).</strong></span></td></tr>
+			<tr class="active"><td><a target="_blank" href="{$userUrl}/CNV2?uniq={$rnd}"><strong>Copy number regions</strong></a>: List of regions of amplifications (+1) and deletions (-1) <strong>({$dloadFileSizes['CNV2']}).</strong></span></td></tr>
 		</table>
 	</div>
 PANEL;
+
 
 // =============================================================================
 // == Upload facs / binning file ===============================================
@@ -174,14 +180,6 @@ if($GINKGO_PAGE == 'admin-upload')
 {
 	// Create user directory if doesn't exist
 	@mkdir($userDir);
-
-	// Removed params-binning-file but have params-segmentation-file
-
-	// Error: invalid file type => return error
-	// if($_FILES['params-facs-file']['name'] != "" || $_FILES['params-segmentation-file']['name'] != "")
-	// 	if($_FILES['params-facs-file']['type'] != "text/plain" /*|| $_FILES['params-segmentation-file']['type'] != "text/plain"*/)
-	// 		die("error");
-
 	$result = "";
 
 	// FACS file
@@ -230,6 +228,7 @@ if(isset($_POST['analyze']))
 	$configFile = $userDir . "/config";
 	if(file_exists($configFile))
 	{
+		//
 		$f = file($configFile);
 		$oldParams = array();
 		foreach($f as $index => $val)
@@ -252,8 +251,8 @@ if(isset($_POST['analyze']))
 		$newSegParams	= ($oldParams['segMeth']	!= $_POST['segMeth']) || ($_POST['segMethCustom'] != '');
 		$newClustering	= ($oldParams['clustMeth']	!= $_POST['clustMeth']);
 		$newDistance	= ($oldParams['distMeth']	!= $_POST['distMeth']);
-		$newColor	= ($oldParams['color']			!= $_POST['color']);
-		$sexChange	= ($oldParams['sex']			!= $_POST['sex']);
+		$newColor		= ($oldParams['color']		!= $_POST['color']);
+		$sexChange		= ($oldParams['sex']		!= $_POST['sex']);
 
 		// Different cells to analyze than last time?
 		$cells = '';
@@ -339,11 +338,79 @@ if(isset($_POST['analyze']))
 
 
 // =============================================================================
+// == Launch analysis **on subset of cells** ===================================
+// =============================================================================
+
+if(isset($_POST['analyze-subset']))
+{
+	// Job settings
+	$selectedCells = $_POST['selectedCells'];
+	$analysisType  = $_POST['analysisType'];
+	//
+	$analysisID    = generateID(10);
+
+	// Save job settings
+	$configTxt = $analysisType . "\n";
+	foreach($selectedCells as $cell)
+		$configTxt .= $cell . "\n";
+	file_put_contents($userDir . '/' . $analysisID . '.config', $configTxt);
+
+	// Start analysis
+	$PAR = 'original';
+	if($config['rmpseudoautosomal'] == '1')
+		$PAR = 'pseudoautosomal';
+
+	$cmd = "./scripts/analyze-subset.R $GINKGO_USER_ID $analysisID $genome {$config['binMeth']} $PAR >> $userDir/ginkgo-" . $analysisID . ".out 2>&1  &";
+	session_regenerate_id(TRUE);	
+	$handle = popen($cmd, 'r');
+	pclose($handle);
+
+	echo $analysisID;
+	exit;
+}
+
+if($GINKGO_PAGE == "results-subset")
+{
+	if(file_exists('uploads/' . $GINKGO_USER_ID . '/' . $query[2] . '.done'))
+		echo '<img src="./uploads/' . $GINKGO_USER_ID . '/' . $query[2] . '.jpeg?uniq=' . rand(1e6,2e6) . '">';
+	else
+		echo 'Generating figure...<meta http-equiv="refresh" content="1">';
+	exit;
+}
+
+
+// =============================================================================
+// == Prepare file for UCSC custom track =======================================
+// =============================================================================
+
+if(isset($_POST['ucsc']))
+{
+	// Job settings
+	$cell  = $_POST['cell'];
+	$range = $_POST['range'];
+	//
+	$analysisID    = generateID(10);
+
+	// Save job settings
+	$configTxt = "browser position {$range}\n";
+
+	$CMD  = <<<CM
+awk -v CELL='"{$cell}"' 'BEGIN{ print "track name=Amplifications description="CELL" color=0,0,255,"; }{  if(NR==1){ for(i=1;i<=NF;i++){if(\$i==CELL)cellID=i;} }else{ if(\$cellID>2)print \$1"\t"\$2"\t"\$3;  }  }' ./uploads/{$GINKGO_USER_ID}/SegCopy;
+awk -v CELL='"{$cell}"' 'BEGIN{ print "track name=Deletions description="CELL" color=255,0,0,"; }{  if(NR==1){ for(i=1;i<=NF;i++){if(\$i==CELL)cellID=i;} }else{ if(\$cellID<2)print \$1"\t"\$2"\t"\$3;  }  }' ./uploads/{$GINKGO_USER_ID}/SegCopy;
+CM;
+
+	file_put_contents($userDir . '/' . $analysisID . '.ucsc', "browser position {$range}\n".shell_exec($CMD));
+	echo $analysisID;
+	exit;
+}
+
+
+// =============================================================================
 // == If analysis under way, redirect to status page ===========================
 // =============================================================================
 
 // Load status.xml if exists and check if analysis under way
-if($GINKGO_PAGE == "" | $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
+if($GINKGO_PAGE == "" || $GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard") {
 	$statusFile = DIR_UPLOADS . '/' . $GINKGO_USER_ID . '/status.xml';
 	if(file_exists($statusFile)) {
 		$status = simplexml_load_file($statusFile);
@@ -382,7 +449,6 @@ if($GINKGO_PAGE == 'admin-search')
 }
 
 
-
 // =============================================================================
 // == HTML template ============================================================
 // =============================================================================
@@ -394,7 +460,6 @@ if($GINKGO_PAGE == 'admin-search')
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
 		<meta name="description" content="">
 		<meta name="author" content="">
-
 		<title>Ginkgo</title>
 
 		<!-- Bootstrap core CSS -->
@@ -417,12 +482,27 @@ if($GINKGO_PAGE == 'admin-search')
 			.sorting { background: url('includes/datatables/images/sort_both.png') no-repeat center right; }
 			.sorting_asc_disabled { background: url('includes/datatables/images/sort_asc_disabled.png') no-repeat center right; }
 			.sorting_desc_disabled { background: url('includes/datatables/images/sort_desc_disabled.png') no-repeat center right; }
+
+			/* callout */
+			.bs-callout { margin:20px 0; padding:15px 30px 15px 15px; border-left:5px solid #eee; }
+			.bs-callout h4 { margin-top:0; }
+			.bs-callout p:last-child { margin-bottom:0; }
+			.bs-callout code, .bs-callout .highlight { background-color:#fff; }
+			/* */ 
+			.bs-callout-danger { background-color:#fcf2f2; border-color:#dFb5b4; }
+			.bs-callout-warning { background-color:#fefbed; border-color:#f1e7bc; }
+			.bs-callout-info { background-color:#f0f7fd; border-color:#d0e3f0; } 
+			/* */
+			#results-QA-table tr td:first-child { text-align: center; }
+			#results-QA-table tr td:first-child:before { content: "\f096"; font-family: FontAwesome; }
+			#results-QA-table tr.selected td:first-child:before { content: "\f046"; }
+			/* */
+			.codesample { background-color:#f9f2f4; font-family:Monaco, monospace, serif; font-size:90%; color:#C7254E; padding:10px; }
 		</style>
 
 		<!-- Tinycon styles/javascript -->
 		<script type="text/javascript" src="includes/tinycon/tinycon.min.js"></script>
 		<link rel="icon" href="includes/tinycon/ginkgo.ico" />
-
 		<script>
 		  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
 		  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
@@ -431,11 +511,8 @@ if($GINKGO_PAGE == 'admin-search')
 
 		  ga('create', 'UA-31249083-2', 'auto');
 		  ga('send', 'pageview');
-
 		</script>
-
 	</head>
-
 	<body>
 
 		<!-- Navigation bar -->
@@ -451,7 +528,6 @@ if($GINKGO_PAGE == 'admin-search')
 					<ul class="nav navbar-nav">
 						<li>
 							<a class="navbar-brand dropdown-toggle" data-toggle="dropdown" href="#"><span class="glyphicon glyphicon-tree-deciduous"></span> Ginkgo <span class="caret" style="border-top-color:#ccc !important; border-bottom-color:#ccc !important;"></span></a>
-							<!-- <a class="navbar-brand" href="javascript:void(0);">[UNDER MAINTENANCE: Oct. 30-Nov.2]</a> -->
 							<ul class="dropdown-menu" role="menu">
 								<li><a href="?q=">Home</a></li>
 								<li><a href="https://github.com/robertaboukhalil/ginkgo">Github</a></li>
@@ -558,36 +634,61 @@ if($GINKGO_PAGE == 'admin-search')
 					<!-- Panel: Help -->
 					<div class="panel panel-primary">
 						<div class="panel-heading"><h3 class="panel-title"><span class="glyphicon glyphicon-question-sign"></span> Help</h3></div>
-						<div class="panel-body"><div class="panel-group" id="help-makebed"><div class="panel panel-default">
-							<div class="panel-heading"><h4 class="panel-title"><a class="accordion-toggle" data-toggle="collapse" data-parent="#help-makebed" href="#help-makebed-content">How to make .bed files</a></h4></div>
-							<div id="help-makebed-content" class="panel-collapse collapse in">
-								<div class="panel-body">
-									<p>Open a terminal and navigate to your data folder:</p>
-									<div style="background-color:#f9f2f4;">
-										<code>$ <input type="text" value="bowtie2 ref.fa reads.fq > reads.sam"></code>
-										<!-- <code>$ <input type="text" value="samtools view -Sb reads.sam -q 20 -o reads.bam"></code> -->
-										<code>$ <textarea cols="25" rows="2">samtools view -Sb reads.sam -q 20 -o reads.bam</textarea></code>
-										<code>$ <input type="text" value="bamToBed -i reads.bam > reads.bed"></code>
+						<div class="panel-body">
+
+							<div class="panel-group" id="help-bedfmt">
+								<div class="panel panel-default">
+									<div class="panel-heading"><h4 class="panel-title"><a class="accordion-toggle" data-toggle="collapse" data-parent="#help-bedfmt" href="#help-bedfmt-content">Sample .bed file</a></h4></div>
+									<div id="help-bedfmt-content" class="panel-collapse collapse in"><div class="panel-body">
+										<table class="table">
+											<thead><tr><th>chrom</th><th>chromStart</th><th>chromEnd</th></tr></thead>
+											<tbody><tr><td>chr1</td><td>555485</td><td>555533</td></tr><tr><td>chr1</td><td>676584</td><td>676632</td></tr><tr><td>chr1</td><td>745136</td><td>745184</td></tr></tbody>
+										</table>
+									</div></div>
+								</div>
+							</div>
+
+							<br/>
+							<div class="panel-group" id="help-makebed">
+								<div class="panel panel-default">
+									<div class="panel-heading"><h4 class="panel-title"><a class="accordion-toggle" data-toggle="collapse" data-parent="#help-makebed" href="#help-makebed-content">How to make .bed files</a></h4></div>
+									<div id="help-makebed-content" class="panel-collapse collapse in">
+										<div class="panel-body">
+											<p>If your mapped reads are saved in the file <strong>reads.bam</strong>:</p>
+											<div class="codesample">bamToBed -i reads.bam > reads.bed</div>
+										</div>
+									</div>
+								</div>
+							</div>
+
+							<br/>
+							<div class="panel-group" id="help-details">
+								<div class="panel panel-default">
+									<div class="panel-heading"><h4 class="panel-title"><a class="accordion-toggle" data-toggle="collapse" data-parent="#help-details" href="#help-details-content">Detailed instructions</a></h4></div>
+									<div id="help-details-content" class="panel-collapse collapse out">
+										<div class="panel-body">
+											<p>
+												<strong>Step 1</strong><br/>
+												If you do not have a reference genome index (e.g. hg19), download it from the <a href="http://bowtie-bio.sourceforge.net/bowtie2/index.shtml" target="_blank">Bowtie2 website</a> (menu on right, under <i>Indexes</i>).
+												Then, map your reads (in <strong>reads.fastq</strong>) to the genome, and output the results to <strong>reads.sam</strong>:</p>
+											<div class="codesample">bowtie2 -x hg19 -U reads.fastq -S reads.sam</div>
+											<br/>
+											<p>If you have paired-end reads, use the following command instead:</p>
+											<div class="codesample">bowtie2 -x hg19 -1 reads_r1.fastq -2 reads_r2.fastq -S reads.sam</div>
+											<br/>
+											<p>
+												<strong>Step 2</strong><br/>
+												Convert <strong>reads.sam</strong> to <strong>reads.bam</strong>:</p>
+											<div class="codesample">samtools view -Sb reads.sam -q 20 -o reads.bam</div>
+											<br/><p>
+											<strong>Step 3</strong><br/>
+											Convert <strong>reads.bam</strong> to <strong>reads.bed</strong>:</p>
+											<div class="codesample">bamToBed -i reads.bam > reads.bed</div>
+										</div>
 									</div>
 								</div>
 							</div>
 						</div>
-					</div>
-
-					<br/>
-					<div class="panel-group" id="help-bedfmt"><div class="panel panel-default">
-						<div class="panel-heading"><h4 class="panel-title"><a class="accordion-toggle" data-toggle="collapse" data-parent="#help-bedfmt" href="#help-bedfmt-content">What a .bed file should look like</a></h4></div>
-						<div id="help-bedfmt-content" class="panel-collapse collapse in">
-							<div class="panel-body">
-								<p><table class="table">
-									<thead><tr><th>chrom</th><th>chromStart</th><th>chromEnd</th></tr></thead>
-									<tbody><tr><td>chr1</td><td>555485</td><td>555533</td></tr><tr><td>chr1</td><td>676584</td><td>676632</td></tr><tr><td>chr1</td><td>745136</td><td>745184</td></tr></tbody>
-								</table></p>
-							</div>
-						</div>
-					</div>
-				</div>
-			</div>
 			<?php else: ?>
 			<script>
 			window.location = '?q=results/<?php echo $GINKGO_USER_ID; ?>';
@@ -613,49 +714,47 @@ if($GINKGO_PAGE == 'admin-search')
 						<?php $selected = array(); ?>
 						<?php foreach($MY_CELLS as $currCell): ?>
 						<?php
-										// Was the current cell previously selected in an analysis?
-										$selected[$currCell] = "";
-										if(in_array($currCell, $previouslySelected))
-											$selected[$currCell] = " checked";
+								// Was the current cell previously selected in an analysis?
+								$selected[$currCell] = "";
+								if(in_array($currCell, $previouslySelected))
+									$selected[$currCell] = " checked";
 						?>
-				    <label><div class="input-group" style="margin:20px;"><span class="input-group-addon"><input type="checkbox" name="dashboard_cells[]" value="<?php echo $currCell; ?>"<?php echo $selected[$currCell];?>></span><span class="form-control"><?php echo $currCell; ?></span></div></label>
+				    	<label><div class="input-group" style="margin:20px;"><span class="input-group-addon"><input type="checkbox" name="dashboard_cells[]" value="<?php echo $currCell; ?>"<?php echo $selected[$currCell];?>></span><span class="form-control"><?php echo $currCell; ?></span></div></label>
 						<?php endforeach; ?>
-
 					</div>
 
 					<!-- Which genome? -->
 					<br/><br/><h3 style="margin-top:-5px;"><span class="badge">STEP 2</span> Set analysis options <small></small></h3>
 					<div id="params-genome" style="margin:20px;">
 						<table class="table table-striped">
-							<tbody>
-								<tr>
-									<td width="20%">Job name:</td>
-									<td>
-										<input id="param-job-name" class="form-control" type="text" placeholder="Single-cells from tissue X" value="<?php echo str_replace("'", "", file_get_contents($userDir . '/description.txt')); ?>">
-									</td>
-								</tr>
+							<tr>
+								<td width="20%">Job name:</td>
+								<td>
+									<input id="param-job-name" class="form-control" type="text" placeholder="Single-cells from tissue X" value="<?php echo str_replace("'", "", file_get_contents($userDir . '/description.txt')); ?>">
+								</td>
+							</tr>
 
-								<tr>
-									<td width="20%">Genome:</td>
-									<td>
-										<select id="param-genome" class="input-mini" style="margin-top:8px; font-size:11px; padding-top:3px; padding-bottom:0; height:25px; ">
-											<optgroup label="Latest genomes">
-												<!--<option value="hg20">Human (hg20)</option>-->
-												<?php $selected = array(); $selected[$config['chosen_genome']] = ' selected'; ?>
-												<option value="hg19"<?php echo $selected['hg19']; ?>>Human (hg19)</option>
-												<option value="panTro4"<?php echo $selected['panTro4']; ?>>Chimpanzee (panTro4)</option>
-												<option value="mm10"<?php echo $selected['mm10']; ?>>Mus musculus (mm10)</option>
-												<option value="rn5"<?php echo $selected['rn5']; ?>>R. norvegicus (rn5)</option>
-												<option value="dm3"<?php echo $selected['dm3']; ?>>D. Melanogaster (dm3)</option>
-											</optgroup>
-											<optgroup label="Older genomes">
-												<option value="hg18"<?php echo $selected['hg18']; ?>>Human (hg18)</option>
-												<option value="panTro3"<?php echo $selected['panTro3']; ?>>Chimpanzee (panTro3)</option>
-											</optgroup>
-										</select>
-									</td>
-								</tr>
-							</table>
+							<tr>
+								<td width="20%">Genome:</td>
+								<td>
+									<select id="param-genome" class="input-mini" style="margin-top:8px; font-size:11px; padding-top:3px; padding-bottom:0; height:25px; ">
+										<optgroup label="Latest genomes">
+											<!--<option value="hg20">Human (hg20)</option>-->
+											<?php $selected = array(); $selected[$config['chosen_genome']] = ' selected'; ?>
+											<option value="hg19"<?php echo $selected['hg19']; ?>>Human (hg19)</option>
+											<option value="panTro4"<?php echo $selected['panTro4']; ?>>Chimpanzee (panTro4)</option>
+											<option value="mm10"<?php echo $selected['mm10']; ?>>Mus musculus (mm10)</option>
+											<option value="rn5"<?php echo $selected['rn5']; ?>>R. norvegicus (rn5)</option>
+											<option value="dm3"<?php echo $selected['dm3']; ?>>D. Melanogaster (dm3)</option>
+										</optgroup>
+										<optgroup label="Older genomes">
+											<option value="hg18"<?php echo $selected['hg18']; ?>>Human (hg18)</option>
+											<option value="panTro3"<?php echo $selected['panTro3']; ?>>Chimpanzee (panTro3)</option>
+										</optgroup>
+									</select>
+								</td>
+							</tr>
+						</table>
 					</div>
 
 					<!-- Get informed by email when done? -->
@@ -663,7 +762,7 @@ if($GINKGO_PAGE == 'admin-search')
 					<div id="params-email" style="margin:20px;">
 						<p>If you want to be notified once the analysis is done, enter your e-mail here:<br/></p>
 						<div class="input-group">
-							<?php /*$email = 'my@email.com';*/ if($config['email'] != '') $email = $config['email']; ?>
+							<?php if($config['email'] != '') $email = $config['email']; ?>
 							<span class="input-group-addon"><span class="glyphicon glyphicon-envelope"></span></span>
 							<input id="email" class="form-control" type="text" placeholder="my@email.com" value="<?php echo $email; ?>">
 						</div>
@@ -672,7 +771,7 @@ if($GINKGO_PAGE == 'admin-search')
 
 					<!-- Set parameters -->
 					<h3 style="margin-top:-5px;"><span class="badge">OPTIONAL</span> <a href="#parameters" onClick="javascript:$('#params-table').toggle();">Advanced parameters</a></h3>
-					<table class="table" id="params-table"><!-- table-striped -->
+					<table class="table" id="params-table">
 						<tbody>
 							<tr class="active"><td colspan="2"><strong>Sample Parameters</strong></td></tr>
 							<tr>
@@ -744,22 +843,22 @@ if($GINKGO_PAGE == 'admin-search')
 							<tr style="display:none" id="param-segmentation-custom">
 								<td>Custom segmentation</td>
 								<td style="height:45px;">
-										<div class="fileupload fileupload-new" data-provides="fileupload">
-											<div class="input-append">
-												<div class="uneditable-input span3">
-													<i class="glyphicon glyphicon-upload"></i>
-													<span class="fileupload-preview"></span>
-												</div>
-
-												<span class="btn btn-file">
-													<span class="fileupload-new btn btn-success">Select .bed file</span>
-													<span class="fileupload-exists btn btn-success">Change</span>
-													<input type="file" name="params-segmentation-file" />
-												</span>
-
-												<a href="#" class="btn btn-danger fileupload-exists" data-dismiss="fileupload">Remove</a>
+									<div class="fileupload fileupload-new" data-provides="fileupload">
+										<div class="input-append">
+											<div class="uneditable-input span3">
+												<i class="glyphicon glyphicon-upload"></i>
+												<span class="fileupload-preview"></span>
 											</div>
+
+											<span class="btn btn-file">
+												<span class="fileupload-new btn btn-success">Select .bed file</span>
+												<span class="fileupload-exists btn btn-success">Change</span>
+												<input type="file" name="params-segmentation-file" />
+											</span>
+
+											<a href="#" class="btn btn-danger fileupload-exists" data-dismiss="fileupload">Remove</a>
 										</div>
+									</div>
 								</td>
 							</tr>
 
@@ -778,7 +877,6 @@ if($GINKGO_PAGE == 'admin-search')
 									<input type="checkbox" id="dashboard-rmpseudoautosomal"<?php echo $checked;?>>
 								</td>
 							</tr>
-
 
 							<tr class="active"><td colspan="2"><strong>Clustering Parameters</strong></td></tr>
 							<tr>
@@ -815,7 +913,6 @@ if($GINKGO_PAGE == 'admin-search')
 									<input type="checkbox" id="dashboard-include-sex"<?php echo $checked;?>>
 								</td>
 							</tr>
-
 
 							<tr class="active"><td colspan="2"><strong>FACS File</strong></td></tr>
 							<tr>
@@ -856,11 +953,8 @@ if($GINKGO_PAGE == 'admin-search')
 					<hr><br/>
 					<div style="float:left"><a class="btn btn-lg btn-primary" href="?q=/<?php echo $GINKGO_USER_ID; ?>"><span class="glyphicon glyphicon-chevron-left"></span> Manage Files </a></div>
 					<div style="float:right"><a id="analyze" class="btn btn-lg btn-primary" href="javascript:void(0);"><?php echo $btnCaption; ?> <span class="glyphicon glyphicon-chevron-right"></span></a></div><br/><br/><br/>
-
 				</form>
-					
 				</div>
-
 				<div class="col-lg-4">
 					<?php echo $PANEL_PREVIOUS; ?>
 					<?php echo $PANEL_LATER; ?>
@@ -889,21 +983,30 @@ if($GINKGO_PAGE == 'admin-search')
 					<!-- Panel: Summary -->
 					<div id="results-summary" class="panel panel-default">
 						<div class="panel-heading"><span class="glyphicon glyphicon-certificate"></span> Summary</div>
-						<div style="height:300px; overflow:auto;"><table class="table" id="results-QA-table" style="display:none;"></table></div>
+						<div style="height:350px; overflow:auto;">
+							<table class="table" id="results-QA-table" style="display:none;"></table>
+						</div>
 						<table class="table">
-							<tr><td><b>Download detailed quality assessment:</b> 
-								<a target="_blank" href="<?php echo URL_UPLOADS . '/' . $GINKGO_USER_ID . '/SegStats'; ?>">.txt</a>		
-							</td></tr>
+							<tr>
+								<td style="width:75%; vertical-align:middle">
+									With selected cells, plot:
+									<a aria-controls="results-QA-table" class="DTTT_button DTTT_button_text" onclick="javascript:analyze_subset('cnvprofiles')"><span>CNV profiles</span></a>
+									<a aria-controls="results-QA-table" class="DTTT_button DTTT_button_text" onclick="javascript:analyze_subset('lorenz')"><span>Lorenz curve</span></a>
+									<a aria-controls="results-QA-table" class="DTTT_button DTTT_button_text" onclick="javascript:analyze_subset('gc')"><span>GC bias</span></a>
+									<a aria-controls="results-QA-table" class="DTTT_button DTTT_button_text" onclick="javascript:analyze_subset('mad')"><span>MAD</span></a>
+								</td>
+								<td id="results-summary-btns" style="width:25% vertical-align:middle; padding-top:20px;"></td>
+							</tr>
 						</table>
 					</div>
-
-					<br/>
 
 					<!-- Panel: More results -->
 					<div id="results-heatmaps" class="panel panel-default" style="display:none;">
 						<div class="panel-heading"><span class="glyphicon glyphicon-barcode"></span> Heatmaps</div>
 						<div class="panel-body">
-							<p>Heatmaps are generated using the unique breakpoints found across all samples, and their values correspond to their relative read counts or copy number as determined by their dissimilarity structure for each respective dendrogram.</p>
+							<div class="bs-callout bs-callout-info" style="margin:-15px;">
+								<p>Heatmaps are generated using the unique breakpoints found across all samples, and their values correspond to their relative read counts or copy number as determined by their dissimilarity structure for each respective dendrogram.</p>
+							</div>
 						</div>
 						<!-- Table -->
 						<table class="table" style="text-align:center;">
@@ -939,6 +1042,8 @@ if($GINKGO_PAGE == 'admin-search')
 					<br><br><br><br>
 				</div>
 
+				<div class="clearfix visible-sm"></div>
+
 				<div class="col-lg-4">
 					<h3 style="margin-bottom:-15px;">&nbsp;</h3>
 					<?php echo $PANEL_LATER; ?>
@@ -947,8 +1052,6 @@ if($GINKGO_PAGE == 'admin-search')
 					<br>
 				</div>
 			</div>
-
-
 
 
 			<?php // ================================================================ ?>
@@ -973,7 +1076,7 @@ if($GINKGO_PAGE == 'admin-search')
 						<div class="panel-heading">
 							<span class="glyphicon glyphicon-align-center"></span> Interactive Profile Viewer
 							<div style="float:right; margin-top:-5px;">
-								<a class="btn btn-sm btn-primary" href="#" onclick="javascript:viewRegionUCSC()">View region in UCSC browser</a>
+								<a id="results-ucsc-btn" class="btn btn-sm btn-primary" href="#" onclick="javascript:viewRegionUCSC()">View region in UCSC browser</a>
 							</div>
 						</div>
 						<!-- Table -->
@@ -1106,6 +1209,7 @@ if($GINKGO_PAGE == 'admin-search')
 		<script src="http://code.jquery.com/jquery-2.0.3.min.js"></script>
 		<script src="//netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.min.js"></script>
 
+
 		<!-- JQuery/Bootstrap customization
 		================================================== -->
 		<script language="javascript">
@@ -1188,7 +1292,14 @@ if($GINKGO_PAGE == 'admin-search')
 
 		<!-- DataTables (sortable tables)
 		================================================== -->
-		<script type="text/javascript" language="javascript" src="includes/datatables/jquery.dataTables.min.js"></script>
+		<!-- <script type="text/javascript" language="javascript" src="includes/datatables/jquery.dataTables.min.js"></script> -->
+		<link rel="stylesheet" type="text/css" href="includes/datatables/1.10.4/dataTables.tableTools.css">
+		<link rel="stylesheet" type="text/css" href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.0.3/css/font-awesome.css">
+		<script type="text/javascript" language="javascript" src="includes/datatables/1.10.4/jquery.dataTables.1.10.4.min.js"></script>
+		<script type="text/javascript" language="javascript" src="includes/datatables/1.10.4/dataTables.tableTools.2.2.3.min.js"></script>
+
+		<!-- <link rel="stylesheet" type="text/css" href="includes/datatables/1.10.4/dataTables.fixedHeader.css"> -->
+		<script type="text/javascript" language="javascript" src="includes/datatables/1.10.4/dataTables.fixedHeader.min.js"></script>
 
 		<!-- CNV profiles
 		================================================== -->
@@ -1313,14 +1424,12 @@ if($GINKGO_PAGE == 'admin-search')
 							binMethVal = $('#param-bins-type').val() + $('#param-bins-value').val();
 							binMethVal = binMethVal.substring(0, binMethVal.length - 1);
 						}
+
 						//
 						rmbadbins = $('#dashboard-rmbadbins').is(':checked') == true ? 1 : 0;
 						rmpseudoautosomal = $('#dashboard-rmpseudoautosomal').is(':checked') == true ? 1 : 0;
-						// if(rmbadbins == 1)
-							// binMethVal += '_rmbadbins';
 
-						// alert(binMethVal)
-
+						//
 						$.post("?q=dashboard/" + ginkgo_user_id, {
 								// General
 								'analyze':	1,
@@ -1365,6 +1474,34 @@ if($GINKGO_PAGE == 'admin-search')
 			  }
 			});
 		});
+
+
+		function analyze_subset(analysisType)
+		{
+			// -- Generate list of selected cells
+			var selectedCells = [];
+			$('.selected').each(function(){
+				selectedCells.push(this.children[1].textContent)
+			});
+
+			if(selectedCells.length == 0)
+				return
+
+			// -- Submit subset analysis
+			$.post("?q=analyze-subset/" + ginkgo_user_id, {
+					'analyze-subset'	: 1,
+					'selectedCells'		: selectedCells,
+					'analysisType'		: analysisType,
+				},
+				function(data)
+				{
+					if(data != '-1')
+						window.open('?q=results-subset/<?php echo $GINKGO_USER_ID; ?>/' + data, '_blank')
+				}
+			);
+		}
+		
+
 
 		// -------------------------------------------------------------------------
 		// -- Refresh progress -----------------------------------------------------
@@ -1453,13 +1590,14 @@ if($GINKGO_PAGE == 'admin-search')
 				// Turn string into array of lines
 				lineNb = 0;
 				table = '<thead> ' + '\n' +
-						'	<tr> ' + '\n' +
-						'		<th style="text-align:center" width="15%">Cell</th> ' + '\n' +
-						'		<th style="text-align:center" width="25%">CNV Profile</th> ' + '\n' +
-						'		<th style="text-align:center" width="15%"># Reads</th> ' + '\n' +
-						'		<th style="text-align:center" width="15%">Mean read count</th> ' + '\n' +
-						'		<th style="text-align:center" width="15%">Read count variance</th> ' + '\n' +
-						'		<th style="text-align:center" width="15%">Index of dispersion</th> ' + '\n' +
+						'	<tr style="background-color: white !important"> ' + '\n' +
+						'		<th style="text-align:center; vertical-align:middle" width="5%"></th> ' + '\n' +
+						'		<th style="text-align:center; vertical-align:middle" width="10%">Cell</th> ' + '\n' +
+						'		<th style="text-align:center; vertical-align:middle" width="25%">CNV Profile</th> ' + '\n' +
+						'		<th style="text-align:center; vertical-align:middle" width="15%"># Reads</th> ' + '\n' +
+						'		<th style="text-align:center; vertical-align:middle" width="15%">Mean read count</th> ' + '\n' +
+						'		<th style="text-align:center; vertical-align:middle" width="15%">Read count variance</th> ' + '\n' +
+						'		<th style="text-align:center; vertical-align:middle" width="15%">Index of dispersion</th> ' + '\n' +
 						'	</tr> ' + '\n' +
 						'	</thead>\n';
 				table += '<tbody>';
@@ -1490,8 +1628,9 @@ if($GINKGO_PAGE == 'admin-search')
 
 					//
 					newLine =	'<tr' + rowClass + '>' + 
-									'<td width="15%" style="text-align:center"><a href="' + cellUrl + '">' + cell + '</a></td>' + 
-									'<td width="25%" style="text-align:center"><a href="' + cellUrl + '"><img height="40" src="' + cnvProfileUrl + '"></a></td>' + 
+									'<td width="5%" style="text-align:center"></td>' + 
+									'<td width="10%" style="text-align:center"><a href="' + cellUrl + '">' + cell + '</a></td>' + 
+									'<td width="25%" style="text-align:center"><a href="' + cellUrl + '" alt=""><img height="35" src="' + cnvProfileUrl + '"></a></td>' + 
 									'<td width="15%" style="text-align:center">' + numberWithCommas(arrLine[1].replace(/"/g, '')) + '</td>' + 
 									'<td width="15%" style="text-align:center">' + numberWithCommas(arrLine[3].replace(/"/g, '')) + '</td>' + 
 									'<td width="15%" style="text-align:center">' + numberWithCommas(arrLine[4].replace(/"/g, '')) + '</td>' + 
@@ -1519,49 +1658,51 @@ if($GINKGO_PAGE == 'admin-search')
 						"iDisplayLength":10,
 						"bPaginate":false,
 						"aoColumnDefs": [ {
-						   "aTargets": [2,3,4],
-						   "fnCreatedCell": function (nTd, sData, oData, iRow, iCol) {
-						     var $currencyCell = $(nTd);
-						     var commaValue = $currencyCell.text().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,");
-						     $currencyCell.text(commaValue);
-						   }
-						}]
+							"aTargets": [3,4,5],
+							"fnCreatedCell": function (nTd, sData, oData, iRow, iCol) {
+								var $currencyCell = $(nTd);
+								var commaValue = $currencyCell.text().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,");
+								$currencyCell.text(commaValue);
+							}
+						}],
+
+				        columns: [
+				            { data: null, defaultContent: '', orderable: false },
+				            { data: 'cell' },
+				            { data: 'cnv_profile', orderable: false },
+				            { data: 'nbreads' },
+				            { data: 'avgReadsPerBin' },
+				            { data: 'varReadsPerBin' },
+				            { data: 'indexOfDispersion' }
+				        ],
+						order: [ 1, 'asc' ],
+
+						dom: '<"top"><"bottom"lfrtipT><"clear">',
+						tableTools: {
+							"sRowSelect"	: "multi",
+							"sRowSelector"	: 'td:first-child',
+							"aButtons"		: [ "select_all", "select_none" ]
+						},
+						"initComplete": function() {
+							$('div.DTTT_container').appendTo("#results-summary-btns");
+						},
+
 					});
+
+    			// Fix header (there's a bug about this that makes it appear in the middle of the page)
+    			// new $.fn.dataTable.FixedHeader( oTable );
 				$('#results-QA-table_length').css('display', 'none');
 
-
-				$.get('genomes/<?php echo $config["chosen_genome"] . "/" . ($config["rmpseudoautosomal"] == "1" ? "pseudoautosomal" : "original"); ?>/bounds_<?php echo $config["binMeth"]; ?>', function(data){
+				// Plot CNV profile of current cell
+				$.get('genomes/<?php echo $config["chosen_genome"] . "/" . ($config["rmpseudoautosomal"] == "1" ? "pseudoautosomal" : "original"); ?>/bounds_<?php echo $config["binMeth"]; ?>', function(data)
+				{
 					chromBoundaries = data.split('\n');
 					for(i=0; i<chromBoundaries.length; i++) {
 						tmp = chromBoundaries[i].split('\t');
 						chromBoundaries[i] = chromBoundaries[i].replace(tmp[0]+'\t', '')
 					}
 					loadCellProfile('cnv');
-
-					// // Chromosome annotations
-					// n = 0;
-					// allAnnotations = [];
-					// for(j in chromBoundaries)
-					// {
-					// 	chr = parseInt(j);
-					// 	if(chromBoundaries[chr] != "")
-					// 	{
-					// 		allAnnotations.push(
-					// 		{
-					// 			// series: allCells[n],
-					// 			x: (parseInt(chromBoundaries[chr])-1),
-					// 			shortText: (chr+1),
-					// 			text: "<-- chr" + (chr+1)
-					// 		}
-					// 		);
-					// 	}
-					// }
-
-					// allCellProfiles[n].setAnnotations(allAnnotations);
 				});
-
-
-
 			});
 		}
 
@@ -1593,18 +1734,6 @@ if($GINKGO_PAGE == 'admin-search')
 				if(xmlFile == "")
 					return;
 
-				// maxBL = 0
-				// $( xmlFile.getElementsByTagName("branch_length") ).each(function(index, value)
-				// {
-				// 	currBL = parseInt(value.childNodes[0].nodeValue)
-				// 	if(currBL > maxBL)
-				// 	{
-				// 		maxBL = currBL
-				// 		// maxBLindex = 
-				// 	}
-				// });
-				// alert(maxBL)
-
 				$( xmlFile.getElementsByTagName("branch_length") ).each(function(index, value)
 				{
 					currElement = xmlFile.getElementsByTagName("branch_length")[index];
@@ -1615,8 +1744,6 @@ if($GINKGO_PAGE == 'admin-search')
 
 					if(currVal > 200)
 						currElement.childNodes[0].nodeValue = 40;
-
-					// currElement.childNodes[0].nodeValue /= maxBL
 				});
 
 				// Annotate the phyloXML file
@@ -1678,6 +1805,7 @@ if($GINKGO_PAGE == 'admin-search')
 			axisColor = 'black';
 			axisFontSize = 14;
 			labelsDisplay = 'block';
+
 			// Settings for Chr
 			if(cellName == 'CHR') {
 				graphTitle = '';
@@ -1686,7 +1814,7 @@ if($GINKGO_PAGE == 'admin-search')
 			}
 
 			// -- Load file that specifies bin # <--> chr:pos
-			$.get('genomes/<?php echo $config["chosen_genome"] . "/" . ($config["rmpseudoautosomal"] == "1" ? "pseudoautosomal" : "original"); ?>/<?php echo $config["binMeth"]; ?>', function(data){
+			$.get('genomes/<?php echo $config["chosen_genome"] . "/" . ($config["rmpseudoautosomal"] == "1" ? "pseudoautosomal" : "original"); ?>/<?php echo $config["binMeth"]; ?>?uniq=' + Math.round(Math.random()*10000), function(data){
 
 				binToPos = data.split('\n');
 				// Note i=1 b/c skipping header
@@ -1700,7 +1828,7 @@ if($GINKGO_PAGE == 'admin-search')
 				allCellProfiles.push(
 					g = new Dygraph(
 						document.getElementById("cell_cnv"),
-						"uploads/" + ginkgo_user_id + "/" + cellName + ".cnv",
+						"uploads/" + ginkgo_user_id + "/" + cellName + ".cnv?uniq=" + Math.round(Math.random()*10000),
 						{
 							// Settings
 							rollPeriod: 0,
@@ -1803,11 +1931,16 @@ if($GINKGO_PAGE == 'admin-search')
 			return arry;
 		}
 
+
 		// =====================================================================
 		// == View current region in UCSC browser in new tab/window ============
 		// =====================================================================
 		function viewRegionUCSC()
 		{
+			btnOrigTxt = $("#results-ucsc-btn").text()
+			$("#results-ucsc-btn").text('Loading...')
+			$("#results-ucsc-btn").attr('disabled', true) // .prop() doesn't work since it's an <a> button
+
 			//
 			binRange = g.xAxisRange()
 			posStart = binToPos[ Math.ceil(binRange[0]) ]
@@ -1833,7 +1966,19 @@ if($GINKGO_PAGE == 'admin-search')
 					}
 				}
 
-			window.open('https://genome.ucsc.edu/cgi-bin/hgTracks?db=<?php echo $config["chosen_genome"]; ?>&position=' + range, '_blank')
+			// -- Submit subset analysis
+			$.post("?q=ucsc/" + ginkgo_user_id, {
+					'ucsc'	: 1,
+					'range'	: range,
+					'cell'	: '<?php echo $CURR_CELL; ?>',
+				},
+				function(data) {
+					window.open('https://genome.ucsc.edu/cgi-bin/hgTracks?db=<?php echo $config["chosen_genome"]; ?>&position=' + range + '&hgt.customText=<?php echo $userUrl; ?>/' + data + '.ucsc', '_blank')
+				}
+			);
+
+			$("#results-ucsc-btn").text(btnOrigTxt)
+			$("#results-ucsc-btn").attr('disabled', false)
 		}
 
 		//
