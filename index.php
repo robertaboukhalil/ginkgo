@@ -36,11 +36,16 @@ $GINKGO_USER_ID	= $query[1];
 if(!$GINKGO_USER_ID)
 	$GINKGO_USER_ID	= generateID(20);
 
-
 // Security patch: don't allow user IDs that aren't alphanumerical
 // e.g. could use "a; echo b" as user ID; will create file "a" and write "b" to it
 if(preg_match('/[^A-Za-z0-9_-]/', $GINKGO_USER_ID))
   exit;
+
+// Don't allow users to modify demo analyses
+if($GINKGO_USER_ID[0] == '_' && $GINKGO_PAGE != "results") {
+	header("Location: ?q=results/" . $GINKGO_USER_ID);
+	exit;
+}
 
 
 // =============================================================================
