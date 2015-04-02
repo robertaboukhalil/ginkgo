@@ -1,5 +1,8 @@
 #!/usr/bin/env Rscript
 
+#user_dir="/mnt/data/ginkgo/uploads/tZpHBDd3DJUsRb0GNDYS_copy";  genome="/mnt/data/ginkgo/genomes/hg19/original";  dat="data";  stat="0";  bm="variable_500000_101_bowtie";  cm="ward";  dm="euclidean";  facs="user-facs.txt"; f=1;
+# statux="status.xml"; cp="3"; ref="_mapped"; sex="1"; bb="0";
+
 args<-commandArgs(TRUE)
 
 genome <- args[[1]]
@@ -228,14 +231,14 @@ for(k in 1:w){
   CNerror[,k] <- round(sort(outerColsums[,k])[1:5], digits=2)
   print(CNmult[,k])
 
-  if (f == 0) {
+  if (f == 0 || length(which(lab[k]==ploidy[,1]))==0 ) {
     final[,k] <- round(fixed[,k]*CNmult[1,k])
   } else {
     final[,k] <- round(fixed[,k]*ploidy[which(lab[k]==ploidy[,1]),2])
   }
 
   #Output results of CN calculations to file
-  if (f == 0) {
+  if (f == 0 || length(which(lab[k]==ploidy[,1]))==0 ) {
     out=paste(lab[k], "\t", CNmult[1,k], ",", CNmult[2,k], ",", CNmult[3,k], ",", CNmult[4,k], ",", CNmult[5,k], "\t", CNerror[1,k], ",", CNerror[2,k], ",", CNerror[3,k], ",", CNerror[4,k], ",", CNerror[5,k], "\t", CNmult[1,k], sep="")
   cat(out, "\n")
   } else {
@@ -355,7 +358,7 @@ for(k in 1:w){
   jpeg(filename=paste(lab[k], "_hist.jpeg", sep=""), width=2500, height=1500)
     par(mar = c(7.0, 7.0, 7.0, 3.0))
 
-    if (f == 0) {
+    if (f == 0 || length(which(lab[k]==ploidy[,1]))==0 ) {
       reads <- hist(normal[,k]*CNmult[1,k], breaks=seq(0,ceiling(max(normal[,k]*CNmult[1,k])),.05), plot=FALSE)
       plot(reads, col='gray50', main=paste("Frequency of Bin Counts for Sample \"", lab[k], "\"\nNormalized and Scaled by Predicted CN (", CNmult[1,k], ")", sep=""), xlab="Copy Number", xlim=c(0,10), cex.main=3, cex.axis=2, cex.lab=2)
     } else {
@@ -394,7 +397,7 @@ for(k in 1:w){
   jpeg(filename=paste(lab[k], "_CN.jpeg", sep=""), width=3000, height=750)
     par(mar = c(7.0, 7.0, 7.0, 3.0))
 
-    if (f == 0) { 
+    if (f == 0 || length(which(lab[k]==ploidy[,1]))==0 ) {
       plot(normal[,k]*CNmult[1,k], main=paste("Integer Copy Number Profile for Sample \"", lab[k], "\"\n Predicted Ploidy = ", CNmult[1,k], sep=""), ylim=c(0, 8), type="n", xlab="Bin", ylab="Copy Number", cex.main=3, cex.axis=2, cex.lab=2)
 
       tu <- par('usr')
