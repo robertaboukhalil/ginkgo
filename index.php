@@ -42,7 +42,7 @@ if(preg_match('/[^A-Za-z0-9_-]/', $GINKGO_USER_ID))
   exit;
 
 // Don't allow users to modify demo analyses
-if($GINKGO_USER_ID[0] == '_' && $GINKGO_PAGE != "results") {
+if($GINKGO_USER_ID[0] == '_' && ($GINKGO_PAGE == "home" || $GINKGO_PAGE == "dashboard")) {
 	header("Location: ?q=results/" . $GINKGO_USER_ID);
 	exit;
 }
@@ -535,7 +535,8 @@ if($GINKGO_PAGE == 'admin-search')
 							<a class="navbar-brand dropdown-toggle" data-toggle="dropdown" href="#"><span class="glyphicon glyphicon-tree-deciduous"></span> Ginkgo <span class="caret" style="border-top-color:#ccc !important; border-bottom-color:#ccc !important;"></span></a>
 							<ul class="dropdown-menu" role="menu">
 								<li><a href="?q=">Home</a></li>
-								<li><a href="https://github.com/robertaboukhalil/ginkgo">Github</a></li>
+								<li><a href="https://github.com/robertaboukhalil/ginkgo">Code on Github</a></li>
+								<li><a href="http://biorxiv.org/content/early/2015/03/06/011346">Paper on bioRxiv</a></li>
 								<li class="divider"></li>
 								<li><a href="?q=results/_t10breast_navin"><small><small style="color:#bdc3c7">DOP-PCR</small></small> Polygenomic breast tumor &mdash; <i>Navin et al, 2011</i></a></li>
 								<li><a href="?q=results/_t16breast_liver_met_navin"><small><small style="color:#bdc3c7">DOP-PCR</small></small> Breast cancer + liver metastasis &mdash; <i>Navin et al, 2011</i></a></li>
@@ -846,7 +847,7 @@ if($GINKGO_PAGE == 'admin-search')
 								</select> method to segment.</td>
 							</tr>
 							<tr style="display:none" id="param-segmentation-custom">
-								<td>Custom segmentation</td>
+								<td>Custom segmentation<br/><i><small>Upload the .bed file of a cell to normalize your data by</small></i></td>
 								<td style="height:45px;">
 									<div class="fileupload fileupload-new" data-provides="fileupload">
 										<div class="input-append">
@@ -862,6 +863,7 @@ if($GINKGO_PAGE == 'admin-search')
 											</span>
 
 											<a href="#" class="btn btn-danger fileupload-exists" data-dismiss="fileupload">Remove</a>
+
 										</div>
 									</div>
 								</td>
@@ -912,7 +914,7 @@ if($GINKGO_PAGE == 'admin-search')
 								</td>
 							</tr>
 							<tr>
-								<td>Include sex chromosomes?<br/><i><small>Not recommended for mixed-gender samples</small></i></td>
+								<td>Include sex chromosomes?<br/><i><small>Uncheck this box for mixed-gender samples</small></i></td>
 								<td>
 									<?php $checked = " checked"; if($config['sex'] == '0') $checked=""; ?>
 									<input type="checkbox" id="dashboard-include-sex"<?php echo $checked;?>>
@@ -921,7 +923,7 @@ if($GINKGO_PAGE == 'admin-search')
 
 							<tr class="active"><td colspan="2"><strong>FACS File</strong></td></tr>
 							<tr>
-								<td>FACS file:</td>
+								<td>FACS file:<br/><i><small>Upload a file with 2 columns: first column is cell name, second column is estimated ploidy by FACS (by DAPI stain)</small></i></td>
 								<td>
 									<div class="fileupload fileupload-new" data-provides="fileupload">
 										<div class="input-append">

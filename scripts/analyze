@@ -30,6 +30,10 @@ if [ "$f" == "0" ]; then
   touch ${dir}/ploidyDummy.txt
   facs=ploidyDummy.txt
 else 
+  # In case upload file with \r instead of \n (Mac, Windows)
+  tr '\r' '\n' < ${dir}/${facs} > ${dir}/quickTemp
+  mv ${dir}/quickTemp ${dir}/${facs}
+  # 
   sed "s/.bed//g" ${dir}/${facs} | sort -k1,1 | awk '{print $1"\t"$2}' > ${dir}/quickTemp 
   mv ${dir}/quickTemp ${dir}/${facs}
 fi
