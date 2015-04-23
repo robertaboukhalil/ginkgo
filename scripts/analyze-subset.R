@@ -62,13 +62,16 @@ col2[,2] = col1[,1]
 # ------------------------------------------------------------------------------
 if(analysisType == "lorenz")
 {
-	jpeg(filename=paste(analysisID, ".jpeg", sep=""), width=500, height=500)
+	jpeg(filename=paste(analysisID, ".jpeg", sep=""), width=700, height=500)
 	# par(mar = c(7.0, 7.0, 7.0, 3.0))
 
 	#
+	legendNames = c("Perfect Uniformity")
 	plottedFirst = 0
-	for(k in cellIDs)
+	for(j in 1:length(cellIDs))
 	{
+		k = cellIDs[j]
+
 		nReads = sum(raw[,k])
 		uniq = unique(sort(raw[,k]))
 		lorenz = matrix(0, nrow=length(uniq), ncol=2)
@@ -80,6 +83,8 @@ if(analysisType == "lorenz")
 		}
 
 		if(plottedFirst == 0) {
+			par(mar=c(5.1, 4.1, 4.1, 18), xpd=TRUE)
+			
 			plot(lorenz, type="n", xlim=c(0,1), main="Lorenz Curve of Coverage Uniformity", xlab="Cumulative Fraction of Genome", ylab="Cumulative Fraction of Total Reads", xaxt="n", yaxt="n", cex.main=2, cex.axis=1.5, cex.lab=1.5)
 			# plot(lorenz, xlim=c(0,1), main=paste("Lorenz Curve of Coverage Uniformity for Sample ", k, sep=""), xlab="Cumulative Fraction of Genome", ylab="Cumulative Fraction of Total Reads", type="n", xaxt="n", yaxt="n", cex.main=3, cex.axis=2, cex.lab=2)
 		} else {
@@ -91,7 +96,7 @@ if(analysisType == "lorenz")
 		if(plottedFirst == 0)
 		{
 			tu = par('usr')
-			par(xpd=FALSE)
+			# par(xpd=FALSE)
 			rect(tu[1], tu[3], tu[2], tu[4], col = "gray85")
 			abline(h=seq(0,1,.1), col="white", lwd=2)
 			abline(v=seq(0,1,.1), col="white", lwd=2)
@@ -101,16 +106,18 @@ if(analysisType == "lorenz")
 			axis(side=4, at=seq(0,1,.1), tcl=.5, cex.axis=2, labels=FALSE)
 			lines(c(0,1), c(0,1), lwd=2.5)
 			tu = par('usr')
-			par(xpd=FALSE)
-
+			# par(xpd=FALSE)
 		}
 
 		plottedFirst = 1
-		try(lines(smooth.spline(lorenz), col=col1[cp,2], lwd=2.5), silent=TRUE)
+		try(lines(smooth.spline(lorenz), col=rainbow(length(cellIDs))[j], lwd=2.5), silent=TRUE)
+
+		legendNames = c(legendNames, paste("Cell",selectedCells[j,1]))
 
 	}
 
-	legend("topleft", inset=.05, legend=c("Perfect Uniformity", "Sample Uniformity"), fill=c("black", col1[cp,2]), cex=1.5)
+	# par(xpd=TRUE)
+	legend("topright", inset=c(-0.65,0), legend=legendNames, fill=c("black", rainbow(length(cellIDs))), cex=1) #col1[cp,2]
 	dev.off()
 	file.create(paste(analysisID,'.done', sep=""))
 }
@@ -121,35 +128,43 @@ if(analysisType == "lorenz")
 # ------------------------------------------------------------------------------
 if(analysisType == "gc")
 {
-	jpeg(filename=paste(analysisID, ".jpeg", sep=""), width=500, height=500)
+	jpeg(filename=paste(analysisID, ".jpeg", sep=""), width=700, height=500)
 
 	#
+	legendNames = c()
 	plottedFirst = 0
-	for(k in cellIDs)
+	for(j in 1:length(cellIDs))
 	{
+		k = cellIDs[j]
+
 		low = lowess(GC[,1], log(normal2[,k]), f=0.05)
 		app = approx(low$x, low$y, GC[,1])
 		cor = exp(log(normal2[,k]) - app$y)
 
-		if(plottedFirst == 0)
+		if(plottedFirst == 0) {
+			par(mar=c(5.1, 4.1, 4.1, 18), xpd=TRUE)
 			try(plot(GC[,1], log(normal2[,k]), main="GC Content vs. Bin Counts", type= "n", xlim=c(min(.3, min(GC[,1])), max(.6, max(GC[,1]))), xlab="GC content", ylab="Normalized Read Counts (log scale)", cex.main=2, cex.axis=1.5, cex.lab=1.5))
-		else
+		} else {
 			try(points(GC[,1], log(normal2[,k]), type="n"))
+		}
 
 		if(plottedFirst == 0)
 		{
 			tu = par('usr')
-			par(xpd=FALSE)
+			# par(xpd=FALSE)
 			rect(tu[1], tu[3], tu[2], tu[4], col = "gray85")
 			abline(v=axTicks(1), col="white", lwd=2)
 			abline(h=axTicks(2), col="white", lwd=2)
 		}
 
 		plottedFirst = 1
-		try(points(app, col=col1[cp,2]))
+		try(points(app, col=rainbow(length(cellIDs))[j] )) #  col1[cp,2]
+
+		legendNames = c(legendNames, paste("Cell",selectedCells[j,1]))
 	}
 
 	# legend("bottomright", inset=.05, legend="Lowess Fit", fill=col1[cp,2], cex=1.5)
+	legend("topright", inset=c(-0.65,0), legend=legendNames, fill=c(rainbow(length(cellIDs))), cex=1) #col1[cp,2]
 	dev.off()
 	file.create(paste(analysisID,'.done', sep=""))
 }
