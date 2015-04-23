@@ -1,6 +1,6 @@
 #!/usr/bin/env Rscript
 
-#user_dir="/mnt/data/ginkgo/uploads/tZpHBDd3DJUsRb0GNDYS_copy";  genome="/mnt/data/ginkgo/genomes/hg19/original";  dat="data";  stat="0";  bm="variable_500000_101_bowtie";  cm="ward";  dm="euclidean";  facs="user-facs.txt"; f=1;
+#user_dir="/mnt/data/ginkgo/uploads/mcconnell-normal";  genome="/mnt/data/ginkgo/genomes/hg19/original";  dat="data";  stat="0";  bm="variable_500000_101_bowtie";  cm="ward";  dm="euclidean";  facs="user-facs.txt"; f=1;
 # statux="status.xml"; cp="3"; ref="_mapped"; sex="1"; bb="0";
 
 args<-commandArgs(TRUE)
@@ -176,6 +176,7 @@ for(k in 1:w){
   CNA.object <- CNA(genomdat = lr, chrom = loc[,1], maploc = as.numeric(loc[,2]), data.type = 'logratio')
   CNA.smoothed <- smooth.CNA(CNA.object)
   segs <- segment(CNA.smoothed, verbose=0, min.width=2)
+  # segs <- segment(CNA.smoothed, verbose=0, min.width=5, alpha=0.001,undo.splits="sdundo",undo.SD=1)
   frag <- segs$output[,2:3]
 
   #Map breakpoints to kth sample
@@ -222,6 +223,9 @@ for(k in 1:w){
   ############################################################
 
   #Determine Copy Number     
+# CNgrid <- seq(1.5, maxPloidy, by=0.001)
+# outerColsums <- matrix(0, length(CNgrid), w)
+ 
   CNgrid <- seq(1.5, maxPloidy, by=0.05)
   outerRaw <- fixed[,k] %o% CNgrid
   outerRound <- round(outerRaw)
@@ -230,6 +234,8 @@ for(k in 1:w){
   CNmult[,k] <- CNgrid[order(outerColsums[,k])[1:5]]
   CNerror[,k] <- round(sort(outerColsums[,k])[1:5], digits=2)
   print(CNmult[,k])
+
+# fixed[2457:2470,k]*CNmult[1,k]
 
   if (f == 0 || length(which(lab[k]==ploidy[,1]))==0 ) {
     final[,k] <- round(fixed[,k]*CNmult[1,k])
