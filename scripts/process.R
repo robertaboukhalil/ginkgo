@@ -20,6 +20,7 @@ facs <- args[[12]]
 sex <- as.numeric(args[[13]])
 bb  <- as.numeric(args[[14]])
 maxPloidy = 6
+minBinWidth = 5
 
 library('ctc')
 library(DNAcopy) #segmentation
@@ -175,7 +176,7 @@ for(k in 1:w){
   #Determine breakpoints and extract chrom/locations
   CNA.object <- CNA(genomdat = lr, chrom = loc[,1], maploc = as.numeric(loc[,2]), data.type = 'logratio')
   CNA.smoothed <- smooth.CNA(CNA.object)
-  segs <- segment(CNA.smoothed, verbose=0, min.width=2)
+  segs <- segment(CNA.smoothed, verbose=0, min.width=minBinWidth)
   # segs <- segment(CNA.smoothed, verbose=0, min.width=5, alpha=0.001,undo.splits="sdundo",undo.SD=1)
   frag <- segs$output[,2:3]
 
@@ -192,11 +193,19 @@ for(k in 1:w){
   breaks[bps,k]=1
 
   #Modify bins to contain median read count/bin within each segment
-  fixed[,k][1:bps[2]] <- median(normal[,k][1:bps[2]])
+  #fixed[,k][1:bps[2]] <- median(normal[,k][1:bps[2]])
+  #for(i in 2:(len-1)){
+  #  fixed[,k][bps[i]:(bps[i+1]-1)] = median(normal[,k][bps[i]:(bps[i+1]-1)])
+  #}
+  #fixed[,k] <- fixed[,k]/mean(fixed[,k])
+
+  #Modify bins to contain median read count/bin within each segment
+  fixed[,k][1:bps[2]] <- median(normal[,k][2:(bps[2]-1)])
   for(i in 2:(len-1)){
-    fixed[,k][bps[i]:(bps[i+1]-1)] = median(normal[,k][bps[i]:(bps[i+1]-1)])
+    fixed[,k][bps[i]:(bps[i+1]-1)] = median(normal[,k][(bps[i]+1):(bps[i+1]-2)])
   }
   fixed[,k] <- fixed[,k]/mean(fixed[,k])
+
 
   #######RA:
   # fixed[,k][1:bps[2]] <- mean(normal[,k][1:bps[2]])
@@ -463,10 +472,19 @@ close(statusFile)
 sink()
 
 #Store processed sample information
-write.table(normal, file=paste(user_dir, "/SegNorm", sep=""), row.names=FALSE, col.names=lab, sep="\t")
-write.table(fixed, file=paste(user_dir, "/SegFixed", sep=""), row.names=FALSE, col.names=lab, sep="\t")
-write.table(final, file=paste(user_dir, "/SegCopy", sep=""), row.names=FALSE, col.names=lab, sep="\t")
-write.table(breaks, file=paste(user_dir, "/SegBreaks", sep=""), row.names=FALSE, col.names=lab, sep="\t")
+loc2=loc
+loc2[,3]=loc2[,2]
+pos = cbind(c(1,bounds[,2]), c(bounds[,2], l))
+for (i in 1:nrow(pos)) {
+  loc2[pos[i,1]:(pos[i,2]-1),2]=c(1,loc[pos[i,1]:(pos[i,2]-2),2]+1)
+}
+loc2[nrow(loc2),2]=loc2[nrow(loc2)-1,3]+1
+colnames(loc2)=c("CHR","START", "END")
+#
+write.table(cbind(loc2,normal), file=paste(user_dir, "/SegNorm", sep=""), row.names=FALSE, col.names=c(colnames(loc2),lab), sep="\t")
+write.table(cbind(loc2,fixed), file=paste(user_dir, "/SegFixed", sep=""), row.names=FALSE, col.names=c(colnames(loc2),lab), sep="\t")
+write.table(cbind(loc2,final), file=paste(user_dir, "/SegCopy", sep=""), row.names=FALSE, col.names=c(colnames(loc2),lab), sep="\t")
+write.table(cbind(loc2,breaks), file=paste(user_dir, "/SegBreaks", sep=""), row.names=FALSE, col.names=c(colnames(loc2),lab), sep="\t")
 write.table(stats, file=paste(user_dir, "/SegStats", sep=""), sep="\t")
 
 ############################################################
