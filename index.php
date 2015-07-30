@@ -400,8 +400,8 @@ if(isset($_POST['ucsc']))
 	$configTxt = "browser position {$range}\n";
 
 	$CMD  = <<<CM
-awk -v CELL='"{$cell}"' 'BEGIN{ print "track name=Amplifications description="CELL" color=0,0,255,"; }{  if(NR==1){ for(i=1;i<=NF;i++){if(\$i==CELL)cellID=i;} }else{ if(\$cellID>2)print \$1"\t"\$2"\t"\$3;  }  }' ./uploads/{$GINKGO_USER_ID}/SegCopy;
-awk -v CELL='"{$cell}"' 'BEGIN{ print "track name=Deletions description="CELL" color=255,0,0,"; }{  if(NR==1){ for(i=1;i<=NF;i++){if(\$i==CELL)cellID=i;} }else{ if(\$cellID<2)print \$1"\t"\$2"\t"\$3;  }  }' ./uploads/{$GINKGO_USER_ID}/SegCopy;
+awk -v CELL='{$cell}' 'BEGIN{ print "track name=Amplifications description="CELL" color=0,0,255,"; }{  if(NR==1){ for(i=1;i<=NF;i++){if(\$i==CELL)cellID=i;} }else{ if(\$cellID>2)print \$1"\t"\$2"\t"\$3;  }  }' ./uploads/{$GINKGO_USER_ID}/SegCopy;
+awk -v CELL='{$cell}' 'BEGIN{ print "track name=Deletions description="CELL" color=255,0,0,"; }{  if(NR==1){ for(i=1;i<=NF;i++){if(\$i==CELL)cellID=i;} }else{ if(\$cellID<2)print \$1"\t"\$2"\t"\$3;  }  }' ./uploads/{$GINKGO_USER_ID}/SegCopy;
 CM;
 
 	file_put_contents($userDir . '/' . $analysisID . '.ucsc', "browser position {$range}\n".shell_exec($CMD));
@@ -815,6 +815,7 @@ if($GINKGO_PAGE == 'admin-search')
 									<!-- <option value="40000_"<?php echo $selected['40000']; ?>>40kb</option> -->
 									<option value="25000_"<?php echo $selected['25000']; ?>>25kb</option>
 									<option value="10000_"<?php echo $selected['10000']; ?>>10kb</option>
+									<option value="800000_"<?php echo $selected['800000']; ?>>800kb</option>
 									<!-- <option value="5000_"<?php echo $selected['5000']; ?>>5kb</option> -->
 									</select> size.
 								</td>

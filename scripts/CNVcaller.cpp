@@ -61,9 +61,9 @@ int main(int argc, char *argv[]){
   
   //Count the number of samples in the file
   char * line = NULL;
-  size_t buffer = 1000;
+  size_t buffer = 10000;
   ssize_t read;
-  int n = -3;
+  int n = -2;
 
   read = getline(&line, &buffer, CN_file);
   for (int i=0; i<read; i++) {

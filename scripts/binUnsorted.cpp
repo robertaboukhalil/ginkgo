@@ -120,6 +120,10 @@ int main(int argc, char *argv[]){
     for (int i=0; i<tabs; i++) {
       fscanf(reads_file, "%201s", &dump);
     }
+
+    if (bin_map.count(chrom) == 0) {
+      continue;
+    }
    
     low = (bin_map[chrom]).first;
     high = (bin_map[chrom]).second;

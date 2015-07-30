@@ -1,7 +1,8 @@
 #!/usr/bin/env Rscript
 
-#user_dir="/mnt/data/ginkgo/uploads/mcconnell-normal";  genome="/mnt/data/ginkgo/genomes/hg19/original";  dat="data";  stat="0";  bm="variable_500000_101_bowtie";  cm="ward";  dm="euclidean";  facs="user-facs.txt"; f=1;
-# statux="status.xml"; cp="3"; ref="_mapped"; sex="1"; bb="0";
+#user_dir="/mnt/data/ginkgo/uploads/mcconnell-normal";  genome="/mnt/data/ginkgo/genomes/hg19/original";  dat="data";  stat="0";  bm="variable_500000_101_bowtie";  cm="ward";  dm="euclidean";
+# facs="user-facs.txt"; f=1;
+# status="status.xml"; cp="3"; ref="_mapped"; sex="1"; bb="0";
 
 args<-commandArgs(TRUE)
 
@@ -57,6 +58,18 @@ if (bb) {
   loc=loc[-badbins[,1],]
   raw=data.frame(raw[-badbins[,1],])
   bounds <- read.table(paste(genome, "/bounds_", bm, "_badbins", sep=""), header=FALSE, sep="\t")
+
+  step=1
+  chrom=loc[1,1]
+  for (i in 1:nrow(loc)) {
+   if (loc[i,1] != chrom) {
+     bounds[step,1]=chrom
+     bounds[step,2]=i
+     step=step+1
+     chrom=loc[i,1]
+    }
+  }
+
 }
 
 
@@ -158,12 +171,12 @@ for(k in 1:w){
   # }
 
   # Calculate normal for current cell (previous values of normal seem wrong)
-  lowess.gc <- function(jtkx, jtky) {
-    jtklow <- lowess(jtkx, log(jtky), f=0.05); 
-    jtkz <- approx(jtklow$x, jtklow$y, jtkx)
-    return(exp(log(jtky) - jtkz$y))
-  }
-  normal[,k] = lowess.gc( GC[,1], (raw[,k]+1)/mean(raw[,k]+1) )
+  #lowess.gc <- function(jtkx, jtky) {
+  #  jtklow <- lowess(jtkx, log(jtky), f=0.05); 
+  #  jtkz <- approx(jtklow$x, jtklow$y, jtkx)
+  #  return(exp(log(jtky) - jtkz$y))
+  #}
+  #normal[,k] = lowess.gc( GC[,1], (raw[,k]+1)/mean(raw[,k]+1) )
 
   #Compute log ratio between kth sample and reference
   if (stat == 0) {
@@ -176,8 +189,11 @@ for(k in 1:w){
   #Determine breakpoints and extract chrom/locations
   CNA.object <- CNA(genomdat = lr, chrom = loc[,1], maploc = as.numeric(loc[,2]), data.type = 'logratio')
   CNA.smoothed <- smooth.CNA(CNA.object)
-  segs <- segment(CNA.smoothed, verbose=0, min.width=minBinWidth)
-  # segs <- segment(CNA.smoothed, verbose=0, min.width=5, alpha=0.001,undo.splits="sdundo",undo.SD=1)
+  #segs <- segment(CNA.smoothed, verbose=0, min.width=minBinWidth)
+  # segs <- segment(CNA.smoothed, verbose=0, undo.splits="sdundo",undo.SD=2, min.width=minBinWidth)
+  segs <- segment(CNA.smoothed, verbose=0, alpha=0.001, undo.splits="sdundo",undo.SD=1, min.width=minBinWidth)
+
+
   frag <- segs$output[,2:3]
 
   #Map breakpoints to kth sample
@@ -193,18 +209,18 @@ for(k in 1:w){
   breaks[bps,k]=1
 
   #Modify bins to contain median read count/bin within each segment
-  #fixed[,k][1:bps[2]] <- median(normal[,k][1:bps[2]])
-  #for(i in 2:(len-1)){
-  #  fixed[,k][bps[i]:(bps[i+1]-1)] = median(normal[,k][bps[i]:(bps[i+1]-1)])
-  #}
-  #fixed[,k] <- fixed[,k]/mean(fixed[,k])
-
-  #Modify bins to contain median read count/bin within each segment
-  fixed[,k][1:bps[2]] <- median(normal[,k][2:(bps[2]-1)])
+  fixed[,k][1:bps[2]] <- median(normal[,k][1:bps[2]])
   for(i in 2:(len-1)){
-    fixed[,k][bps[i]:(bps[i+1]-1)] = median(normal[,k][(bps[i]+1):(bps[i+1]-2)])
+   fixed[,k][bps[i]:(bps[i+1]-1)] = median(normal[,k][bps[i]:(bps[i+1]-1)])
   }
   fixed[,k] <- fixed[,k]/mean(fixed[,k])
+
+  # #Modify bins to contain median read count/bin within each segment
+  # fixed[,k][1:bps[2]] <- median(normal[,k][2:(bps[2]-1)])
+  # for(i in 2:(len-1)){
+  #   fixed[,k][bps[i]:(bps[i+1]-1)] = median(normal[,k][(bps[i]+1):(bps[i+1]-2)])
+  # }
+  # fixed[,k] <- fixed[,k]/mean(fixed[,k])
 
 
   #######RA:
@@ -481,11 +497,11 @@ for (i in 1:nrow(pos)) {
 loc2[nrow(loc2),2]=loc2[nrow(loc2)-1,3]+1
 colnames(loc2)=c("CHR","START", "END")
 #
-write.table(cbind(loc2,normal), file=paste(user_dir, "/SegNorm", sep=""), row.names=FALSE, col.names=c(colnames(loc2),lab), sep="\t")
-write.table(cbind(loc2,fixed), file=paste(user_dir, "/SegFixed", sep=""), row.names=FALSE, col.names=c(colnames(loc2),lab), sep="\t")
-write.table(cbind(loc2,final), file=paste(user_dir, "/SegCopy", sep=""), row.names=FALSE, col.names=c(colnames(loc2),lab), sep="\t")
-write.table(cbind(loc2,breaks), file=paste(user_dir, "/SegBreaks", sep=""), row.names=FALSE, col.names=c(colnames(loc2),lab), sep="\t")
-write.table(stats, file=paste(user_dir, "/SegStats", sep=""), sep="\t")
+write.table(cbind(loc2,normal), file=paste(user_dir, "/SegNorm", sep=""), row.names=FALSE, col.names=c(colnames(loc2),lab), sep="\t", quote=FALSE)
+write.table(cbind(loc2,fixed), file=paste(user_dir, "/SegFixed", sep=""), row.names=FALSE, col.names=c(colnames(loc2),lab), sep="\t", quote=FALSE)
+write.table(cbind(loc2,final), file=paste(user_dir, "/SegCopy", sep=""), row.names=FALSE, col.names=c(colnames(loc2),lab), sep="\t", quote=FALSE)
+write.table(cbind(loc2,breaks), file=paste(user_dir, "/SegBreaks", sep=""), row.names=FALSE, col.names=c(colnames(loc2),lab), sep="\t", quote=FALSE)
+write.table(stats, file=paste(user_dir, "/SegStats", sep=""), sep="\t", quote=FALSE)
 
 ############################################################
 ##################  Generate Dendrograms ###################
@@ -638,9 +654,13 @@ writeLines(c("<?xml version='1.0'?>", "<status>", "<step>3</step>", paste("<proc
 close(statusFile)
 
 #Create breakpoint heatmaps
-rawBPs=breaks[unique(sort((which(breaks==1)%%l))),]
-fixedBPs=fixed[unique(sort((which(breaks==1)%%l))),]
-finalBPs=final[unique(sort((which(breaks==1)%%l))),]
+#rawBPs=breaks[unique(sort((which(breaks==1)%%l))),]
+rawBPs=breaks
+#fixedBPs=fixed[unique(sort((which(breaks==1)%%l))),]
+fixedBPs=fixed
+#finalBPs=final[unique(sort((which(breaks==1)%%l))),]
+finalBPs=final
+
 colnames(rawBPs) <- lab
 colnames(fixedBPs) <- lab
 colnames(finalBPs) <- lab
