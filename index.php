@@ -401,7 +401,7 @@ if(isset($_POST['ucsc']))
 
 	$CMD  = <<<CM
 awk -v CELL='{$cell}' 'BEGIN{ print "track name=Amplifications description="CELL" color=0,0,255,"; }{  if(NR==1){ for(i=1;i<=NF;i++){if(\$i==CELL)cellID=i;} }else{ if(\$cellID>2)print \$1"\t"\$2"\t"\$3;  }  }' ./uploads/{$GINKGO_USER_ID}/SegCopy;
-awk -v CELL='{$cell}' 'BEGIN{ print "track name=Deletions description="CELL" color=255,0,0,"; }{  if(NR==1){ for(i=1;i<=NF;i++){if(\$i==CELL)cellID=i;} }else{ if(\$cellID<2)print \$1"\t"\$2"\t"\$3;  }  }' ./uploads/{$GINKGO_USER_ID}/SegCopy;
+awk -v CELL='{$cell}' 'BEGIN{ print "track name=Deletions description="CELL" color=255,0,0,";      }{  if(NR==1){ for(i=1;i<=NF;i++){if(\$i==CELL)cellID=i;} }else{ if(\$cellID<2)print \$1"\t"\$2"\t"\$3;  }  }' ./uploads/{$GINKGO_USER_ID}/SegCopy;
 CM;
 
 	file_put_contents($userDir . '/' . $analysisID . '.ucsc', "browser position {$range}\n".shell_exec($CMD));
@@ -536,7 +536,7 @@ if($GINKGO_PAGE == 'admin-search')
 							<ul class="dropdown-menu" role="menu">
 								<li><a href="?q=">Home</a></li>
 								<li><a href="https://github.com/robertaboukhalil/ginkgo">Code on Github</a></li>
-								<li><a href="http://biorxiv.org/content/early/2015/03/06/011346">Paper on bioRxiv</a></li>
+								<li><a href="http://www.nature.com/nmeth/journal/v12/n11/full/nmeth.3578.html">Our Paper</a></li>
 								<li class="divider"></li>
 								<li><a href="?q=results/_t10breast_navin"><small><small style="color:#bdc3c7">DOP-PCR</small></small> Polygenomic breast tumor &mdash; <i>Navin et al, 2011</i></a></li>
 								<li><a href="?q=results/_t16breast_liver_met_navin"><small><small style="color:#bdc3c7">DOP-PCR</small></small> Breast cancer + liver metastasis &mdash; <i>Navin et al, 2011</i></a></li>
@@ -750,6 +750,7 @@ if($GINKGO_PAGE == 'admin-search')
 											<option value="hg19"<?php echo $selected['hg19']; ?>>Human (hg19)</option>
 											<option value="panTro4"<?php echo $selected['panTro4']; ?>>Chimpanzee (panTro4)</option>
 											<option value="mm10"<?php echo $selected['mm10']; ?>>Mus musculus (mm10)</option>
+											<option value="rheMac7"<?php echo $selected['rheMac7']; ?>>Rhesus macaque (rheMac7)</option>
 											<option value="rn5"<?php echo $selected['rn5']; ?>>R. norvegicus (rn5)</option>
 											<option value="dm3"<?php echo $selected['dm3']; ?>>D. Melanogaster (dm3)</option>
 										</optgroup>
@@ -807,16 +808,20 @@ if($GINKGO_PAGE == 'admin-search')
 
 									<?php $selected = array(); $selected[$binMeth[1]] = ' selected'; ?>
 									<select id="param-bins-value" class="input-mini" style="margin-top:8px; font-size:11px; padding-top:3px; padding-bottom:0; height:25px; ">
+
+									<option class="param-bins-value-hg19" value="10000000_"<?php echo $selected['10000000']; ?>>10Mb</option>
+									<option class="param-bins-value-hg19" value="5000000_"<?php echo $selected['5000000']; ?>>5Mb</option>
+									<option class="param-bins-value-hg19" value="2500000_"<?php echo $selected['2500000']; ?>>2.5Mb</option>
+									<option class="param-bins-value-hg19" value="1000000_"<?php echo $selected['1000000']; ?>>1Mb</option>
+									<!-- <option class="param-bins-value-hg19" value="800000_"<?php echo $selected['800000']; ?>>800kb</option> -->
+
 									<option value="500000_"<?php echo $selected['500000']; ?>>500kb</option>
 									<option value="250000_"<?php echo $selected['250000']; ?>>250kb</option>
 									<option value="175000_"<?php echo $selected['175000']; ?>>175kb</option>
 									<option value="100000_"<?php echo $selected['100000']; ?>>100kb</option>
 									<option value="50000_"<?php echo $selected['50000']; ?>>50kb</option>
-									<!-- <option value="40000_"<?php echo $selected['40000']; ?>>40kb</option> -->
 									<option value="25000_"<?php echo $selected['25000']; ?>>25kb</option>
 									<option value="10000_"<?php echo $selected['10000']; ?>>10kb</option>
-									<option value="800000_"<?php echo $selected['800000']; ?>>800kb</option>
-									<!-- <option value="5000_"<?php echo $selected['5000']; ?>>5kb</option> -->
 									</select> size.
 								</td>
 							</tr>
@@ -870,7 +875,7 @@ if($GINKGO_PAGE == 'admin-search')
 								</td>
 							</tr>
 
-							<tr id="param-segmentation-maskbadbins" style="display:none">
+							<tr id="param-segmentation-maskbadbins"> <!-- style="display:none" -->
 								<td>Mask bad bins <i><small>(experimental)</small></i><br/><i><small>Removes bins with consistent read pileups from the analysis (e.g. at chromosome boundaries)</small></i></td>
 								<td>
 									<?php /* Uncomment this later */ $checked = " "; if($config['rmbadbins'] == '0') $checked=""; ?>
@@ -878,7 +883,7 @@ if($GINKGO_PAGE == 'admin-search')
 								</td>
 							</tr>
 
-							<tr id="param-segmentation-pseudoautosomal" style="display:none">
+							<tr id="param-segmentation-pseudoautosomal">  <!-- style="display:none" -->
 								<td>Mask Y-chr pseudoautosomal regions <i><small>(experimental)</small></i><br/><i><small>Description</small></i></td>
 								<td>
 									<?php /* Uncomment this later */ $checked = " "; if($config['rmpseudoautosomal'] == '0') $checked=""; ?>
@@ -1255,15 +1260,34 @@ if($GINKGO_PAGE == 'admin-search')
 			{
 				$("#param-segmentation-maskbadbins").show();
 				$("#param-segmentation-pseudoautosomal").show();
+				$('.param-bins-value-hg19').toggleOption(true);
 			}
 			else
 			{
 				$("#param-segmentation-maskbadbins").hide();
 				$("#param-segmentation-pseudoautosomal").hide();
+				$('.param-bins-value-hg19').toggleOption(true);
 			}
 		});
-		$("#param-segmentation").change()
-		$("#param-genome").change()
+		// $("#param-segmentation").change()
+		// $("#param-genome").change()
+		$("#param-bins-value").change(function() {
+			binSize = parseInt($('#param-bins-value').val().replace("_", ""))
+			if($('#param-genome').val() != 'hg19')
+			{
+				$("#param-segmentation-maskbadbins").hide();
+				$("#param-segmentation-pseudoautosomal").hide();
+			} else {
+				if(binSize <= 500000)
+				{
+					$("#param-segmentation-maskbadbins").show();
+					$("#param-segmentation-pseudoautosomal").show();
+				} else {
+					$("#param-segmentation-maskbadbins").hide();
+					$("#param-segmentation-pseudoautosomal").hide();
+				}
+			}
+		})
 
 		</script>
 
@@ -2051,6 +2075,19 @@ if($GINKGO_PAGE == 'admin-search')
 				e.preventDefault();
 			}
 		});
+
+		/* Show/hide select <options> */
+		// Source: http://stackoverflow.com/a/9234883
+		jQuery.fn.toggleOption = function( show ) {
+		    jQuery( this ).toggle( show );
+		    if( show ) {
+		        if( jQuery( this ).parent( 'span.toggleOption' ).length )
+		            jQuery( this ).unwrap( );
+		    } else {
+		        if( jQuery( this ).parent( 'span.toggleOption' ).length == 0 )
+		            jQuery( this ).wrap( '<span class="toggleOption" style="display: none;" />' );
+		    }
+		};
 
 		</script>
 
