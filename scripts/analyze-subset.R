@@ -46,6 +46,7 @@ for(i in 1:length(selectedCells[,1]))
 if(is.null(cellIDs))
 	stop("Error")
 
+
 # -- Initialize color palette
 cp = 3
 col1 = col2 = matrix(0,3,2)
@@ -183,10 +184,13 @@ if(analysisType == "cnvprofiles")
 	par(mfrow=c(nbCells,1)) 
 
 	#
+	rowID = 0
 	for(k in cellIDs)
 	{
+		rowID = rowID + 1
+		cat(k)
 		# -- New cell
-		plot(normal[,k], main=selectedCells[k,1], ylim=c(0, 8), type="n", xlab="Bin", ylab="Copy Number", cex.main=2, cex.axis=1.5, cex.lab=1.5)
+		plot(normal[,k], main=selectedCells[rowID,1], ylim=c(0, 8), type="n", xlab="Bin", ylab="Copy Number", cex.main=2, cex.axis=1.5, cex.lab=1.5)
 		#
 		tu = par('usr')
 		par(xpd=FALSE)
