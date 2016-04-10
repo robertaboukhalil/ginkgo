@@ -1,0 +1,37 @@
+To run ginkgo on the command line you must:
+
+1. Install ginkgo
+
+  Simply follow the instructions in the README.md that comes with Ginkgo (make sure you update the
+  value of main in both scripts/process.R and in scripts/reclust.R
+  
+2. Create a directory under the uploads directory in the ginkgo installation directory
+
+  mkdir ~/src/ginkgo/uploads/new_run_123
+
+  Note that the name of that directory is the $GINKGO_USER_ID. The main server uses a 20 digits
+  random number. Feel free to use whatever you see fit.
+
+3. Copy your compressed bed files (the output of bamTobed) into that directory
+
+  cp *.bed.gz ~/src/ginkgo/uploads/new_run_123
+
+4. Create a file with the list of cells. The file must be called "list":
+
+  ls ~/src/ginkgo/uploads/new_run_123 | grep .bed.gz$ > ~/src/ginkgo/uploads/new_run_123/list
+
+5. Create a configuration file with all the options for ginkgo. This is probably the trickiest point
+   as little documentation exists for this file. However, by reverse-engineering the php code, I
+   have built an example file with enough comments to be able to modify the most important aspects
+   of the analysis.
+
+  cp ~/src/ginkgo/config.example ~/src/ginkgo/uploads/new_run_123/
+  
+  # Edit the file with vi or your favourite editor:
+  vi ~/src/ginkgo/uploads/new_run_123/config.example
+
+6. Run ginkgo:
+
+  cd ~/src/ginkgo/
+  ./scripts/analyze new_run_123
+
