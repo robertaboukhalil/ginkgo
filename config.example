@@ -1,0 +1,143 @@
+#!/bin/bash
+
+## This is an example configuration script for Ginkgo. When using Ginkgo via the webserver, this is
+## in charge of creating this file. This example is only useful if you are planing to run Ginkgo
+## as a standalone programme.
+
+
+# =======================================================================================
+# Running options
+# =======================================================================================
+# init=1 -> Clean the directory and start from scratch the whole analysis
+init=1
+# process=1 -> Run mapped data through primary pipeline
+process=1
+# fix=1 -> Recreate clusters/heat maps (not required if process=1)
+fix=0
+# =======================================================================================
+
+
+# =======================================================================================
+# Segmentation
+# =======================================================================================
+# Use one of these methods to segment:
+# 0 -> Independent (normalized read counts)
+# 1 -> Global (sample with lowest IOD)
+# 2 -> Custom (using uploaded reference sample)
+segMeth=1
+# =======================================================================================
+
+
+# =======================================================================================
+# Genome
+# =======================================================================================
+# Directory name for ROOT_DIR/genomes/${chosen_genome}
+# Pre-calculated files are only available for hg19
+chosen_genome=hg19
+# =======================================================================================
+
+
+# =======================================================================================
+# Mask Y-chr pseudoautosomal regions (experimental)
+# =======================================================================================
+# if 1, use ROOT_DIR/genomes/${chosen_genome}/pseudoautosomal
+# else -> use ROOT_DIR/genomes/${chosen_genome}/original
+# Pre-calculated files are only available for "original", set it to "0"
+rmpseudoautosomal=0
+# =======================================================================================
+
+
+# =======================================================================================
+# Genome bins
+# =======================================================================================
+# This is a complex value made of the concatenation of
+# - type: variable or fixed (bins. Variable refers to amount of mappable genome, recommended)
+# - size: available values are 10000000, 5000000, 2500000, 1000000, 500000, 250000, 175000, 100000,
+#       50000, 25000, 10000
+# - read-length: available values are: 150, 101, 76, 48
+# - aligner: bowtie or bwa
+# The read-length and aligner refer to the simulations of re-mapping reads of that length with that
+# aligner on the whole genome. This is used to calculate bins of "mappable" (i.e. variable) genome.
+# The resulting value is the name of a file under ginkgo/genomes/$choosen_genome/original/ with the
+# bin coordinates
+binMeth=variable_100000_150_bwa
+
+# Mask bad bins (experimental)
+# Removes bins with consistent read pileups from the analysis (e.g. at chromosome boundaries)
+rmbadbins=0
+
+# Probably some legacy options. Always set to 0 and empty on the Ginkgo webserver. This seemed to be
+# an option to provide user-defined bins.
+b=0
+binList=
+# For user-defined segmentation (seems to be disabled now)
+ref=
+# =======================================================================================
+
+
+# =======================================================================================
+# FACS file
+# =======================================================================================
+# Options to specify a user-provided FACS file (for ploidy)
+# f=0 if not FACS file is provided. f=1 if FACS file is provided.
+f=0
+
+# User-provided FACS file with cell name and ploidy
+facs=
+# =======================================================================================
+
+
+# =======================================================================================
+# Clustering
+# =======================================================================================
+# Distance measure. Options can be:
+# - euclidean
+# - maximum
+# - manhattan
+# - canberra
+# - binary
+# - minkowsky
+# This is the distance measure used to calculate the distance matrix with the dist function from the
+# R package stats
+distMeth=euclidean
+
+# Clustering method. Options can be:
+# - ward (best to either use ward.D or ward.D2 if using a modern version of R)
+# - single
+# - complete
+# - average
+# - NJ
+# This is the method used to calculate the dendrogram with the hclust function from the R package
+# stats, except for NJ for which the ape library is used.
+clustMeth=ward.D2
+
+# Include sex chromosome (1: yes; 0: no). Probably safe to leave it as 1 unless you have a mixture
+# of male and female cells in which case it might be a good idea to leave sex chromosomes out.
+sex=1
+# =======================================================================================
+
+
+# =======================================================================================
+# Display options
+# =======================================================================================
+# Plot gene locations (1) or not (0)
+q=0
+
+# Color scheme:
+# - 3: dark blue / red
+# - 1: light blue / orange
+# - 2: magenta / gold
+color=3
+# =======================================================================================
+
+
+# =======================================================================================
+# Reporting by email
+# =======================================================================================
+# Only required if you want to get an email at the end of the run. Probably not necessary
+# in standalone mode. Set email to nothing to skip email feature. Otherwise, set your
+# email address and the permalink which is meant to be the location of the results.
+user=
+email=
+permalink=
+# =======================================================================================
