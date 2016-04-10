@@ -63,11 +63,13 @@ Type ```make``` in the ginkgo/ directory
 - ginkgo/scripts/process.R
 	- Change ```main_dir``` variable to the folder where ginkgo/scripts is located
 
+- ginkgo/scripts/reclust.R
+	- Change ```main_dir``` variable to the folder where ginkgo/scripts is located
+
 - ginkgo/scripts/analyze-subset.R
 	- Set the folder to where ginkgo/scripts is located
 
 **Download data files:**
 
 - Download binning data for hg19 at http://qb.cshl.edu/ginkgo/genomes/hg19/hg19.original.tar.gz
-
-
+	- untar into ginkgo/genomes/hg19 (which needs to be created)

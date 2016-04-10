@@ -83,6 +83,9 @@ int main(int argc, char *argv[]){
         bound.first = low_bound;
         bound.second = high_bound-1;
         bin_map[prev_chr]= bound;
+        if (strncmp(prev_chr, "chr", 3) == 0) {
+            bin_map[prev_chr + 3]= bound;
+        }
         low_bound = high_bound;
       }
     skip=false;
@@ -93,6 +96,9 @@ int main(int argc, char *argv[]){
   bound.first = low_bound;
   bound.second = high_bound-2;
   bin_map[new_chr] = bound;
+  if (strncmp(new_chr, "chr", 3) == 0) {
+    bin_map[new_chr + 3]= bound;
+  }
 
 
   char * line = NULL;

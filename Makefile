@@ -1,6 +1,6 @@
 CC=g++ -o scripts/$@ scripts/$@.cpp
 
-all: testBED status interval binUnsorted
+all: testBED status interval binUnsorted CNVcaller
 
 testBED: scripts/testBED.cpp
 	$(CC)
@@ -14,4 +14,6 @@ interval: scripts/interval.cpp
 binUnsorted: scripts/binUnsorted.cpp
 	$(CC)
 
+CNVcaller: scripts/CNVcaller.cpp
+	$(CC)
 
