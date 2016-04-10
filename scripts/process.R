@@ -294,12 +294,14 @@ for(k in 1:w){
   }
 
   # smooth.spline needs >= 4 points...
-  if(nrow(lorenz) < 4)
+  fit = data.frame(x=lorenz[,1], y=lorenz[,2])
+  if(nrow(lorenz) >= 4)
   {
-    fit=data.frame(x=lorenz[,1], y=lorenz[,2])
-  } else {
-    fit=data.frame(x=smooth.spline(lorenz)$x, y=smooth.spline(lorenz)$y)
+    spline = try(smooth.spline(lorenz))
+    if(class(spline) != "try-error")
+      fit = data.frame(x=spline$x, y=spline$y)
   }
+
   perf=data.frame(x=c(0,1), y=c(0,1))
 
   plot1 <- try(ggplot() +
