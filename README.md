@@ -7,21 +7,10 @@ Ginkgo
 Usage
 =========
 
-**Step 0: Upload .bed files**
-
-<img src="http://qb.cshl.edu/ginkgo/screenshots/0.png" width="400" />
-
-**Step 1: Choose analysis parameters**
-
-<img src="http://qb.cshl.edu/ginkgo/screenshots/1.png" width="400" />
-
-**Step 2: Phylogenetic Tree**
-
-<img src="http://qb.cshl.edu/ginkgo/screenshots/2.png" width="400" />
-
-**Step 3: Analyse Individual Cells**
-
-<img src="http://qb.cshl.edu/ginkgo/screenshots/3.png" width="400" />
+* Step 0: Upload .bed files
+* Step 1: Choose analysis parameters
+* Step 2: Phylogenetic Tree
+* Step 3: Analyse Individual Cells
 
 
 Setup Ginkgo on your own server
@@ -30,7 +19,7 @@ Setup Ginkgo on your own server
 **Requirements:**
 
 - PHP >=5.2
-- R >=2.15.2
+- R >= 3.0.0
 - R Packages:
 	- ctc
 	- DNAcopy
@@ -38,6 +27,10 @@ Setup Ginkgo on your own server
 	- gplots
 	- scales
 	- plyr
+	- ggplot2
+	- gridExtra
+	- fastcluster
+	- heatmap3
 
 **Install Ginkgo:**
 
@@ -68,6 +61,8 @@ Type ```make``` in the ginkgo/ directory
 
 - ginkgo/scripts/analyze-subset.R
 	- Set the folder to where ginkgo/scripts is located
+
+- Make sure the uploads directory has the correct write permissions
 
 **Download data files:**
 
