@@ -50,7 +50,7 @@ Type ```make``` in the ginkgo/ directory
 - ginkgo/bootstrap.php
 	- Change ```DIR_ROOT```, ```DIR_UPLOADS``` and ```URL_ROOT```
 
-- ginkgo/scripts/analyze
+- ginkgo/scripts/analyze.sh
 	- Change ```home``` variable to where the ginkgo/ folder is located
 
 - ginkgo/scripts/process.R

@@ -327,7 +327,7 @@ if(isset($_POST['analyze']))
 	file_put_contents($userDir . '/config', $config);
 
 	// Start analysis
-	$cmd = "./scripts/analyze $GINKGO_USER_ID >> $userDir/ginkgo.out 2>&1  &";
+	$cmd = "./scripts/analyze.sh $GINKGO_USER_ID >> $userDir/ginkgo.out 2>&1  &";
 	session_regenerate_id(TRUE);	
 	$handle = popen($cmd, 'r');
 	pclose($handle);

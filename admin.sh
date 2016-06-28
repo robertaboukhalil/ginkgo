@@ -5,7 +5,7 @@
 # -------------------------------------------------------------------------------------------------
 
 n=0;
-for SAMPLE in $(ps aux | grep "analyze" | awk '{print $NF}' | sort | uniq);
+for SAMPLE in $(ps aux | grep "analyze.sh" | awk '{print $NF}' | sort | uniq);
 do
   if [ -d uploads/$SAMPLE ]; then
     # Calculate step + percentage

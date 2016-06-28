@@ -33,5 +33,5 @@ To run ginkgo on the command line you must:
 6. Run ginkgo:
 
   cd ~/src/ginkgo/
-  ./scripts/analyze new_run_123
+  ./scripts/analyze.sh new_run_123
 
