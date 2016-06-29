@@ -124,40 +124,40 @@ if (stat == 1)
 }
 
 
-############################################################
-##################  PROCESS ALL SAMPLES  ###################
-############################################################
+# ------------------------------------------------------------------------------
+# -- Process all cells
+# ------------------------------------------------------------------------------
 
-#Open output stream
+# Open output stream
 sink("results.txt")
-
 cat(paste("Sample\tCopy_Number\tSoS_Predicted_Ploidy\tError_in_SoS_Approach\n", sep=""))
 
-for(k in 1:w){
-
+#
+for(k in 1:w)
+{
   cat('===',k,'===\n')
 
   statusFile = file( paste(user_dir, "/", status, sep="") )
   writeLines(c("<?xml version='1.0'?>", "<status>", "<step>3</step>", paste("<processingfile>", lab[k], "</processingfile>", sep=""), paste("<percentdone>", (k*100)%/%(w+4), "</percentdone>", sep=""), "<tree>clust.xml</tree>", "</status>"), statusFile)
   close(statusFile)
 
-  #Generate basic statistics
-  stats[k,1]=sum(raw[,k])
-  stats[k,2]=l
-  stats[k,3]=round(mean(raw[,k]), digits=2)
-  stats[k,4]=round(sd(raw[,k]), digits=2)
-  stats[k,5]=round(stats[k,4]/stats[k,3], digits=2)
-  stats[k,6]=min(raw[,k])
-  stats[k,7]=quantile(raw[,k], c(.25))[[1]]
-  stats[k,8]=median(raw[,k])
-  stats[k,9]=quantile(raw[,k], c(.75))[[1]]
-  stats[k,10]=max(raw[,k])
+  # Generate basic statistics
+  stats[k,1]  = sum(raw[,k])
+  stats[k,2]  = l
+  stats[k,3]  = round(mean(raw[,k]), digits=2)
+  stats[k,4]  = round(sd(raw[,k]), digits=2)
+  stats[k,5]  = round(stats[k,4]/stats[k,3], digits=2)
+  stats[k,6]  = min(raw[,k])
+  stats[k,7]  = quantile(raw[,k], c(.25))[[1]]
+  stats[k,8]  = median(raw[,k])
+  stats[k,9]  = quantile(raw[,k], c(.75))[[1]]
+  stats[k,10] = max(raw[,k])
 
-  ############################################################
-  #####################  Segment Sample  #####################
-  ############################################################
+  # ----------------------------------------------------------------------------
+  # -- Segment data
+  # ----------------------------------------------------------------------------
 
-  #Calculate normal for current cell (previous values of normal seem wrong)
+  # Calculate normalized for current cell (previous values of normal seem wrong)
   lowess.gc = function(jtkx, jtky) {
     jtklow = lowess(jtkx, log(jtky), f=0.05); 
     jtkz = approx(jtklow$x, jtklow$y, jtkx)
@@ -165,50 +165,47 @@ for(k in 1:w){
   }
   normal[,k] = lowess.gc( GC[,1], (raw[,k]+1)/mean(raw[,k]+1) )
 
-  #Compute log ratio between kth sample and reference
-  if (stat == 0) {
+  # Compute log ratio between kth sample and reference
+  if (stat == 0)
     lr = log2(normal[,k])
-  } else {
+  else
     lr = log2((normal[,k])/(F))
-  }
 
-  #Determine breakpoints and extract chrom/locations
-  CNA.object = CNA(genomdat = lr, chrom = loc[,1], maploc = as.numeric(loc[,2]), data.type = 'logratio')
+  # Determine breakpoints and extract chrom/locations
+  CNA.object   = CNA(genomdat = lr, chrom = loc[,1], maploc = as.numeric(loc[,2]), data.type = 'logratio')
   CNA.smoothed = smooth.CNA(CNA.object)
-  segs = segment(CNA.smoothed, verbose=0, min.width=minBinWidth)
-  frag = segs$output[,2:3]
+  segs         = segment(CNA.smoothed, verbose=0, min.width=minBinWidth)
+  frag         = segs$output[,2:3]
 
-  #Map breakpoints to kth sample
+  # Map breakpoints to kth sample
   len = dim(frag)[1]
   bps = array(0, len)
-  for (j in 1:len){
+  for (j in 1:len)
     bps[j]=which((loc[,1]==frag[j,1]) & (as.numeric(loc[,2])==frag[j,2]))
-  }
   bps = sort(bps)
   bps[(len=len+1)] = l
 
-  #Track global breakpoint locations
-  breaks[bps,k]=1
+  # Track global breakpoint locations
+  breaks[bps,k] = 1
 
-  #Modify bins to contain median read count/bin within each segment
+  # Modify bins to contain median read count/bin within each segment
   fixed[,k][1:bps[2]] = median(normal[,k][1:bps[2]])
-  for(i in 2:(len-1)){
+  for(i in 2:(len-1))
     fixed[,k][bps[i]:(bps[i+1]-1)] = median(normal[,k][bps[i]:(bps[i+1]-1)])
-  }
   fixed[,k] = fixed[,k]/mean(fixed[,k])
 
-  ############################################################
-  ###########  Determine Copy Number (SoS Method)  ###########
-  ############################################################
+  # ----------------------------------------------------------------------------
+  # -- Determine Copy Number (SoS Method)
+  # ----------------------------------------------------------------------------
 
-  #Determine Copy Number     
-  CNgrid = seq(1.5, maxPloidy, by=0.05)
-  outerRaw = fixed[,k] %o% CNgrid
-  outerRound = round(outerRaw)
-  outerDiff = (outerRaw - outerRound) ^ 2
+  # Determine Copy Number     
+  CNgrid           = seq(1.5, maxPloidy, by=0.05)
+  outerRaw         = fixed[,k] %o% CNgrid
+  outerRound       = round(outerRaw)
+  outerDiff        = (outerRaw - outerRound) ^ 2
   outerColsums[,k] = colSums(outerDiff, na.rm = FALSE, dims = 1)
-  CNmult[,k] = CNgrid[order(outerColsums[,k])]
-  CNerror[,k] = round(sort(outerColsums[,k]), digits=2)
+  CNmult[,k]       = CNgrid[order(outerColsums[,k])]
+  CNerror[,k]      = round(sort(outerColsums[,k]), digits=2)
 
   if (f == 0 | length(which(lab[k]==ploidy[,1]))==0 ) {
     CN = CNmult[1,k]
@@ -220,15 +217,15 @@ for(k in 1:w){
   }
   final[,k] = round(fixed[,k]*CN)
 
-  #Output results of CN calculations to file
+  # Output results of CN calculations to file
   out=paste(lab[k], CN, paste(CNmult[,k], collapse= ","), paste(CNerror[,k], collapse= ","), sep="\t")
   cat(out, "\n")
 
-  ############################################################
-  ################  Generate Plots & Figures #################
-  ############################################################
+  # ----------------------------------------------------------------------------
+  # -- Generate Plots & Figures
+  # ----------------------------------------------------------------------------
 
-  #Plot Distribution of Read Coverage
+  # Plot Distribution of Read Coverage
   jpeg(filename=paste(lab[k], "_dist.jpeg", sep=""), width=3000, height=750)
   
   top=round(quantile(raw[,k], c(.995))[[1]])
@@ -457,24 +454,24 @@ for(k in 1:w){
 
 }
 
+# ------------------------------------------------------------------------------
+# -- Save processed data
+# ------------------------------------------------------------------------------
 
-############################################################
-##################  Save Processed Data  ###################
-############################################################
-
+# Update status
 statusFile=file( paste(user_dir, "/", status, sep="") )
 writeLines(c("<?xml version='1.0'?>", "<status>", "<step>3</step>", paste("<processingfile>Saving Data</processingfile>", sep=""), paste("<percentdone>", (w*100)%/%(w+4), "</percentdone>", sep=""), "<tree>clust.xml</tree>", "</status>"), statusFile)
 close(statusFile)
 
-#Close output stream
+# Close output stream
 sink()
 
-#Store processed sample information
+# Store processed sample information
 loc2=loc
 loc2[,3]=loc2[,2]
 pos = cbind(c(1,bounds[,2]), c(bounds[,2], l))
 
-
+#
 for (i in 1:nrow(pos))
 {
   # If only 1 bin in a chromosome
@@ -489,8 +486,7 @@ for (i in 1:nrow(pos))
   }
 }
 
-
-
+# 
 loc2[nrow(loc2),2]=loc2[nrow(loc2)-1,3]+1
 colnames(loc2)=c("CHR","START", "END")
 
@@ -500,15 +496,15 @@ write.table(cbind(loc2,final), file=paste(user_dir, "/SegCopy", sep=""), row.nam
 write.table(cbind(loc2,breaks), file=paste(user_dir, "/SegBreaks", sep=""), row.names=FALSE, col.names=c(colnames(loc2),lab), sep="\t", quote=FALSE)
 write.table(stats, file=paste(user_dir, "/SegStats", sep=""), sep="\t", quote=FALSE)
 
-############################################################
-##################  Generate Dendrograms ###################
-############################################################
+# ------------------------------------------------------------------------------
+# -- Generate phylo trees
+# ------------------------------------------------------------------------------
 
 statusFile = file( paste(user_dir, "/", status, sep="") )
 writeLines(c("<?xml version='1.0'?>", "<status>", "<step>3</step>", paste("<processingfile>Computing Cluster (Read Count)</processingfile>", sep=""), paste("<percentdone>", ((w+1)*100)%/%(w+4), "</percentdone>", sep=""), "<tree>clust.xml</tree>", "</status>"), statusFile)
 close(statusFile)
 
-#Ignore sex chromomes if specified
+# Ignore sex chromosomes if specified
 if (sex == 0) {
   l=bounds[(dim(bounds)-1)[1],][[2]]-1
   raw=raw[1:l,]
@@ -518,14 +514,15 @@ if (sex == 0) {
   normal=normal[1:l,]
 }
 
-#Calculate read distance matrix for clustering
+# Calculate read distance matrix for clustering
 d = dist(t(fixed), method=dm)
-if(cm == "NJ"){
+if(cm == "NJ")
+{
   library(ape)
   clust = nj(d)
   clust$tip.label = lab
   write.tree(clust, file=paste(user_dir, "/clust.newick", sep=""))
-}else{
+} else {
   clust = hclust(d, method = cm)
   clust$labels = lab  
   write(hc2Newick(clust), file=paste(user_dir, "/clust.newick", sep=""))
@@ -623,28 +620,26 @@ pdf("clust3.pdf", width=10, height=7)
   plot(clust3, xlab="Sample", hang=-1, ylab="Distance (Pearson correlation)", lwd=2)
 dev.off()
 
-############################################################
-####################  Generate Heat Maps ###################
-############################################################
+# ------------------------------------------------------------------------------
+# -- Generate heatmaps
+# ------------------------------------------------------------------------------
 
 statusFile=file( paste(user_dir, "/", status, sep="") )
 writeLines(c("<?xml version='1.0'?>", "<status>", "<step>3</step>", paste("<processingfile>Creating Heat Maps</processingfile>", sep=""), paste("<percentdone>", ((w+3)*100)%/%(w+4), "</percentdone>", sep=""), "<tree>clust.xml</tree>", "</status>"), statusFile)
 close(statusFile)
 
 #Create breakpoint heatmaps
-#rawBPs=breaks[unique(sort((which(breaks==1)%%l))),]
 rawBPs=breaks
-#fixedBPs=fixed[unique(sort((which(breaks==1)%%l))),]
 fixedBPs=fixed
-#finalBPs=final[unique(sort((which(breaks==1)%%l))),]
 finalBPs=final
 
 colnames(rawBPs) = lab
 colnames(fixedBPs) = lab
 colnames(finalBPs) = lab
 
-# RA: Need to root NJ tree, make tree ultrametric by extending branch lengths then convert to hclust object!
-phylo2hclust = function(phy) {
+# Need to root NJ tree, make tree ultrametric by extending branch lengths then convert to hclust object!
+phylo2hclust = function(phy)
+{
   # Root tree
   clustR = root(phy, outgroup=1, resolve.root=TRUE)
   # If edge lengths are exactly 0, chronopl will delete those edges.....
