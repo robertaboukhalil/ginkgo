@@ -1,9 +1,12 @@
 #!/usr/bin/env Rscript
 
-# ------------------------------------------------------------------------------
-# --
-# ------------------------------------------------------------------------------
+# ==============================================================================
+# == From "Summary" Table, launch plot generation on selected cells
+# ==============================================================================
 
+# ------------------------------------------------------------------------------
+# -- Parse user input
+# ------------------------------------------------------------------------------
 args			= commandArgs(TRUE)
 userID			= args[[1]]
 analysisID		= args[[2]]
@@ -64,7 +67,6 @@ col2[,2] = col1[,1]
 if(analysisType == "lorenz")
 {
 	jpeg(filename=paste(analysisID, ".jpeg", sep=""), width=700, height=500)
-	# par(mar = c(7.0, 7.0, 7.0, 3.0))
 
 	#
 	legendNames = c("Perfect Uniformity")
@@ -78,19 +80,18 @@ if(analysisType == "lorenz")
 		lorenz = matrix(0, nrow=length(uniq), ncol=2)
 		a = c(length(which(raw[,k]==0)), tabulate(raw[,k], nbins=max(raw[,k])))
 		b = a*(0:(length(a)-1))
-		for (i in 2:length(uniq)) {
+		for (i in 2:length(uniq))
+		{
 			lorenz[i,1] = sum(a[1:uniq[i]]) / l
 			lorenz[i,2] = sum(b[2:uniq[i]]) / nReads
 		}
 
-		if(plottedFirst == 0) {
+		if(plottedFirst == 0)
+		{
 			par(mar=c(5.1, 4.1, 4.1, 18), xpd=TRUE)
-			
 			plot(lorenz, type="n", xlim=c(0,1), main="Lorenz Curve of Coverage Uniformity", xlab="Cumulative Fraction of Genome", ylab="Cumulative Fraction of Total Reads", xaxt="n", yaxt="n", cex.main=2, cex.axis=1.5, cex.lab=1.5)
-			# plot(lorenz, xlim=c(0,1), main=paste("Lorenz Curve of Coverage Uniformity for Sample ", k, sep=""), xlab="Cumulative Fraction of Genome", ylab="Cumulative Fraction of Total Reads", type="n", xaxt="n", yaxt="n", cex.main=3, cex.axis=2, cex.lab=2)
 		} else {
 			points(lorenz, type="n")
-			# points(lorenz, xlim=c(0,1), type="n", xaxt="n", yaxt="n") #, cex.main=3, cex.axis=2, cex.lab=2)
 		}
 
 
@@ -114,10 +115,8 @@ if(analysisType == "lorenz")
 		try(lines(smooth.spline(lorenz), col=rainbow(length(cellIDs))[j], lwd=2.5), silent=TRUE)
 
 		legendNames = c(legendNames, paste("Cell",selectedCells[j,1]))
-
 	}
 
-	# par(xpd=TRUE)
 	legend("topright", inset=c(-0.65,0), legend=legendNames, fill=c("black", rainbow(length(cellIDs))), cex=1) #col1[cp,2]
 	dev.off()
 	file.create(paste(analysisID,'.done', sep=""))
@@ -152,19 +151,17 @@ if(analysisType == "gc")
 		if(plottedFirst == 0)
 		{
 			tu = par('usr')
-			# par(xpd=FALSE)
 			rect(tu[1], tu[3], tu[2], tu[4], col = "gray85")
 			abline(v=axTicks(1), col="white", lwd=2)
 			abline(h=axTicks(2), col="white", lwd=2)
 		}
 
 		plottedFirst = 1
-		try(points(app, col=rainbow(length(cellIDs))[j] )) #  col1[cp,2]
+		try(points(app, col=rainbow(length(cellIDs))[j] ))
 
 		legendNames = c(legendNames, paste("Cell",selectedCells[j,1]))
 	}
 
-	# legend("bottomright", inset=.05, legend="Lowess Fit", fill=col1[cp,2], cex=1.5)
 	legend("topright", inset=c(-0.65,0), legend=legendNames, fill=c(rainbow(length(cellIDs))), cex=1) #col1[cp,2]
 	dev.off()
 	file.create(paste(analysisID,'.done', sep=""))
@@ -236,7 +233,6 @@ if(analysisType == "cnvprofiles")
 if(analysisType == "mad")
 {
 	library(plyr)
-	# library(reshape2)
 	library(DNAcopy) #segmentation
 	library(inline) #use of c++
 	library(gplots) #visual plotting of tables
@@ -277,24 +273,3 @@ if(analysisType == "mad")
 
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
