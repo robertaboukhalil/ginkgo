@@ -66,5 +66,5 @@ Type ```make``` in the ginkgo/ directory
 
 **Download data files:**
 
-- Download binning data for hg19 at http://qb.cshl.edu/ginkgo/genomes/hg19/hg19.original.tar.gz
+- Download binning data for hg19 at http://qb.cshl.edu/ginkgo/uploads/hg19.original.tar.gz
 	- untar into ginkgo/genomes/hg19 (which needs to be created)
