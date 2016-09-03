@@ -338,7 +338,7 @@ for(k in 1:w)
   corrected = data.frame(x=GC[,1], y=log(cor))
   fit = data.frame(x=app$x, y=app$y)
 
-  try(plot1 = ggplot() +
+  try(plot1 <- ggplot() +
     geom_point(data=uncorrected, aes(x=x, y=y), size=3) +
     geom_line(data=fit, aes(x=x, y=y, color="Lowess Fit"), size=3) +
     scale_x_continuous(limits=c(min(.3, min(GC[,1])), max(.6, max(GC[,1]))), breaks=seq(.3,.6,.05)) +
@@ -353,7 +353,7 @@ for(k in 1:w)
     theme(legend.position=c(.85, .9)) +
     scale_color_manual(name='', values=colors[cp,1]))
 
-  try(plot2 = ggplot() +
+  try(plot2 <- ggplot() +
     geom_point(data=corrected, aes(x=x, y=y), size=3) +
     scale_x_continuous(limits=c(min(.3, min(GC[,1])), max(.6, max(GC[,1]))), breaks=seq(.3,.6,.05)) +
     labs(title=paste("GC Content vs. Bin Count\nSample ", lab[k], " (Corrected)", sep=""), x="GC content", y="") +
