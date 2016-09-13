@@ -68,3 +68,5 @@ Type ```make``` in the ginkgo/ directory
 
 - Download binning data for hg19 at http://qb.cshl.edu/ginkgo/uploads/hg19.original.tar.gz
 	- untar into ginkgo/genomes/hg19 (which needs to be created)
+
+- Other genomes, including hg18, hg19, mm9, mm10, rheMac7, rheMac8, rn5 and dm3 can be found at http://labshare.cshl.edu/shares/schatzlab/www-data/ginkgo/genomes/
