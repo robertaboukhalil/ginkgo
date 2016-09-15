@@ -238,15 +238,16 @@ if(analysisType == "mad")
 	library(gplots) #visual plotting of tables
 	library(scales)
 
-	#Calculate MAD
-	a = matrix(0, w, 4)
+	# Calculate MAD for selected cells
+	a = matrix(0, length(cellIDs), 4)
 	rownames(a) <- colnames(normal)
-	for (i in 1:w)
+	for(i in 1:length(cellIDs))
 	{
-		a[i,1]=mad(normal[-1,i] - normal[1:(l-1),i])
-		a[i,2]=mad(normal[-(1:2),i] - normal[1:(l-2),i])
-		a[i,3]=mad(normal[-(1:3),i] - normal[1:(l-3),i])
-		a[i,4]=mad(normal[-(1:4),i] - normal[1:(l-4),i])
+		cell = cellIDs[i]
+		a[i, 1] = mad(normal[-1    , cell] - normal[1:(l-1), cell])   # same as diff()
+		a[i, 2] = mad(normal[-(1:2), cell] - normal[1:(l-2), cell])
+		a[i, 3] = mad(normal[-(1:3), cell] - normal[1:(l-3), cell])
+		a[i, 4] = mad(normal[-(1:4), cell] - normal[1:(l-4), cell])
 	}
 
 	jpeg(filename=paste(analysisID, ".jpeg", sep=""), width=500, height=500)
