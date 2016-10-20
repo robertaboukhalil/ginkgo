@@ -306,11 +306,8 @@ if(isset($_POST['analyze']))
     $config.= 'clustMeth=' . $_POST['clustMeth'] . "\n";
     $config.= 'distMeth=' . $_POST['distMeth'] . "\n";
     //
-    $config.= 'b=' . $_POST['b'] . "\n";
-    $config.= 'binList=' . $_POST['binList'] . "\n";
     $config.= 'f=' . $_POST['f'] . "\n";
     $config.= 'facs=' . $_POST['facs'] . "\n";
-    $config.= 'q=' . $_POST['g'] . "\n";
     $config.= 'chosen_genome=' . $_POST['chosen_genome'] . "\n";
     //
     $config.= 'init=' . $init . "\n";
@@ -1438,19 +1435,15 @@ if($GINKGO_PAGE == 'admin-search')
                         alert("Error: please use the correct extension for custom parameter files.")
                     else
                     {
-                        facs = ""; bins = ""; genes = ""; segmentation = "";
+                        facs = ""; segmentation = "";
                         if(data == "facs" || data == "facssegmentation")
                             facs = "user-facs.txt"
                         if(data == "segmentation" || data == "facssegmentation")
                             segmentation = "user-segmentation.txt"
 
-                        f = 0; b = 0; g = 0;
+                        f = 0;
                         if(facs != "")
                             f = 1;
-                        if(bins != "")
-                            b = 1;
-                        if(genes != "")
-                            g = 1;
 
                         //
                         binMethVal = $('#param-bins-type').val() + $('#param-bins-value').val() + $('#param-bins-sim-rlen').val() + $('#param-bins-sim-mapper').val();
@@ -1479,11 +1472,7 @@ if($GINKGO_PAGE == 'admin-search')
                                 'f':                f,
                                 'facs':         facs,
                                 // Plot gene locations
-                                'g':                0,
                                 'query':    '',
-                                // User-specified bin file
-                                'b':                b,
-                                'binList':  bins,
                                 // User specified binning segmentation file
                                 'segMethCustom': segmentation,
                                 // Genome
