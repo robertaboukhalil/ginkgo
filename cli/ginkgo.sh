@@ -13,7 +13,7 @@ DIR_SCRIPTS=${DIR_ROOT}/scripts
 # ------------------------------------------------------------------------------
 
 # Sample usage
-usage=" ---> Sample usage: ./ginkgo.sh --input dir/to/bed/files/ --genome hg19 --binning variable_500000_101_bowtie [--clustdist euclidean] [--clustlinkage ward] [--facs facs.txt] [--maskbadbins] [--maskpsrs] [--masksexchrs]"
+usage=" ---> Sample usage: /ginkgo/cli/ginkgo.sh --input dir/to/bed/files/ --genome hg19 --binning variable_500000_101_bowtie [--clustdist euclidean] [--clustlinkage ward] [--facs facs.txt] [--maskbadbins] [--maskpsrs] [--masksexchrs]"
 
 # Required parameters
 unset DIR_INPUT
