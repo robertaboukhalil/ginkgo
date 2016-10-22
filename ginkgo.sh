@@ -4,11 +4,22 @@
 # Ginkgo - Command line version
 # ==============================================================================
 
-# Default values
-DIR_INPUT=""
-GENOME=""
-BINNING=""
-#
+DIR_ROOT=/mnt/data/ginkgo
+DIR_GENOMES=${DIR_ROOT}/genomes
+
+# ------------------------------------------------------------------------------
+# Parse user input
+# ------------------------------------------------------------------------------
+
+# Sample usage
+usage=" ---> Sample usage: ./ginkgo.sh --input dir/to/bed/files/ --genome hg19 --binning variable_500000_101_bowtie [--clustdist euclidean] [--clustlinkage ward] [--facs facs.txt] [--maskbadbins] [--maskpsrs] [--masksexchrs]"
+
+# Required parameters
+unset DIR_INPUT
+unset GENOME
+unset BINNING
+
+# Optional parameters
 CLUSTERING_DISTANCE="euclidean"
 CLUSTERING_LINKAGE="ward"
 SEGMENTATION=0
@@ -17,13 +28,12 @@ COLOR=3
 MASK_BADBINS=0
 MASK_SEXCHRS=0
 MASK_PSRS=0
+DIR_CELLS_LIST=""
 
 # Parse user input
-while [[ $# -gt 1 ]];
+while [[ $# -gt 0 ]]; #1
 do
-    parameter="$1"
-
-    case $parameter in
+    case "${1}" in
         # Required parameters
         --input         ) DIR_INPUT="$2"                                        ; shift; ;;
         --genome        ) GENOME="$2"                                           ; shift; ;;
@@ -34,16 +44,178 @@ do
         --segmentation  ) SEGMENTATION="$2"                                     ; shift; ;;
         --color         ) COLOR="$2"                                            ; shift; ;;
         --facs          ) FILE_FACS="$2"                                        ; shift; ;;
+        --cells         ) DIR_CELLS_LIST="$2"                                   ; shift; ;;
         --maskbadbins   ) MASK_BADBINS=1                                        ;        ;;
         --masksexchrs   ) MASK_SEXCHRS=1                                        ;        ;;
         --maskpsrs      ) MASK_PSRS=1                                           ;        ;;
-        *               ) echo "Warning: ignoring parameter $parameter"         ;        ;;
+        *               ) echo "Warning: ignoring parameter ${1}"               ;        ;;
     esac
     shift
 done
 
+# Validate required parameters
+DIR_INPUT=${DIR_INPUT?$usage}
+GENOME=${GENOME?$usage}
+BINNING=${BINNING?$usage}
+
+
+# ------------------------------------------------------------------------------
+# -- Setup variables
+# ------------------------------------------------------------------------------
+
+statFile=status.xml
+
+# Make sure input folder is valid
+[[ ! -d "${DIR_INPUT}" ]] && echo "Error: folder ${DIR_INPUT} doesn't exist" && exit
+
+# By default, use all cells
+if [ -z "${DIR_CELLS_LIST}" ];
+then
+    DIR_CELLS_LIST="list"
+    ( ls *.{bed,bed.gz} 2>/dev/null ) > "${DIR_CELLS_LIST}"
+fi
+
+# Genomes directory
+DIR_GENOME=${DIR_GENOMES}/${GENOME}
+DIR_GENOME=${DIR_GENOME}/$( [[ "${MASK_PSRS}" == "1" ]] && echo "pseudoautosomal" || echo "original" )
+
+# FACS file
+FACS=$([[ -e "${FILE_FACS}" ]] && echo 1 || echo 0)
+if [ "${FACS}" == 0 ];
+then
+    FILE_FACS=${DIR_INPUT}/"ploidyDummy.txt"
+    touch ${FILE_FACS}
+else
+    # In case upload file with \r instead of \n (Mac, Windows)
+    tr '\r' '\n' < ${FILE_FACS} > ${DIR_INPUT}/tmp-$(uuidgen)
+    mv ${DIR_INPUT}/tmp-$(uuidgen) ${FILE_FACS}
+    # 
+    sed "s/.bed//g" ${FILE_FACS} | sort -k1,1 | awk '{print $1"\t"$2}' > ${DIR_INPUT}/tmp-$(uuidgen) 
+    mv ${DIR_INPUT}/tmp-$(uuidgen) ${FILE_FACS}
+fi
+
 echo $DIR_INPUT
+echo $MASK_PSRS
+echo $MASK_SEXCHRS
+echo $DIR_GENOME
+echo $FACS
+echo $FILE_FACS
+
 exit;
+
+# ------------------------------------------------------------------------------
+# -- Map Reads & Prepare Samples For Processing
+# ------------------------------------------------------------------------------
+
+# Clean directory
+rm -f ${DIR_INPUT}/{Seg*,results.txt,*.{_mapped,jpeg,newick,xml,cnv}}
+
+# Map user bed files to appropriate bins
+while read file;
+do
+    # Unzip gzip files if need be
+    if [[ "${file}" =~ \.gz$ ]];
+    then
+        
+    fi
+
+    # If bed file doesn't encode chromosomes using 'chr', add it
+    firstLineChr=$(zcat ${DIR_INPUT}/${file} | head -n 1 | cut -f1 | grep "chr")
+    if [[ "${firstLineChr}" == "" ]]; then
+        awk '{print "chr"$0}' <(zcat ${DIR_INPUT}/${file}) > ${DIR_INPUT}/${file}_tmp
+        mv ${DIR_INPUT}/${file}_tmp ${DIR_INPUT}/${file/.gz/}
+        gzip -f ${DIR_INPUT}/${file/.gz/}
+    fi
+
+
+    # Unzip gzip files if necessary
+    if [[ "${file}" =~ \.gz$ ]];
+    then
+        # Add 
+        firstLineChr=$(zcat ${DIR_INPUT}/${file} | head -n 1 | cut -f1 | grep "chr")
+        if [[ "${firstLineChr}" == "" ]];
+        then
+            awk '{print "chr"$0}' <(zcat ${DIR_INPUT}/${file}) > ${DIR_INPUT}/${file}_tmp
+            mv ${DIR_INPUT}/${file}_tmp ${DIR_INPUT}/${file/.gz/}
+            gzip -f ${DIR_INPUT}/${file/.gz/}
+        fi
+        ${DIR_ROOT}/scripts/binUnsorted ${DIR_GENOME}/${BINNING} `wc -l < ${DIR_GENOME}/${BINNING}` <(zcat -cd ${DIR_INPUT}/${file}) `echo ${file} | awk -F ".bed" '{print $1}'` ${DIR_INPUT}/${file}_mapped
+    # 
+    else
+        firstLineChr=$( head -n 1 ${DIR_INPUT}/${file} | cut -f1 | grep "chr")
+        if [[ "${firstLineChr}" == "" ]];
+        then
+        awk '{print "chr"$0}' ${DIR_INPUT}/${file} > ${DIR_INPUT}/${file}_tmp
+        mv ${DIR_INPUT}/${file}_tmp ${DIR_INPUT}/${file}
+        fi
+        ${DIR_ROOT}/scripts/binUnsorted ${DIR_GENOME}/${BINNING} `wc -l < ${DIR_GENOME}/${BINNING}` ${DIR_INPUT}/${file} `echo ${file} | awk -F ".bed" '{print $1}'` ${DIR_INPUT}/${file}_mapped
+        gzip ${DIR_INPUT}/${file}
+    fi
+done < ${DIR_INPUT}/${DIR_CELLS_LIST}
+
+# Concatenate binned reads to central file  
+paste ${DIR_INPUT}/*_mapped > ${DIR_INPUT}/data
+rm -f ${DIR_INPUT}/*_mapped ${DIR_INPUT}/*_binned
+
+
+# ------------------------------------------------------------------------------
+# -- Map User Provided Reference/Segmentation Sample
+# ------------------------------------------------------------------------------
+
+if [ "$segMeth" == "2" ]; then
+    ${DIR_ROOT}/scripts/binUnsorted ${DIR_GENOME}/${BINNING} `wc -l < ${DIR_GENOME}/${BINNING}` ${DIR_INPUT}/${ref} Reference ${DIR_INPUT}/${ref}_mapped
+else
+    ref=refDummy.bed
+    touch ${DIR_INPUT}/${ref}_mapped
+fi
+
+# ------------------------------------------------------------------------------
+# -- Run Mapped Data Through Primary Pipeline
+# ------------------------------------------------------------------------------
+
+  ${DIR_ROOT}/scripts/process.R ${DIR_GENOME} ${DIR_INPUT} $statFile data $segMeth ${BINNING} $clustMeth $distMeth $color ${ref}_mapped ${FACS} $facs $sex $rmbadbins
+
+
+# ------------------------------------------------------------------------------
+# -- Create CNV profiles
+# ------------------------------------------------------------------------------
+
+nbCols=$(awk '{ print NF; exit; }' ${DIR_INPUT}/SegCopy)
+for (( i=1; i<=$nbCols; i++ ));
+do
+  currCell=$(cut -f$i ${DIR_INPUT}/SegCopy | head -n 1 | tr -d '"')
+  if [ "$currCell" == "" ]; then
+    continue;
+  fi
+  cut -f$i ${DIR_INPUT}/SegCopy | tail -n+2 | awk '{if(NR==1) print "1,"$1; else print NR","prev"\n"NR","$1;prev=$1; }' > ${DIR_INPUT}/$currCell.cnv
+done
+
+# ------------------------------------------------------------------------------
+# -- Call CNVs
+# ------------------------------------------------------------------------------
+
+${DIR_ROOT}/scripts/CNVcaller ${DIR_INPUT}/SegCopy ${DIR_INPUT}/CNV1 ${DIR_INPUT}/CNV2
+
+# ------------------------------------------------------------------------------
+# -- Email notification of completion
+# ------------------------------------------------------------------------------
+
+if [ "$email" != "" ]; then
+    echo -e "Your analysis on Ginkgo is complete! Check out your results at $permalink" | mail -s "Your Analysis Results" $email -- -F "Ginkgo"
+fi
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
