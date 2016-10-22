@@ -4,8 +4,9 @@
 # Ginkgo - Command line version
 # ==============================================================================
 
-DIR_ROOT=/mnt/data/ginkgo
+DIR_ROOT="/ginkgo"
 DIR_GENOMES=${DIR_ROOT}/genomes
+DIR_SCRIPTS=${DIR_ROOT}/scripts
 
 # ------------------------------------------------------------------------------
 # Parse user input
@@ -42,6 +43,7 @@ do
         --clustdist     ) CLUSTERING_DISTANCE="$2"                              ; shift; ;;
         --clustlinkage  ) CLUSTERING_LINKAGE="$2"                               ; shift; ;;
         --segmentation  ) SEGMENTATION="$2"                                     ; shift; ;;
+        --ref           ) SEGMENTATION_REF="$2"                                 ; shift; ;;
         --color         ) COLOR="$2"                                            ; shift; ;;
         --facs          ) FILE_FACS="$2"                                        ; shift; ;;
         --cells         ) DIR_CELLS_LIST="$2"                                   ; shift; ;;
@@ -71,13 +73,14 @@ statFile=status.xml
 # By default, use all cells
 if [ -z "${DIR_CELLS_LIST}" ];
 then
-    DIR_CELLS_LIST="list"
-    ( ls *.{bed,bed.gz} 2>/dev/null ) > "${DIR_CELLS_LIST}"
+    DIR_CELLS_LIST=${DIR_INPUT}/"list"
+    ls ${DIR_INPUT}/*.{bed,bed.gz} 2>/dev/null | cat > "${DIR_CELLS_LIST}"
 fi
 
 # Genomes directory
 DIR_GENOME=${DIR_GENOMES}/${GENOME}
 DIR_GENOME=${DIR_GENOME}/$( [[ "${MASK_PSRS}" == "1" ]] && echo "pseudoautosomal" || echo "original" )
+NB_BINS=$(wc -l < ${DIR_GENOME}/${BINNING})
 
 # FACS file
 FACS=$([[ -e "${FILE_FACS}" ]] && echo 1 || echo 0)
@@ -86,94 +89,77 @@ then
     FILE_FACS=${DIR_INPUT}/"ploidyDummy.txt"
     touch ${FILE_FACS}
 else
-    # In case upload file with \r instead of \n (Mac, Windows)
-    tr '\r' '\n' < ${FILE_FACS} > ${DIR_INPUT}/tmp-$(uuidgen)
-    mv ${DIR_INPUT}/tmp-$(uuidgen) ${FILE_FACS}
     # 
-    sed "s/.bed//g" ${FILE_FACS} | sort -k1,1 | awk '{print $1"\t"$2}' > ${DIR_INPUT}/tmp-$(uuidgen) 
-    mv ${DIR_INPUT}/tmp-$(uuidgen) ${FILE_FACS}
+    uuid=$(uuidgen)
+    # In case upload file with \r instead of \n (Mac, Windows)
+    tr '\r' '\n' < ${FILE_FACS} > ${DIR_INPUT}/tmp-${uuid}
+    mv ${DIR_INPUT}/tmp-${uuid} ${FILE_FACS}
+    # 
+    sed "s/.bed//g" ${FILE_FACS} | sort -k1,1 | awk '{print $1"\t"$2}' > ${DIR_INPUT}/tmp-${uuid} 
+    mv ${DIR_INPUT}/tmp-${uuid} ${FILE_FACS}
 fi
 
-echo $DIR_INPUT
-echo $MASK_PSRS
-echo $MASK_SEXCHRS
-echo $DIR_GENOME
-echo $FACS
-echo $FILE_FACS
-
-exit;
 
 # ------------------------------------------------------------------------------
 # -- Map Reads & Prepare Samples For Processing
 # ------------------------------------------------------------------------------
 
 # Clean directory
-rm -f ${DIR_INPUT}/{Seg*,results.txt,*.{_mapped,jpeg,newick,xml,cnv}}
+rm -f ${DIR_INPUT}/{data,CNV*,Seg*,results.txt,*{_mapped,.jpeg,.newick,.xml,.cnv}}
 
 # Map user bed files to appropriate bins
 while read file;
 do
-    # Unzip gzip files if need be
-    if [[ "${file}" =~ \.gz$ ]];
-    then
-        
+    echo -n "# Processing ${file}... "
+
+    # Make sure exists
+    if [[ ! "${file}" =~ \.bed$ ]] && [[ ! "${file}" =~ \.bed.gz$ ]]; then
+        echo "error: file <${file}> doesn't exist"
+        exit;
     fi
+    echo ""
+
+    # Add "z" to cat to support gzipped files
+    [[ "${file}" =~ \.gz$ ]] && Z="z" || Z=""
 
     # If bed file doesn't encode chromosomes using 'chr', add it
-    firstLineChr=$(zcat ${DIR_INPUT}/${file} | head -n 1 | cut -f1 | grep "chr")
-    if [[ "${firstLineChr}" == "" ]]; then
-        awk '{print "chr"$0}' <(zcat ${DIR_INPUT}/${file}) > ${DIR_INPUT}/${file}_tmp
-        mv ${DIR_INPUT}/${file}_tmp ${DIR_INPUT}/${file/.gz/}
-        gzip -f ${DIR_INPUT}/${file/.gz/}
-    fi
-
-
-    # Unzip gzip files if necessary
-    if [[ "${file}" =~ \.gz$ ]];
+    firstLineChr=$(${Z}grep --max 1 "chr" ${file} | cut -f1)
+    if [ "${firstLineChr}" == "" ];
     then
-        # Add 
-        firstLineChr=$(zcat ${DIR_INPUT}/${file} | head -n 1 | cut -f1 | grep "chr")
-        if [[ "${firstLineChr}" == "" ]];
-        then
-            awk '{print "chr"$0}' <(zcat ${DIR_INPUT}/${file}) > ${DIR_INPUT}/${file}_tmp
-            mv ${DIR_INPUT}/${file}_tmp ${DIR_INPUT}/${file/.gz/}
-            gzip -f ${DIR_INPUT}/${file/.gz/}
-        fi
-        ${DIR_ROOT}/scripts/binUnsorted ${DIR_GENOME}/${BINNING} `wc -l < ${DIR_GENOME}/${BINNING}` <(zcat -cd ${DIR_INPUT}/${file}) `echo ${file} | awk -F ".bed" '{print $1}'` ${DIR_INPUT}/${file}_mapped
-    # 
-    else
-        firstLineChr=$( head -n 1 ${DIR_INPUT}/${file} | cut -f1 | grep "chr")
-        if [[ "${firstLineChr}" == "" ]];
-        then
-        awk '{print "chr"$0}' ${DIR_INPUT}/${file} > ${DIR_INPUT}/${file}_tmp
-        mv ${DIR_INPUT}/${file}_tmp ${DIR_INPUT}/${file}
-        fi
-        ${DIR_ROOT}/scripts/binUnsorted ${DIR_GENOME}/${BINNING} `wc -l < ${DIR_GENOME}/${BINNING}` ${DIR_INPUT}/${file} `echo ${file} | awk -F ".bed" '{print $1}'` ${DIR_INPUT}/${file}_mapped
-        gzip ${DIR_INPUT}/${file}
+        echo "# -> no 'chr' detected; rewritting bed files."
+        awk '{print "chr"$0}' <( ${Z}cat ${file} ) | ( [[ ${Z} == "z" ]] && gzip || cat ) > ${file}_tmp
+        mv ${file} ${file}_invalidchr
+        mv ${file}_tmp ${file}
     fi
-done < ${DIR_INPUT}/${DIR_CELLS_LIST}
+
+    # Bin reads
+    ${DIR_SCRIPTS}/binUnsorted ${DIR_GENOME}/${BINNING} ${NB_BINS} <(${Z}cat ${file}) ${file//.bed} ${file}_mapped
+done < ${DIR_CELLS_LIST}
 
 # Concatenate binned reads to central file  
+echo "# Concatenating binned reads... "
 paste ${DIR_INPUT}/*_mapped > ${DIR_INPUT}/data
-rm -f ${DIR_INPUT}/*_mapped ${DIR_INPUT}/*_binned
+rm -f ${DIR_INPUT}/*{_mapped,_binned}
 
 
 # ------------------------------------------------------------------------------
 # -- Map User Provided Reference/Segmentation Sample
 # ------------------------------------------------------------------------------
 
-if [ "$segMeth" == "2" ]; then
-    ${DIR_ROOT}/scripts/binUnsorted ${DIR_GENOME}/${BINNING} `wc -l < ${DIR_GENOME}/${BINNING}` ${DIR_INPUT}/${ref} Reference ${DIR_INPUT}/${ref}_mapped
+if [ "${SEGMENTATION}" == "2" ];
+then
+    ${DIR_SCRIPTS}/binUnsorted ${DIR_GENOME}/${BINNING} ${NB_BINS} ${SEGMENTATION_REF} Reference ${SEGMENTATION_REF}_mapped
 else
-    ref=refDummy.bed
-    touch ${DIR_INPUT}/${ref}_mapped
+    SEGMENTATION_REF=refDummy.bed
+    touch ${DIR_INPUT}/${SEGMENTATION_REF}_mapped
 fi
+
 
 # ------------------------------------------------------------------------------
 # -- Run Mapped Data Through Primary Pipeline
 # ------------------------------------------------------------------------------
 
-  ${DIR_ROOT}/scripts/process.R ${DIR_GENOME} ${DIR_INPUT} $statFile data $segMeth ${BINNING} $clustMeth $distMeth $color ${ref}_mapped ${FACS} $facs $sex $rmbadbins
+${DIR_SCRIPTS}/process.R ${DIR_GENOME} ${DIR_INPUT} ${statFile} data ${SEGMENTATION} ${BINNING} ${CLUSTERING_LINKAGE} ${CLUSTERING_DISTANCE} ${COLOR} ${SEGMENTATION_REF}_mapped ${FACS} ${FILE_FACS} $( [[ $MASK_SEXCHRS == 1 ]] && echo 0 || echo 1 ) ${MASK_BADBINS}
 
 
 # ------------------------------------------------------------------------------
@@ -190,78 +176,9 @@ do
   cut -f$i ${DIR_INPUT}/SegCopy | tail -n+2 | awk '{if(NR==1) print "1,"$1; else print NR","prev"\n"NR","$1;prev=$1; }' > ${DIR_INPUT}/$currCell.cnv
 done
 
+
 # ------------------------------------------------------------------------------
 # -- Call CNVs
 # ------------------------------------------------------------------------------
 
-${DIR_ROOT}/scripts/CNVcaller ${DIR_INPUT}/SegCopy ${DIR_INPUT}/CNV1 ${DIR_INPUT}/CNV2
-
-# ------------------------------------------------------------------------------
-# -- Email notification of completion
-# ------------------------------------------------------------------------------
-
-if [ "$email" != "" ]; then
-    echo -e "Your analysis on Ginkgo is complete! Check out your results at $permalink" | mail -s "Your Analysis Results" $email -- -F "Ginkgo"
-fi
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
---input /my/bed/files/
-$1, $dir
-
---genome hg19
-$chosen_genome
-
---binmethod variable_500000_101_bowtie
-$binMeth
-
---segmentation 0,1,2 [Independent, Global, Custom]
-$segMeth
-
---segmentation-custom
-$ref
-
---maskbadbins
-$rmbadbins
-
---maskpar //pseudoautosomal regions
-$rmpseudoautosomal
-
---masksex
-$sex=1 => include; 0 = dont include
-
---facs
-# f=0 if not FACS file is provided. f=1 if FACS file is provided.
-# facs=location of facs file
-
---clusterdist euclidean/maximum/manhattan/canberra/binary/minkowsky
-$distMeth
-
---clusterlinkage ward/single/complete/average/NJ
-$clustMeth
-
---color 1,2,3 [light blue / orange, magenta / gold, dark blue / red]
-$color
-
-# -- Running options
-# init=1 -> Clean the directory and start from scratch the whole analysis
-# process=1 -> Run mapped data through primary pipeline
-# fix=1 -> Recreate clusters/heat maps (not required if process=1)
-
-
-
+${DIR_SCRIPTS}/CNVcaller ${DIR_INPUT}/SegCopy ${DIR_INPUT}/CNV1 ${DIR_INPUT}/CNV2
