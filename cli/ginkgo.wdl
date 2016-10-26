@@ -4,11 +4,11 @@ workflow ginkgo {
     String binning
     String clustdist
     String clustlinkage
-    String segmentation
     String ref
-    String color
     String facs
     String cells
+    Integer segmentation
+    Integer color
     Boolean maskbadbins
     Boolean masksexchrs
     Boolean maskpsrs
