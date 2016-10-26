@@ -4,7 +4,7 @@
 # Ginkgo - Command line version
 # ==============================================================================
 
-DIR_ROOT="/ginkgo"
+DIR_ROOT="/mnt/data/ginkgo"
 DIR_GENOMES=${DIR_ROOT}/genomes
 DIR_SCRIPTS=${DIR_ROOT}/scripts
 

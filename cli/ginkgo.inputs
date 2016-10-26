@@ -4,12 +4,12 @@
     "ginkgo.binning": "variable_500000_101_bowtie",
     "ginkgo.clustdist": "euclidean",
     "ginkgo.clustlinkage": "ward",
-    "ginkgo.segmentation": 0,
     "ginkgo.ref": "",
-    "ginkgo.color": 3,
     "ginkgo.facs": "",
     "ginkgo.cells": "",
-    "ginkgo.maskbadbins": False,
-    "ginkgo.masksexchrs": False,
-    "ginkgo.maskpsrs": False
+    "ginkgo.color": 3,
+    "ginkgo.segmentation": 0,
+    "ginkgo.maskbadbins": false,
+    "ginkgo.masksexchrs": false,
+    "ginkgo.maskpsrs": false
 }

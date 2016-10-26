@@ -7,8 +7,8 @@ workflow ginkgo {
     String ref
     String facs
     String cells
-    Integer segmentation
-    Integer color
+    Int segmentation
+    Int color
     Boolean maskbadbins
     Boolean masksexchrs
     Boolean maskpsrs
@@ -37,17 +37,17 @@ task ginkgo_run {
     String binning
     String clustdist
     String clustlinkage
-    String segmentation
     String ref
-    String color
     String facs
     String cells
+    Int segmentation
+    Int color
     Boolean maskbadbins
     Boolean masksexchrs
     Boolean maskpsrs
 
     command <<<
-        /ginkgo/cli/ginkgo.sh \
+        /mnt/data/ginkgo/cli/ginkgo.sh \
           --input ${dir_input} \
           --genome ${genome} \
           --binning ${binning} \
@@ -61,17 +61,14 @@ task ginkgo_run {
           --maskbadbins ${maskbadbins} \
           --masksexchrs ${masksexchrs} \
           --maskpsrs ${maskpsrs}
-
     >>>
 
-  output {
-    File out = "${dir_input}/archive.tar"
-  }
+    output {
+        File out = "${dir_input}/archive.tar"
+    }
 
-  runtime {
-     docker: "robertaboukhalil/ginkgo"
-     disks: "local-disk 200 SSD"
-     cpu: "32"
-  }
+    runtime {
+        docker: "robertaboukhalil/ginkgo"
+    }
 
 }

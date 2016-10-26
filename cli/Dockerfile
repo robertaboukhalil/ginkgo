@@ -1,48 +1,46 @@
 
-FROM ubuntu:latest
+FROM debian:jessie
 
-MAINTAINER Robert Aboukhalil <raboukha@cshl.edu>
+MAINTAINER Robert Aboukhalil <robert.aboukhalil@gmail.com>
 
-# -- Get Ubuntu latest package list --------------------------------------------
+# -- Update package list -------------------------------------------------------
 RUN apt-get update
-RUN apt-get -y upgrade
 
-# -- Install Apache + PHP + MySQL ----------------------------------------------
-# See [http://bit.ly/11zWrWI] for details
-RUN DEBIAN_FRONTEND=noninteractive apt-get -y install apache2 libapache2-mod-php5 php5-mysql php5-gd php-pear php-apc php5-curl curl lynx-cur
+# -- Install R packages --------------------------------------------------------
+# Appends the CRAN repository to your sources.list file 
+RUN sh -c 'echo "deb http://cran.rstudio.com/bin/linux/debian lenny-cran/" >> /etc/apt/sources.list'
 
-# Enable Apache mods
-RUN a2enmod php5
-RUN a2enmod rewrite
+# Add CRAN GPG key
+RUN apt-key adv --keyserver hkp://pgp.mit.edu:11371 --recv-key 381BA480
+RUN apt-get update
+RUN apt-get install r-base r-base-dev -y
 
-# Update PHP.ini file: enable <? ?> tags and quieten logging.
-RUN sed -i "s/short_open_tag = Off/short_open_tag = On/" /etc/php5/apache2/php.ini
-RUN sed -i "s/error_reporting = .*$/error_reporting = E_ERROR | E_WARNING | E_PARSE/" /etc/php5/apache2/php.ini
+# Install bioconductor + bioconductor packages
+RUN R -e 'source("http://bioconductor.org/biocLite.R"); biocLite(suppressUpdates=TRUE); biocLite("ctc",suppressUpdates=TRUE); biocLite("DNAcopy",suppressUpdates=TRUE);'
 
-# Ginkgo needs to be able to upload large files
-RUN sed -i "s/upload_max_filesize = .*$/upload_max_filesize = 5G/" /etc/php5/apache2/php.ini
-RUN sed -i "s/max_file_uploads = .*$/max_file_uploads = 20/" /etc/php5/apache2/php.ini
+# Install R packages
+RUN R -e 'install.packages("inline", repos="http://cran.us.r-project.org");'
+RUN R -e 'install.packages("gplots", repos="http://cran.us.r-project.org");'
+RUN R -e 'install.packages("plyr", repos="http://cran.us.r-project.org");'
+RUN R -e 'install.packages("gridExtra", repos="http://cran.us.r-project.org");'
+RUN R -e 'install.packages("fastcluster", repos="http://cran.us.r-project.org");'
+RUN R -e 'install.packages("heatmap3", repos="http://cran.us.r-project.org")'
 
-# Manually set up the Apache environment variables
-ENV APACHE_RUN_USER ginkgo
-ENV APACHE_RUN_GROUP ginkgo
-ENV APACHE_LOG_DIR /var/log/apache2
-ENV APACHE_LOCK_DIR /var/lock/apache2
-ENV APACHE_PID_FILE /var/run/apache2.pid
-
-EXPOSE 80
-
-# Update the default Apache site with the config we created.
-ADD apache-config.conf /etc/apache2/sites-enabled/000-default.conf
-
-# By default, simply start Apache.
-CMD /usr/sbin/apache2ctl -D FOREGROUND
-
-# -- Install R and packages ----------------------------------------------------
-RUN apt-get -y install r-base-core
+# scales/ggplot has plyr dependency...
+RUN apt-get install r-cran-plyr -y
+RUN R -e 'install.packages("scales", repos="http://cran.us.r-project.org");'
+RUN R -e 'install.packages("ggplot2", repos="http://cran.us.r-project.org");'
 
 # -- Retrieve latest Ginkgo code from Github -----------------------------------
-RUN curl -L -o /var/www/ginkgo.tar.gz http://github.com/robertaboukhalil/ginkgo/tarball/master/
-RUN tar xpvf /var/www/ginkgo.tar.gz
-RUN mv /var/www/$(tar --exclude="*/*" -tf /var/www/ginkgo.tar.gz) /var/www/ginkgo/
-RUN rm /var/www/ginkgo.tar.gz
+RUN apt-get install git wget -y
+RUN mkdir -p /mnt/data/ginkgo/ && \
+    cd /mnt/data/ && \
+    git clone https://github.com/robertaboukhalil/ginkgo.git && \
+    cd /mnt/data/ginkgo/ && \
+    make
+
+# -- Setup hg19 ----------------------------------------------------------------
+RUN mkdir -p /mnt/data/ginkgo/genomes/hg19/original && \
+    cd /mnt/data/ginkgo/genomes/hg19/original && \
+    wget http://qb.cshl.edu/ginkgo/uploads/hg19.original.tar.gz && \
+    tar -xvf hg19.original.tar.gz
