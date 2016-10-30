@@ -1,74 +1,90 @@
-workflow ginkgo {
-    String dir_input
-    String genome
-    String binning
-    String clustdist
-    String clustlinkage
-    String ref
-    String facs
-    String cells
-    Int segmentation
-    Int color
-    Boolean maskbadbins
-    Boolean masksexchrs
-    Boolean maskpsrs
+workflow ginkgo
+{
+    File        input_file
+    String      genome
+    String      binning
+    Boolean     maskpsrs
+    Boolean     maskbadbins
+    Boolean     masksexchrs
+    File        genome_bins
+    File        genome_bounds
+    File        genome_genes
+    File        genome_gc
+    File        genome_badbins
+    File        ref
+    File        facs
+    String      clustdist
+    String      clustlinkage
+    Int         segmentation
+    Int         color
 
-    call ginkgo_run {
+    call ginkgo_run
+    {
         input:
-            dir_input = dir_input,
-            genome = genome,
-            binning = binning,
-            clustdist = clustdist,
-            clustlinkage = clustlinkage,
-            segmentation = segmentation,
-            ref = ref,
-            color = color,
-            facs = facs,
-            cells = cells,
-            maskbadbins = maskbadbins,
-            masksexchrs = masksexchrs,
-            maskpsrs = maskpsrs
+            input_file      = input_file,
+            genome          = genome,
+            binning         = binning,
+            maskpsrs        = maskpsrs,
+            maskbadbins     = maskbadbins,
+            masksexchrs     = masksexchrs,
+            genome_bins     = genome_bins,
+            genome_bounds   = genome_bounds,
+            genome_genes    = genome_genes,
+            genome_gc       = genome_gc,
+            genome_badbins  = genome_badbins,
+            ref             = ref,
+            facs            = facs,
+            clustdist       = clustdist,
+            clustlinkage    = clustlinkage,
+            segmentation    = segmentation,
+            color           = color
     }
 }
 
-task ginkgo_run {
-    String dir_input
-    String genome
-    String binning
-    String clustdist
-    String clustlinkage
-    String ref
-    String facs
-    String cells
-    Int segmentation
-    Int color
-    Boolean maskbadbins
-    Boolean masksexchrs
-    Boolean maskpsrs
+task ginkgo_run
+{
+    File        input_file
+    String      genome
+    String      binning
+    Boolean     maskpsrs
+    Boolean     maskbadbins
+    Boolean     masksexchrs
+    File        genome_bins
+    File        genome_bounds
+    File        genome_genes
+    File        genome_gc
+    File        genome_badbins
+    File        ref
+    File        facs
+    String      clustdist
+    String      clustlinkage
+    Int         segmentation
+    Int         color
 
     command <<<
-        /mnt/data/ginkgo/cli/ginkgo.sh \
-          --input ${dir_input} \
-          --genome ${genome} \
-          --binning ${binning} \
-          --clustdist ${clustdist} \
-          --clustlinkage ${clustlinkage} \
-          --segmentation ${segmentation} \
-          --ref ${ref} \
-          --color ${color} \
-          --facs ${facs} \
-          --cells ${cells} \
-          --maskbadbins ${maskbadbins} \
-          --masksexchrs ${masksexchrs} \
-          --maskpsrs ${maskpsrs}
+        echo "Launching Ginkgo..."
+
+        # 
+        opt_genome_type=$( [[ "${maskpsrs}" == "1" ]] && echo "pseudoautosomal" || echo "original" )
+        dir_genome=/ginkgo/genomes/${genome}/$opt_genome_type/
+        dir_input=/ginkgo/data/
+        mkdir -p $dir_genome $dir_input
+
+        # Setup ref genome
+        cp ${genome_bins} ${genome_bounds} ${genome_genes} ${genome_gc} ${genome_badbins} $dir_genome/
+        # Setup data
+        tar -xf ${input_file} -C $dir_input
+
+
+        echo "Done."
     >>>
 
-    output {
-        File out = "${dir_input}/archive.tar"
-    }
+    #output {
+    #    File out = "${input_file}/archive.tar"
+    #}
 
     runtime {
-        docker: "robertaboukhalil/ginkgo"
+        docker: "robertaboukhalil/ginkgo:latest"
     }
-
 }
+
