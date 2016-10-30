@@ -41,8 +41,8 @@ RUN mkdir -p /ginkgo/ && \
 
 # # -- Setup hg19 --------------------------------------------------------------
 # # -- NOTE: removed this to make genome support not dependent on docker image
-# #RUN mkdir -p /mnt/data/ginkgo/genomes/hg19/original && \
-# #    cd /mnt/data/ginkgo/genomes/hg19/original && \
+# #RUN mkdir -p /ginkgo/genomes/hg19/original && \
+# #    cd /ginkgo/genomes/hg19/original && \
 # #    wget http://qb.cshl.edu/ginkgo/uploads/hg19.original.tar.gz && \
 # #    tar -xvf hg19.original.tar.gz
 
