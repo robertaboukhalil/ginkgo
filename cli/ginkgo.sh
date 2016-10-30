@@ -4,7 +4,8 @@
 # Ginkgo - Command line version
 # ==============================================================================
 
-DIR_ROOT="/mnt/data/ginkgo"
+# Determine root directory (http://stackoverflow.com/a/246128)
+DIR_ROOT="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && cd ../ && pwd )"
 DIR_GENOMES=${DIR_ROOT}/genomes
 DIR_SCRIPTS=${DIR_ROOT}/scripts
 
