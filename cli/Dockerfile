@@ -33,14 +33,16 @@ RUN R -e 'install.packages("ggplot2", repos="http://cran.us.r-project.org");'
 
 # -- Retrieve latest Ginkgo code from Github -----------------------------------
 RUN apt-get install git wget -y
-RUN mkdir -p /mnt/data/ginkgo/ && \
-    cd /mnt/data/ && \
+RUN mkdir -p /ginkgo/ && \
+    cd / && \
     git clone https://github.com/robertaboukhalil/ginkgo.git && \
-    cd /mnt/data/ginkgo/ && \
+    cd /ginkgo/ && \
     make
 
-# -- Setup hg19 ----------------------------------------------------------------
-RUN mkdir -p /mnt/data/ginkgo/genomes/hg19/original && \
-    cd /mnt/data/ginkgo/genomes/hg19/original && \
-    wget http://qb.cshl.edu/ginkgo/uploads/hg19.original.tar.gz && \
-    tar -xvf hg19.original.tar.gz
+# # -- Setup hg19 --------------------------------------------------------------
+# # -- NOTE: removed this to make genome support not dependent on docker image
+# #RUN mkdir -p /mnt/data/ginkgo/genomes/hg19/original && \
+# #    cd /mnt/data/ginkgo/genomes/hg19/original && \
+# #    wget http://qb.cshl.edu/ginkgo/uploads/hg19.original.tar.gz && \
+# #    tar -xvf hg19.original.tar.gz
+
