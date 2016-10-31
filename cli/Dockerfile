@@ -31,18 +31,26 @@ RUN apt-get install r-cran-plyr -y
 RUN R -e 'install.packages("scales", repos="http://cran.us.r-project.org");'
 RUN R -e 'install.packages("ggplot2", repos="http://cran.us.r-project.org");'
 
+# -- Install Java --------------------------------------------------------------
+RUN echo "deb http://ppa.launchpad.net/webupd8team/java/ubuntu xenial main" | tee /etc/apt/sources.list.d/webupd8team-java.list
+RUN echo "deb-src http://ppa.launchpad.net/webupd8team/java/ubuntu xenial main" | tee -a /etc/apt/sources.list.d/webupd8team-java.list
+RUN echo "oracle-java8-installer shared/accepted-oracle-license-v1-1 select true" | debconf-set-selections
+RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys EEA14886
+RUN apt-get update
+RUN apt-get install oracle-java8-installer -y
+
 # -- Retrieve latest Ginkgo code from Github -----------------------------------
 RUN apt-get install git wget -y
-RUN mkdir -p /ginkgo/ && \
-    cd / && \
+RUN mkdir -p /mnt/data/ginkgo/ && \
+    cd /mnt/data/ && \
     git clone https://github.com/robertaboukhalil/ginkgo.git && \
-    cd /ginkgo/ && \
+    cd /mnt/data/ginkgo/ && \
     make
 
 # # -- Setup hg19 --------------------------------------------------------------
 # # -- NOTE: removed this to make genome support not dependent on docker image
-# #RUN mkdir -p /ginkgo/genomes/hg19/original && \
-# #    cd /ginkgo/genomes/hg19/original && \
-# #    wget http://qb.cshl.edu/ginkgo/uploads/hg19.original.tar.gz && \
+# #RUN mkdir -p /mnt/data/ginkgo/genomes/hg19/original && \
+# #    cd /mnt/data/ginkgo/genomes/hg19/original && \
+# #    wget http://qb.cshl.edu/mnt/data/ginkgo/uploads/hg19.original.tar.gz && \
 # #    tar -xvf hg19.original.tar.gz
 
