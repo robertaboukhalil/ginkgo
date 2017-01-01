@@ -61,6 +61,7 @@ Type ```make``` in the ginkgo/ directory
 
 - ginkgo/scripts/analyze-subset.R
 	- Set the folder to where ginkgo/scripts is located
+	- Set the folder to where ginkgo/genomes is located (warning: test this carefully if your ginkgo/uploads folder is a symlink)
 
 - Make sure the uploads directory has the correct write permissions
 
