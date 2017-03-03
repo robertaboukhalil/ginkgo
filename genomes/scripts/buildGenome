@@ -1,78 +1,146 @@
 #!/bin/bash
 
-##################VARIABLES##################
-#ASSEMBLY (name of assembly used - i.e. hg19)
-#############################################
+if [ $# != 1 ]
+then
+  echo "buildGenome ASSEMBLY_PREFIX"
+  exit
+fi
+
+ASSEMBLY=$1
+READLEN=(48 76 101 150)
+BINSIZE=(5000 10000 25000 50000 100000 175000 250000 500000 1000000 2500000 5000000 10000000)
+
 export SGE_JSV_TIMEOUT=120
 
- #: <<'COMMENT'
+SCRIPTS=/seq/schatz/mschatz/ginkgo/genomes/scripts
 
+echo "# Indexing $ASSEMBLY for ${READLEN[*]} bp reads using bins of size ${BINSIZE[*]}"
 
-#Make list of all fasta files
-echo "Step (1/7): Building Chrom List"
-ls | grep ^chr | grep ".fa" |  awk -F ".fa" '{print $1}' | sort -V | uniq > list
+if [ ! -f list ]
+then
+  echo " Step (1/7): Building Chrom List"
+  ls | grep ^chr | grep ".fa" |  awk -F ".fa" '{print $1}' | sort -V | uniq > list
+fi
 
-#Concatenate all fasta files
-#echo -e "\nStep (2/7): Preparing Genome"
-#cat `ls | grep chr | sort -V | tr '\n' ' '` > ${ASSEMBLY}.fa
+if [ ! -f ${ASSEMBLY}.fa ]
+then
+  echo -e "\n Step (2/7): Preparing Genome"
+  cat `ls | grep chr | sort -V | tr '\n' ' '` > ${ASSEMBLY}.fa
+fi
 
-#Build bowtie reference files
-echo -e "\nStep (3/7): Building Index Files"
-/opt/uge/bin/lx-amd64/qsub -cwd -l m_mem_free=8G -v ASSEMBLY=$ASSEMBLY /seq/schatz/tgarvin/genomes/scripts/indexBWA
-/opt/uge/bin/lx-amd64/qsub -cwd -l m_mem_free=8G -v ASSEMBLY=$ASSEMBLY /seq/schatz/tgarvin/genomes/scripts/indexBOWTIE
+if [ ! -f bwaBUILT ]
+then
+  echo -e "\n Step (3/7): Building Index Files"
+  /opt/uge/bin/lx-amd64/qsub -cwd -l m_mem_free=8G -v ASSEMBLY=$ASSEMBLY $SCRIPTS/indexBWA
+  /opt/uge/bin/lx-amd64/qsub -cwd -l m_mem_free=8G -v ASSEMBLY=$ASSEMBLY $SCRIPTS/indexBOWTIE
+fi
 
-#Extract reads at all positions across chromosome
-echo -e "\nStep (4/7): Simulating Reads"
-while read line; do 
-  for len in 48 76 101 150; do 
-    /opt/uge/bin/lx-amd64/qsub -cwd -l m_mem_free=3G -v IN=$line -v LENGTH=$len /seq/schatz/tgarvin/genomes/scripts/processGenome
-  done
-done < list
-
-echo -e "\nStep (5/7): Generating Essential Chromosome Files"
-#Count lengths of each chromosome
-echo -e "  [Computing chromomsome lengths]"
-while read CHROM
-  do echo $CHROM $((`grep -v ">" ${CHROM}.fa | wc -c`-`wc -l < ${CHROM}.fa`+1))
-done < list > lengths
-
-#Find centromere positions
-echo "  [Computing centromere positions]"
-for i in `ls | grep chr | grep fa | sed "s/.fa//g" | sort -V`; do 
-  /seq/schatz/tgarvin/genomes/scripts/findCentromeres ${i}.fa out${i}
-  if [ `wc -l < out${i}` -eq 0 ]; then
-    echo -e "${i}\t0\t0"
-  else
-    awk '{print $2-$1"\t"$1"\t"$2}' out${i} | sort -rg | head -1 | awk -v chr=$i '{print chr"\t"$2"\t"$3}'
+for len in ${READLEN[*]}; do
+  if [ ! -f frag_${len}_done ]
+  then
+    echo -e "\n Step (4/7): Simulating $len bp Reads"
+    while read line; do 
+      /opt/uge/bin/lx-amd64/qsub -cwd -l m_mem_free=3G -v IN=$line -v LENGTH=$len $SCRIPTS/processGenome
+    done < list
+    touch frag_${len}_done
   fi
-done > centromeres
-rm -f out*
-
-#Generate fixed length bins
-echo -e "\nStep (6/7): Generating fixed-length interval files"
-for size in 5000 10000 25000 50000 100000 175000 250000 500000 1000000 2500000 5000000 10000000; do 
-  /seq/schatz/tgarvin/genomes/scripts/fixed lengths fixed_${size} $size
-  /seq/schatz/tgarvin/genomes/scripts/bounds fixed_${size} bounds_fixed_${size}
-  /seq/schatz/tgarvin/genomes/scripts/GC fixed_${size} GC_fixed_${size} lengths
-  /seq/schatz/tgarvin/genomes/scripts/match_genes_to_bins fixed_${size} genes genes_fixed_${size}
 done
 
-#Check to ensure both indexes have been build before proceeding
-while [ "$testBWA" != "bwaBUILT" ] || [ "$testBOWTIE" != "bowtieBUILT" ] || [ `qstat | grep tgarvin | grep process | wc -l` -gt 0 ] ; do
+if [ ! -f lengths ]
+then
+  echo -e "\n Step (5/7): Generating Essential Chromosome Files"
+  echo -e "  [Computing chromomsome lengths]"
+  while read CHROM
+    do echo $CHROM $((`grep -v ">" ${CHROM}.fa | wc -c`-`wc -l < ${CHROM}.fa`+1))
+  done < list > lengths
+fi
+
+if [ ! -r centromeres ]
+then
+  echo "  [Computing centromere positions]"
+  for i in `cat list`; do 
+    $SCRIPTS/findCentromeres ${i}.fa out${i}
+    if [ `wc -l < out${i}` -eq 0 ]; then
+      echo -e "${i}\t0\t0"
+    else
+      awk '{print $2-$1"\t"$1"\t"$2}' out${i} | sort -rg | head -1 | awk -v chr=$i '{print chr"\t"$2"\t"$3}'
+    fi
+  done > centromeres
+  rm -f out*
+fi
+
+for size in ${BINSIZE[*]}; do 
+  if [ ! -f fixed_${size} ]
+  then
+    echo -e "\nStep (6/7): Generating fixed-length interval files for ${size} bp bins"
+    $SCRIPTS/fixed lengths fixed_${size} $size
+    $SCRIPTS/bounds fixed_${size} bounds_fixed_${size}
+    $SCRIPTS/GC fixed_${size} GC_fixed_${size} lengths
+
+    if [ ! -f genes ]
+    then
+      $SCRIPTS/match_genes_to_bins fixed_${size} genes genes_fixed_${size}
+    fi
+  fi
+done
+
+# Check to ensure both indexes have been build and reads have been sampled before proceeding
+
+testBWA=`ls | grep bwaBUILT`
+testBOWTIE=`ls | grep bowtieBUILT`
+while [ "$testBWA" != "bwaBUILT" ] || [ "$testBOWTIE" != "bowtieBUILT" ] || [ `qstat | grep mschatz | grep process | wc -l` -gt 0 ] ; do
   sleep 30
   testBWA=`ls | grep bwaBUILT`
   testBOWTIE=`ls | grep bowtieBUILT`
 done
 
-rm -f bwaBUILT bowtieBUILT
-	
-#Map simulated reads back to genome
-echo -e "\nStep (7/7): Mapping Simulated Reads To Reference"
-while read line; do
-  for len in 48 76 101 150; do
-    /opt/uge/bin/lx-amd64/qsub -cwd -l m_mem_free=2G -pe threads 2 -v ASSEMBLY=$ASSEMBLY -v IN=$line -v LENGTH=$len /seq/schatz/tgarvin/genomes/scripts/mapBOWTIE
-    /opt/uge/bin/lx-amd64/qsub -cwd -l m_mem_free=2G -l tmp_free=100G -pe threads 2 -v ASSEMBLY=$ASSEMBLY -v IN=$line -v LENGTH=$len /seq/schatz/tgarvin/genomes/scripts/mapBWA
-  done
-done < list
 
-echo -e "\nFinished Launching Jobs"
+if [ ! -f bwa_done ] || [ ! -f bowtie_done ]
+then
+  ## Create a file of binsizes to compute
+  rm -f binsizes
+  for l in ${BINSIZE[*]}; do
+    echo $l >> binsizes
+  done
+
+  echo -e "\n Step (7/7): Mapping Simulated Reads To Reference and Bin"
+  while read line; do
+    for len in ${READLEN[*]}; do
+      /opt/uge/bin/lx-amd64/qsub -cwd -l m_mem_free=2G -pe threads 2 -v ASSEMBLY=$ASSEMBLY -v IN=$line -v LENGTH=$len $SCRIPTS/mapBOWTIE
+      /opt/uge/bin/lx-amd64/qsub -cwd -l m_mem_free=2G -l tmp_free=100G -pe threads 2 -v ASSEMBLY=$ASSEMBLY -v IN=$line -v LENGTH=$len $SCRIPTS/mapBWA
+    done
+  done < list
+
+  echo -e "\nFinished Launching Jobs"
+fi
+
+
+
+for SIZE in ${BINSIZE[*]}; do
+  for LENGTH in ${READLEN[*]}; do
+    for TYPE in "bwa" "bowtie"; do
+      if [ ! -f bounds_variable_${SIZE}_${LENGTH}_${TYPE} ]
+      then
+        echo -e "\n Step (8/8): Creating variable length ${SIZE} bins with ${LENGTH} bp reads for $TYPE"
+
+        #Concatenate chromsome intervals
+        echo -e "CHR\tEND" > variable_${SIZE}_${LENGTH}_${TYPE}
+        cat `ls | grep results_${SIZE}_${LENGTH}_${TYPE} | sort -V` >> variable_${SIZE}_${LENGTH}_${TYPE}
+        
+        #Generate interval boundaries
+        $SCRIPTS/bounds variable_${SIZE}_${LENGTH}_${TYPE} bounds_variable_${SIZE}_${LENGTH}_${TYPE}
+        
+        #Calculate GC content in intervals
+        $SCRIPTS/GC variable_${SIZE}_${LENGTH}_${TYPE} GC_variable_${SIZE}_${LENGTH}_${TYPE} lengths
+
+        if [ -f genes ]
+        then
+          #Generate gene files
+          $SCRIPTS/match_genes_to_bins variable_${SIZE}_${LENGTH}_${TYPE} genes genes_variable_${SIZE}_${LENGTH}_${TYPE}
+        fi
+      fi
+    done
+  done
+done
+
+echo -e "\nAll done. You can now run clean.sh"

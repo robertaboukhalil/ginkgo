@@ -1,4 +1,4 @@
-all: GC bin bin_old bounds findCentromeres fixed match_genes_to_bins segFa simReads
+all: GC bin bounds findCentromeres fixed match_genes_to_bins simReads
 
 clean: 
-	rm -f GC bin bin_old bounds findCentromeres fixed match_genes_to_bins segFa simReads
+	rm -f GC bin bounds findCentromeres fixed match_genes_to_bins simReads

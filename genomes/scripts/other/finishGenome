@@ -1,5 +1,7 @@
 #!/bin/bash
 
+SCRIPTS=/seq/schatz/mschatz/ginkgo/genomes/scripts
+
 #Concatenate chromsome intervals
 echo -e "CHR\tEND" > variable_${SIZE}_${LENGTH}_${TYPE}
 cat `ls | grep results_${SIZE}_${LENGTH}_${TYPE} | sort -V` >> variable_${SIZE}_${LENGTH}_${TYPE}
@@ -7,12 +9,12 @@ cat `ls | grep results_${SIZE}_${LENGTH}_${TYPE} | sort -V` >> variable_${SIZE}_
 #rm -f results*
 
 #Generate interval boundaries
-/seq/schatz/tgarvin/genomes/scripts/bounds variable_${SIZE}_${LENGTH}_${TYPE} bounds_variable_${SIZE}_${LENGTH}_${TYPE}
+$SCRIPTS/bounds variable_${SIZE}_${LENGTH}_${TYPE} bounds_variable_${SIZE}_${LENGTH}_${TYPE}
 
 #Calculate GC content in intervals
-/seq/schatz/tgarvin/genomes/scripts/GC variable_${SIZE}_${LENGTH}_${TYPE} GC_variable_${SIZE}_${LENGTH}_${TYPE} lengths
+$SCRIPTS/GC variable_${SIZE}_${LENGTH}_${TYPE} GC_variable_${SIZE}_${LENGTH}_${TYPE} lengths
 
 #Generate gene files
-/seq/schatz/tgarvin/genomes/scripts/match_genes_to_bins variable_${SIZE}_${LENGTH}_${TYPE} genes genes_variable_${SIZE}_${LENGTH}_${TYPE}
+$SCRIPTS/match_genes_to_bins variable_${SIZE}_${LENGTH}_${TYPE} genes genes_variable_${SIZE}_${LENGTH}_${TYPE}
 
 echo -e "\nFinished"

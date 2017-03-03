@@ -6,7 +6,9 @@
 
 rm ${TMPDIR}/${IN}_${LENGTH}_frags.sai
 
-for size in 5000 10000 25000 50000 100000 175000 250000 500000 1000000 2500000 5000000 10000000; do
-  /opt/uge/bin/lx-amd64/qsub -V -cwd -l m_mem_free=3G -v LENGTH=$LENGTH -v SIZE=$size -v TYPE=bwa -v IN=$IN /seq/schatz/tgarvin/genomes/scripts/binBWA
+for size in `cat binsizes`; do
+  /opt/uge/bin/lx-amd64/qsub -V -cwd -l m_mem_free=3G -v LENGTH=$LENGTH -v SIZE=$size -v TYPE=bwa -v IN=$IN /seq/schatz/mschatz/ginkgo/genomes/scripts/binBWA
 done
+
+touch bwa_done
 
