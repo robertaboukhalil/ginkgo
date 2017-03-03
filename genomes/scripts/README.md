@@ -29,3 +29,7 @@
    This will sample a read from every position in the genome, map it back with bowtie and bwa to determine unique mappable positions and then derive bins with a certain number of uniquely mappable bases.  It will also create fixed length bins of the desired bin sizes. To make this efficient, it uses grid engine (qsub) to queue work on a cluster. You will need to edit this information for different queueing systems
 
 
+
+Note, we have the bins for several reference genomes computed here:
+http://labshare.cshl.edu/shares/schatzlab/www-data/ginkgo/genomes/
+
