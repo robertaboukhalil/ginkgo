@@ -8,7 +8,7 @@
 # -- Variables
 # ------------------------------------------------------------------------------
 
-home=/mnt/data/ginkgo
+home=/local1/work/ginkgo
 dir=${home}/uploads/${1}
 source ${dir}/config
 distMet=$distMeth
@@ -108,6 +108,7 @@ fi
 # ------------------------------------------------------------------------------
 
 if [ "$process" == "1" ]; then
+  echo "Launching process.R $genome $dir $statFile data $segMeth $binMeth $clustMeth $distMet $color ${ref}_mapped $f $facs $sex $rmbadbins"
   ${home}/scripts/process.R $genome $dir $statFile data $segMeth $binMeth $clustMeth $distMet $color ${ref}_mapped $f $facs $sex $rmbadbins
 fi
 
@@ -116,6 +117,7 @@ fi
 # ------------------------------------------------------------------------------
 
 if [ "$fix" == "1" ]; then
+  echo "Launching reclust.R $genome $dir $statFile $binMeth $clustMeth $distMet $f $facs $sex"
   ${home}/scripts/reclust.R $genome $dir $statFile $binMeth $clustMeth $distMet $f $facs $sex
 fi
 
@@ -137,6 +139,7 @@ done
 # -- Call CNVs
 # ------------------------------------------------------------------------------
 
+echo "Launching ${home}/scripts/CNVcaller ${dir}/SegCopy ${dir}/CNV1 ${dir}/CNV2"
 ${home}/scripts/CNVcaller ${dir}/SegCopy ${dir}/CNV1 ${dir}/CNV2
 
 # ------------------------------------------------------------------------------

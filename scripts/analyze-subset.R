@@ -15,7 +15,7 @@ bm				= args[[4]]
 pseudoautosomal = args[[5]]
 
 # --
-setwd(paste('/mnt/data/ginkgo/uploads/', userID, sep=''))
+setwd(paste('/local1/work/ginkgo/uploads/', userID, sep=''))
 maxPloidy = 6
 
 # --

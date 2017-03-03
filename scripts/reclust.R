@@ -2,6 +2,8 @@
 
 args<-commandArgs(TRUE)
 
+main_dir="/local1/work/ginkgo/scripts"
+
 genome <- args[[1]]
 user_dir <- args[[2]]
 status <- args[[3]]
@@ -70,7 +72,6 @@ clust$labels <- lab
 write(hc2Newick(clust), file=paste(user_dir, "/clust.newick", sep=""))
 
 ##
-main_dir="/mnt/data/ginkgo/scripts"
 command=paste("java -cp ", main_dir, "/forester_1025.jar org.forester.application.phyloxml_converter -f=nn ", user_dir, "/clust.newick ", user_dir, "/clust.xml", sep="");
 unlink( paste(user_dir, "/clust.xml", sep="") );
 system(command);
@@ -118,7 +119,6 @@ clust2$labels <- lab
 write(hc2Newick(clust2), file=paste(user_dir, "/clust2.newick", sep=""))
 
 ##
-main_dir="/mnt/data/ginkgo/scripts"
 command=paste("java -cp ", main_dir, "/forester_1025.jar org.forester.application.phyloxml_converter -f=nn ", user_dir, "/clust2.newick ", user_dir, "/clust2.xml", sep="");
 unlink( paste(user_dir, "/clust2.xml", sep="") );
 system(command);
@@ -147,7 +147,6 @@ clust3$labels=lab
 write(hc2Newick(clust3), file=paste(user_dir, "/clust3.newick", sep=""))
 
 ##
-main_dir="/mnt/data/ginkgo/scripts"
 command=paste("java -cp ", main_dir, "/forester_1025.jar org.forester.application.phyloxml_converter -f=nn ", user_dir, "/clust3.newick ", user_dir, "/clust3.xml", sep="");
 unlink( paste(user_dir, "/clust3.xml", sep="") );
 system(command);

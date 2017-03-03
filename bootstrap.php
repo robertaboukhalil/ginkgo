@@ -5,7 +5,7 @@
 // =============================================================================
 
 // Directories
-define('DIR_ROOT', '/mnt/data/ginkgo');
+define('DIR_ROOT', '/local1/work/ginkgo');
 define('DIR_UPLOADS', DIR_ROOT . '/uploads');
 
 // URLs
