@@ -1,0 +1,7 @@
+#!/bin/bash
+
+#Build bowtie reference files
+bowtie-build ${ASSEMBLY}.fa ${ASSEMBLY}.fa
+echo "Bowtie index built for assembly:" ${ASSEMBLY}
+touch bowtieBUILT
+

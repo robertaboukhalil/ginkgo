@@ -1,0 +1,5 @@
+#!/bin/bash
+
+#Extract reads at all positions across chromosome
+/seq/schatz/tgarvin/genomes/scripts/simReads ${IN}.fa ${IN}_${LENGTH}_frags $LENGTH
+

@@ -1,0 +1,6 @@
+#!/bin/bash
+
+#Build bwa reference files
+bwa index ${ASSEMBLY}.fa
+echo "BWA index built for assembly:" ${ASSEMBLY}
+touch bwaBUILT

@@ -1,0 +1,72 @@
+#!/bin/bash
+
+##################VARIABLES##################
+#ASSEMBLY (name of assembly used - i.e. hg19)
+#############################################
+export SGE_JSV_TIMEOUT=120
+
+#Make list of all fasta files
+echo "Step (1/7): Building Chrom List"
+ls | grep ^chr | grep ".fa" |  awk -F ".fa" '{print $1}' | sort -V | uniq > list
+
+#Concatenate all fasta files
+#echo -e "\nStep (2/7): Preparing Genome"
+#cat `ls | grep chr | sort -V | tr '\n' ' '` > ${ASSEMBLY}.fa
+
+#Build bowtie reference files
+#echo -e "\nStep (3/7): Building Index Files"
+#/opt/uge/bin/lx-amd64/qsub -cwd -l m_mem_free=8G -v ASSEMBLY=$ASSEMBLY /seq/schatz/tgarvin/genomes/scripts/indexBWA
+#/opt/uge/bin/lx-amd64/qsub -cwd -l m_mem_free=8G -v ASSEMBLY=$ASSEMBLY /seq/schatz/tgarvin/genomes/scripts/indexBOWTIE
+
+#Extract reads at all positions across chromosome
+echo -e "\nStep (4/7): Simulating Reads"
+while read line; do 
+  for len in 101; do 
+    /opt/uge/bin/lx-amd64/qsub -cwd -l m_mem_free=3G -v IN=$line -v LENGTH=$len /seq/schatz/tgarvin/genomes/scripts/processGenome
+  done
+done < list
+
+echo -e "\nStep (5/7): Generating Essential Chromosome Files"
+#Count lengths of each chromosome
+echo -e "  [Computing chromomsome lengths]"
+while read CHROM
+  do echo $CHROM $((`grep -v ">" ${CHROM}.fa | wc -c`-`wc -l < ${CHROM}.fa`+1))
+done < list > lengths
+
+#Find centromere positions
+echo "  [Computing centromere positions]"
+for i in `ls | grep chr | grep fa | sed "s/.fa//g" | sort -V`; do 
+  /seq/schatz/tgarvin/genomes/scripts/findCentromeres ${i}.fa out${i}
+  if [ `wc -l < out${i}` -eq 0 ]; then
+    echo -e "${i}\t0\t0"
+  else
+    awk '{print $2-$1"\t"$1"\t"$2}' out${i} | sort -rg | head -1 | awk -v chr=$i '{print chr"\t"$2"\t"$3}'
+  fi
+done > centromeres
+rm -f out*
+
+#Generate fixed length bins
+echo -e "\nStep (6/7): Generating fixed-length interval files"
+for size in 12800000 25600000 51200000 102400000 204800000; do
+  /seq/schatz/tgarvin/genomes/scripts/fixed lengths fixed_${size} $size
+  /seq/schatz/tgarvin/genomes/scripts/bounds fixed_${size} bounds_fixed_${size}
+  /seq/schatz/tgarvin/genomes/scripts/GC fixed_${size} GC_fixed_${size} lengths
+  /seq/schatz/tgarvin/genomes/scripts/match_genes_to_bins fixed_${size} genes genes_fixed_${size}
+done
+
+#Check to ensure both indexes have been build before proceeding
+while [ `qstat | grep processG | wc -l` -gt 0 ] ; do
+  sleep 30
+done
+	
+#Map simulated reads back to genome
+echo -e "\nStep (7/7): Mapping Simulated Reads To Reference"
+while read line; do
+  for len in 101; do
+    /opt/uge/bin/lx-amd64/qsub -cwd -l m_mem_free=2G -pe threads 2 -v ASSEMBLY=$ASSEMBLY -v IN=$line -v LENGTH=$len /seq/schatz/tgarvin/genomes/scripts/mapBOWTIE_quick
+    #/opt/uge/bin/lx-amd64/qsub -cwd -l m_mem_free=2G -l tmp_free=100G -pe threads 2 -v ASSEMBLY=$ASSEMBLY -v IN=$line -v LENGTH=$len /seq/schatz/tgarvin/genomes/scripts/mapBWA
+  done
+done < list
+
+echo -e "\nFinished Launching Jobs"
+
