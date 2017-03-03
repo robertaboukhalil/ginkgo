@@ -680,6 +680,24 @@ jpeg("heatCor.jpeg", width=2000, height=1400)
 heatmap.2(t(finalBPs), Colv=FALSE, Rowv=as.dendrogram(clust3), margins=c(5,20), dendrogram="row", trace="none", xlab="Bins", ylab="Samples", cex.main=2, cex.axis=1.5, cex.lab=1.5, cexCol=.001, col=colorRampPalette(c("white","steelblue1","steelblue4","orange","sienna3"))(15), breaks=seq(0,step,step/15))
 dev.off()
 
+#jpeg("heatRaw.jpeg", width=2000, height=1400)
+#heatmap3(t(rawBPs), distfun = function(x) dist(x), Colv=FALSE, Rowv=as.dendrogram(clust), margins=c(5,20), dendrogram="row", trace="none", xlab="Bins", ylab="Samples", cex.main=2, cex.axis=1.5, cex.lab=1.5, cexCol=.001, col=bluered(2))
+#dev.off()
+#
+#step=quantile(fixedBPs, c(.98))[[1]]
+#jpeg("heatNorm.jpeg", width=2000, height=1400)
+#heatmap3(t(fixedBPs), distfun = function(x) dist(x), Colv=FALSE, Rowv=as.dendrogram(clust), margins=c(5,20), dendrogram="row", trace="none", xlab="Bins", ylab="Samples", cex.main=2, cex.axis=1.5, cex.lab=1.5, cexCol=.001, col=bluered(15), breaks=seq(0,step,step/15))
+#dev.off()
+#
+#step=min(20, quantile(finalBPs, c(.98))[[1]])
+#jpeg("heatCN.jpeg", width=2000, height=1400)
+#heatmap3(t(finalBPs), distfun = function(x) dist(x), Colv=FALSE, Rowv=as.dendrogram(clust2), margins=c(5,20), dendrogram="row", trace="none", xlab="Bins", ylab="Samples", cex.main=2, cex.axis=1.5, cex.lab=1.5, cexCol=.001, col=colorRampPalette(c("white","green","green4","violet","purple"))(15), breaks=seq(0,step,step/15))
+#dev.off()
+#
+#jpeg("heatCor.jpeg", width=2000, height=1400)
+#heatmap3(t(finalBPs), distfun = function(x) dist(x), Colv=FALSE, Rowv=as.dendrogram(clust3), margins=c(5,20), dendrogram="row", trace="none", xlab="Bins", ylab="Samples", cex.main=2, cex.axis=1.5, cex.lab=1.5, cexCol=.001, col=colorRampPalette(c("white","steelblue1","steelblue4","orange","sienna3"))(15), breaks=seq(0,step,step/15))
+#dev.off()
+
 statusFile=file( paste(user_dir, "/", status, sep="") )
 writeLines(c("<?xml version='1.0'?>", "<status>", "<step>3</step>", paste("<processingfile>Finished</processingfile>", sep=""), paste("<percentdone>100</percentdone>", sep=""), "<tree>clust.xml</tree>", "</status>"), statusFile)
 close(statusFile)
