@@ -9,8 +9,8 @@ Usage
 
 * Step 0: Upload .bed files
 * Step 1: Choose analysis parameters
-* Step 2: Phylogenetic Tree
-* Step 3: Analyse Individual Cells
+* Step 2: Compute Copy Number Profiles, and a Phylogenetic Tree
+* Step 3: Analyze Individual Cells
 
 
 Setup Ginkgo on your own server
