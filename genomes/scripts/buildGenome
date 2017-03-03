@@ -10,27 +10,28 @@ ASSEMBLY=$1
 READLEN=(48 76 101 150)
 BINSIZE=(5000 10000 25000 50000 100000 175000 250000 500000 1000000 2500000 5000000 10000000)
 
-export SGE_JSV_TIMEOUT=120
 
+USERNAME=mschatz
 SCRIPTS=/seq/schatz/mschatz/ginkgo/genomes/scripts
+export SGE_JSV_TIMEOUT=120
 
 echo "# Indexing $ASSEMBLY for ${READLEN[*]} bp reads using bins of size ${BINSIZE[*]}"
 
 if [ ! -f list ]
 then
-  echo " Step (1/7): Building Chrom List"
+  echo " Step (1/8): Building Chrom List"
   ls | grep ^chr | grep ".fa" |  awk -F ".fa" '{print $1}' | sort -V | uniq > list
 fi
 
 if [ ! -f ${ASSEMBLY}.fa ]
 then
-  echo -e "\n Step (2/7): Preparing Genome"
+  echo -e "\n Step (2/8): Preparing Genome"
   cat `ls | grep chr | sort -V | tr '\n' ' '` > ${ASSEMBLY}.fa
 fi
 
 if [ ! -f bwaBUILT ]
 then
-  echo -e "\n Step (3/7): Building Index Files"
+  echo -e "\n Step (3/8): Building Index Files"
   /opt/uge/bin/lx-amd64/qsub -cwd -l m_mem_free=8G -v ASSEMBLY=$ASSEMBLY $SCRIPTS/indexBWA
   /opt/uge/bin/lx-amd64/qsub -cwd -l m_mem_free=8G -v ASSEMBLY=$ASSEMBLY $SCRIPTS/indexBOWTIE
 fi
@@ -38,7 +39,7 @@ fi
 for len in ${READLEN[*]}; do
   if [ ! -f frag_${len}_done ]
   then
-    echo -e "\n Step (4/7): Simulating $len bp Reads"
+    echo -e "\n Step (4/8): Simulating $len bp Reads"
     while read line; do 
       /opt/uge/bin/lx-amd64/qsub -cwd -l m_mem_free=3G -v IN=$line -v LENGTH=$len $SCRIPTS/processGenome
     done < list
@@ -48,7 +49,7 @@ done
 
 if [ ! -f lengths ]
 then
-  echo -e "\n Step (5/7): Generating Essential Chromosome Files"
+  echo -e "\n Step (5/8): Generating Essential Chromosome Files"
   echo -e "  [Computing chromomsome lengths]"
   while read CHROM
     do echo $CHROM $((`grep -v ">" ${CHROM}.fa | wc -c`-`wc -l < ${CHROM}.fa`+1))
@@ -72,12 +73,12 @@ fi
 for size in ${BINSIZE[*]}; do 
   if [ ! -f fixed_${size} ]
   then
-    echo -e "\nStep (6/7): Generating fixed-length interval files for ${size} bp bins"
+    echo -e "\nStep (6/8): Generating fixed-length interval files for ${size} bp bins"
     $SCRIPTS/fixed lengths fixed_${size} $size
     $SCRIPTS/bounds fixed_${size} bounds_fixed_${size}
     $SCRIPTS/GC fixed_${size} GC_fixed_${size} lengths
 
-    if [ ! -f genes ]
+    if [ -f genes ]
     then
       $SCRIPTS/match_genes_to_bins fixed_${size} genes genes_fixed_${size}
     fi
@@ -85,13 +86,8 @@ for size in ${BINSIZE[*]}; do
 done
 
 # Check to ensure both indexes have been build and reads have been sampled before proceeding
-
-testBWA=`ls | grep bwaBUILT`
-testBOWTIE=`ls | grep bowtieBUILT`
-while [ "$testBWA" != "bwaBUILT" ] || [ "$testBOWTIE" != "bowtieBUILT" ] || [ `qstat | grep mschatz | grep process | wc -l` -gt 0 ] ; do
+while [ ! -f "bwaBUILT" ] || [ ! -f "bowtieBUILT" ] || [ `qstat | grep $USERNAME | grep process | wc -l` -gt 0 ] ; do
   sleep 30
-  testBWA=`ls | grep bwaBUILT`
-  testBOWTIE=`ls | grep bowtieBUILT`
 done
 
 
@@ -103,7 +99,7 @@ then
     echo $l >> binsizes
   done
 
-  echo -e "\n Step (7/7): Mapping Simulated Reads To Reference and Bin"
+  echo -e "\n Step (7/8): Mapping Simulated Reads To Reference and Bin"
   while read line; do
     for len in ${READLEN[*]}; do
       /opt/uge/bin/lx-amd64/qsub -cwd -l m_mem_free=2G -pe threads 2 -v ASSEMBLY=$ASSEMBLY -v IN=$line -v LENGTH=$len $SCRIPTS/mapBOWTIE
@@ -115,6 +111,15 @@ then
 fi
 
 
+
+# Check to ensure reads have been mapped and tested for uniqueness
+while [ ! -f bowtie_done ] || [ ! -f bwa_done ] || [ `qstat | grep $USERNAME | grep binB | wc -l` -gt 0 ] ; do
+  sleep 30
+done
+
+
+
+## Now finish up the binning
 
 for SIZE in ${BINSIZE[*]}; do
   for LENGTH in ${READLEN[*]}; do
