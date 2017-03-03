@@ -11,6 +11,7 @@
 # Config
 maxPloidy   = 6
 minBinWidth = 5
+main_dir="/local1/work/ginkgo/scripts"
 
 # User settings
 args        = commandArgs(TRUE)
@@ -529,7 +530,6 @@ if(cm == "NJ")
 }
 
 ###
-main_dir="/mnt/data/ginkgo/scripts"
 command=paste("java -cp ", main_dir, "/forester_1025.jar org.forester.application.phyloxml_converter -f=nn ", user_dir, "/clust.newick ", user_dir, "/clust.xml", sep="");
 unlink( paste(user_dir, "/clust.xml", sep="") );
 system(command);
@@ -568,7 +568,6 @@ if(cm == "NJ"){
 
 
 ###
-main_dir="/mnt/data/ginkgo/scripts"
 command=paste("java -cp ", main_dir, "/forester_1025.jar org.forester.application.phyloxml_converter -f=nn ", user_dir, "/clust2.newick ", user_dir, "/clust2.xml", sep="");
 unlink( paste(user_dir, "/clust2.xml", sep="") );
 system(command);
@@ -603,7 +602,6 @@ if(cm == "NJ"){
 }
 
 ###
-main_dir="/mnt/data/ginkgo/scripts"
 command=paste("java -cp ", main_dir, "/forester_1025.jar org.forester.application.phyloxml_converter -f=nn ", user_dir, "/clust3.newick ", user_dir, "/clust3.xml", sep="");
 unlink( paste(user_dir, "/clust3.xml", sep="") );
 system(command);
@@ -660,20 +658,24 @@ if(cm == "NJ"){
   clust3 = phylo2hclust(clust3)
 }
 
+write("Making heatRaw.jpeg", stderr())
 jpeg("heatRaw.jpeg", width=2000, height=1400)
 heatmap.2(t(rawBPs), Colv=FALSE, Rowv=as.dendrogram(clust), margins=c(5,20), dendrogram="row", trace="none", xlab="Bins", ylab="Samples", cex.main=2, cex.axis=1.5, cex.lab=1.5, cexCol=.001, col=bluered(2))
 dev.off()
 
+write("Making heatNorm.jpeg", stderr())
 step=quantile(fixedBPs, c(.98))[[1]]
 jpeg("heatNorm.jpeg", width=2000, height=1400)
 heatmap.2(t(fixedBPs), Colv=FALSE, Rowv=as.dendrogram(clust), margins=c(5,20), dendrogram="row", trace="none", xlab="Bins", ylab="Samples", cex.main=2, cex.axis=1.5, cex.lab=1.5, cexCol=.001, col=bluered(15), breaks=seq(0,step,step/15))
 dev.off()
 
+write("Making heatCN.jpeg", stderr())
 step=min(20, quantile(finalBPs, c(.98))[[1]])
 jpeg("heatCN.jpeg", width=2000, height=1400)
 heatmap.2(t(finalBPs), Colv=FALSE, Rowv=as.dendrogram(clust2), margins=c(5,20), dendrogram="row", trace="none", xlab="Bins", ylab="Samples", cex.main=2, cex.axis=1.5, cex.lab=1.5, cexCol=.001, col=colorRampPalette(c("white","green","green4","violet","purple"))(15), breaks=seq(0,step,step/15))
 dev.off()
 
+write("Making heatCor.jpeg", stderr())
 jpeg("heatCor.jpeg", width=2000, height=1400)
 heatmap.2(t(finalBPs), Colv=FALSE, Rowv=as.dendrogram(clust3), margins=c(5,20), dendrogram="row", trace="none", xlab="Bins", ylab="Samples", cex.main=2, cex.axis=1.5, cex.lab=1.5, cexCol=.001, col=colorRampPalette(c("white","steelblue1","steelblue4","orange","sienna3"))(15), breaks=seq(0,step,step/15))
 dev.off()
