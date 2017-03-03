@@ -1,0 +1,4 @@
+#!/bin/bash
+
+java -jar /seq/schatz/tgarvin/tools/picard-tools/picard.jar CreateSequenceDictionary R=hg19.fa O=hg19.dict
+

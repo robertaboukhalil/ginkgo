@@ -17,8 +17,8 @@ cat `ls | grep chr | sort -V | tr '\n' ' '` > ${ASSEMBLY}.fa
 
 #Build bowtie reference files
 echo -e "\nStep (3/7): Building Index Files"
-/opt/uge/bin/lx-amd64/qsub -cwd -l m_mem_free=8G -v ASSEMBLY=$ASSEMBLY /seq/schatz/tgarvin/genomes/scripts/indexBWA
-/opt/uge/bin/lx-amd64/qsub -cwd -l m_mem_free=8G -v ASSEMBLY=$ASSEMBLY /seq/schatz/tgarvin/genomes/scripts/indexBOWTIE
+/opt/uge/bin/lx-amd64/qsub -cwd -l m_mem_free=8G -v ASSEMBLY=$ASSEMBLY /seq/schatz/mschatz/ginkgo/genomes/scripts/indexBWA
+/opt/uge/bin/lx-amd64/qsub -cwd -l m_mem_free=8G -v ASSEMBLY=$ASSEMBLY /seq/schatz/mschatz/ginkgo/genomes/scripts/indexBOWTIE
 
 COMMENT
 
@@ -26,7 +26,7 @@ COMMENT
 echo -e "\nStep (4/7): Simulating Reads"
 while read line; do
   for len in 48 76 101 150; do
-    /opt/uge/bin/lx-amd64/qsub -cwd -l m_mem_free=3G -v IN=$line -v LENGTH=$len /seq/schatz/tgarvin/genomes/scripts/processGenome
+    /opt/uge/bin/lx-amd64/qsub -cwd -l m_mem_free=3G -v IN=$line -v LENGTH=$len /seq/schatz/mschatz/ginkgo/genomes/scripts/processGenome
   done
 done < list
 

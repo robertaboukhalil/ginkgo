@@ -1,0 +1,9 @@
+#!/bin/bash
+
+SIZE=500000
+LENGTH=101
+TYPE=bowtie
+IN=chr11
+
+/seq/schatz/tgarvin/genomes/scripts/bin results_${SIZE}_${LENGTH}_${TYPE}_${IN} centromeres $SIZE $LENGTH `grep -w $IN lengths | awk '{print $2}'` ${IN}_${LENGTH}_${TYPE}_done
+
