@@ -1,4 +1,4 @@
-# Scripts for creating bins for a new genome file
+# Creating bins for new reference genomes
 
 1. First run `make` to compile the scripts. Make sure bowtie and bwa are in your path
 
