@@ -9,8 +9,8 @@ Usage
 
 * Step 0: Upload .bed files
 * Step 1: Choose analysis parameters
-* Step 2: Phylogenetic Tree
-* Step 3: Analyse Individual Cells
+* Step 2: Compute Copy Number Profiles, and a Phylogenetic Tree
+* Step 3: Analyze Individual Cells
 
 
 Setup Ginkgo on your own server
@@ -31,6 +31,16 @@ Setup Ginkgo on your own server
 	- gridExtra
 	- fastcluster
 	- heatmap3
+
+**WARNING** Version 3.0.0 (Mar 28, 2016) of gplots introduced a bug in heatmap.2 that makes it calculate dendrograms even when Rowv or Colv is set to FALSE so that Ginkgo will run for a very long time. The solution is to use an older version of gplots or use fixed version from: https://github.com/ChristophH/gplots. This can be installed using the commands below
+
+```
+remove.packages('gplots'); 
+library('devtools'); 
+install_github("ChristophH/gplots")
+```
+
+	
 
 **Install Ginkgo:**
 
