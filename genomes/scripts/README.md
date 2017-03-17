@@ -28,6 +28,10 @@
 
    This will sample a read from every position in the genome, map it back with bowtie and bwa to determine unique mappable positions and then derive bins with a certain number of uniquely mappable bases.  It will also create fixed length bins of the desired bin sizes. To make this efficient, it uses grid engine (qsub) to queue work on a cluster. You will need to edit this information for different queueing systems
 
+6. If all goes well the bin boundaries will be recorded in the files fixed_${BINSIZE}_${READLEN}_${ALIGNER} and variable_${BINSIZE}_${READLEN}_${ALIGNER}. The script will
+also create some additional files to compute the GC content of the bins (GC_*), the bounds of the bins (meaning how many bins per chromosome until you get to the next
+chromosome), a summary of the genes in each bin (genes_*). The directory will also contain a bunch of intermediate files. The included script (clean.sh) can be used to
+delete the unneeded files.
 
 
 Note, we have the bins for several reference genomes computed here:

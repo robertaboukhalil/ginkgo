@@ -1,5 +1,24 @@
 #!/bin/bash
 
+# Computes Fixed and Variable length bins for Ginkgo
+####################################################
+
+# List of read lengths to consider
+READLEN=(48 76 101 150)
+
+# List of bin sizes (uniquely mappable bases) to consider
+BINSIZE=(10000 25000 50000 100000 175000 250000 500000 1000000 2500000 5000000 10000000)
+#BINSIZE=(10000)
+
+# This is the username that will be monitored for qsub
+USERNAME=mschatz
+
+# Path to rest of scripts
+SCRIPTS=/seq/schatz/mschatz/ginkgo/genomes/scripts
+
+# Time out for SGE
+export SGE_JSV_TIMEOUT=120
+
 if [ $# != 1 ]
 then
   echo "buildGenome ASSEMBLY_PREFIX"
@@ -7,13 +26,6 @@ then
 fi
 
 ASSEMBLY=$1
-READLEN=(48 76 101 150)
-BINSIZE=(5000 10000 25000 50000 100000 175000 250000 500000 1000000 2500000 5000000 10000000)
-
-
-USERNAME=mschatz
-SCRIPTS=/seq/schatz/mschatz/ginkgo/genomes/scripts
-export SGE_JSV_TIMEOUT=120
 
 echo "# Indexing $ASSEMBLY for ${READLEN[*]} bp reads using bins of size ${BINSIZE[*]}"
 
