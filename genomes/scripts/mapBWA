@@ -2,7 +2,11 @@
 
 /opt/hpc/bin/bwa aln -t 4 ${ASSEMBLY}.fa ${IN}_${LENGTH}_frags > ${TMPDIR}/${IN}_${LENGTH}_frags.sai
 
-/opt/hpc/bin/bwa samse -n 1 ${ASSEMBLY}.fa ${TMPDIR}/${IN}_${LENGTH}_frags.sai ${IN}_${LENGTH}_frags | grep "NM:i:0" | awk '{print $3"\t"$4}' | grep -w $IN | sort -k2,2g > ${IN}_${LENGTH}_bwa_done
+/opt/hpc/bin/bwa samse -n 1 ${ASSEMBLY}.fa ${TMPDIR}/${IN}_${LENGTH}_frags.sai ${IN}_${LENGTH}_frags | \
+  grep "NM:i:0" | \
+  awk '$5 >= 30{print $3"\t"$4}' | \
+  grep -w $IN | \
+  sort -k2,2g > ${IN}_${LENGTH}_bwa_done
 
 rm ${TMPDIR}/${IN}_${LENGTH}_frags.sai
 
