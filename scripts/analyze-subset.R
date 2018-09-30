@@ -240,7 +240,7 @@ if(analysisType == "mad")
 
 	# Calculate MAD for selected cells
 	a = matrix(0, length(cellIDs), 4)
-	rownames(a) <- colnames(normal)
+	rownames(a) <- colnames(normal[,cellIDs])
 	for(i in 1:length(cellIDs))
 	{
 		cell = cellIDs[i]
