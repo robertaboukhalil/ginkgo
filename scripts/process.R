@@ -9,6 +9,7 @@
 # ------------------------------------------------------------------------------
 
 # Config
+minPloidy   = 1.5
 maxPloidy   = 6
 minBinWidth = 5
 main_dir="/local1/work/ginkgo/scripts"
@@ -31,7 +32,7 @@ sex         = as.numeric(args[[13]])
 bb          = as.numeric(args[[14]])
 
 # Libraries
-library('ctc')
+library(ctc)
 library(DNAcopy) # Segmentation
 library(inline)  # Use of c++
 library(gplots)  # Visual plotting of tables
@@ -59,8 +60,9 @@ bounds = read.table(paste("bounds_", bm, sep=""), header=FALSE, sep="\t")
 setwd(user_dir)
 raw    = read.table(dat, header=TRUE, sep="\t")
 ploidy = rbind(c(0,0), c(0,0))
-if (f == 1 | f == 2)
+if (f == 1 | f == 2) {
   ploidy = read.table(facs, header=FALSE, sep="\t", as.is=TRUE)  
+}
 
 # Remove bad bins
 if (bb)
@@ -94,15 +96,17 @@ colors[3,] = c('brown2', 'blue4')
 # Initialize data structures
 l            = dim(raw)[1] # Number of bins
 w            = dim(raw)[2] # Number of cells
-n_ploidy     = length(seq(1.5, maxPloidy, by=0.05)) # Number of ploidy tests during CN inference
 breaks       = matrix(0,l,w)
 fixed        = matrix(0,l,w)
 final        = matrix(0,l,w)
 stats        = matrix(0,w,10)
+pos          = cbind(c(1,bounds[,2]), c(bounds[,2], l))
+# Initialize CN inference variables
+CNgrid       = seq(minPloidy, maxPloidy, by=0.05)
+n_ploidy     = length(CNgrid)  # Number of ploidy tests during CN inference
 CNmult       = matrix(0,n_ploidy,w)
 CNerror      = matrix(0,n_ploidy,w)
-outerColsums = matrix(0, (20*(maxPloidy-1.5)+1), w)
-pos          = cbind(c(1,bounds[,2]), c(bounds[,2], l))
+outerColsums = matrix(0,n_ploidy,w)
 
 # Normalize cells
 normal  = sweep(raw+1, 2, colMeans(raw+1), '/')
@@ -167,10 +171,11 @@ for(k in 1:w)
   normal[,k] = lowess.gc( GC[,1], (raw[,k]+1)/mean(raw[,k]+1) )
 
   # Compute log ratio between kth sample and reference
-  if (stat == 0)
+  if (stat == 0) {
     lr = log2(normal[,k])
-  else
+  } else {
     lr = log2((normal[,k])/(F))
+  }
 
   # Determine breakpoints and extract chrom/locations
   CNA.object   = CNA(genomdat = lr, chrom = loc[,1], maploc = as.numeric(loc[,2]), data.type = 'logratio')
@@ -200,7 +205,6 @@ for(k in 1:w)
   # ----------------------------------------------------------------------------
 
   # Determine Copy Number     
-  CNgrid           = seq(1.5, maxPloidy, by=0.05)
   outerRaw         = fixed[,k] %o% CNgrid
   outerRound       = round(outerRaw)
   outerDiff        = (outerRaw - outerRound) ^ 2
@@ -390,19 +394,19 @@ for(k in 1:w)
   jpeg(filename=paste(lab[k], "_SoS.jpeg", sep=""), width=2500, height=1500)
 
   top = max(outerColsums[,k])
-  dat = data.frame(x=CNgrid, y=outerColsums[,k])
+  sosDat = data.frame(x=CNgrid, y=outerColsums[,k])
   lim = cbind(c(seq(0,5000,500), 1000000), c(50, 100, 100, 200, 250, 400, 500, 500, 600, 600, 750, 1000))
   step = lim[which(top<lim[,1])[1],]
   minSoS = data.frame(x=CNmult[1,k], y=CNerror[1,k])
   bestSoS = data.frame(x=CN, y=outerColsums[which(CNgrid==CN),k])
 
   plot1 = ggplot() +
-    geom_line(data=dat, aes(x=x, y=y), size=3) +
-    geom_point(data=dat, aes(x=x, y=y), shape=21, fill="black", size=5) +
     geom_point(data=minSoS, aes(x=x, y=y*1.02, color="Minimum SoS Error"), shape=18, size=15) +
     geom_point(data=bestSoS, aes(x=x, y=y*.98, color="Chosen Ploidy"), shape=18, size=15) +
     scale_x_continuous(limits=c(1.5, 6), breaks=seq(1.5, 6, .5)) +
     scale_y_continuous(limits=c(.5*min(outerColsums[,k]), top), breaks=seq(0, step[1], step[2])) +
+    geom_line(data=sosDat, aes(x=x, y=y), size=3) +
+    geom_point(data=sosDat, aes(x=x, y=y), shape=21, fill="black", size=5) +
     labs(title="Sum of Squares Error Across Potential Copy Number States", x="Copy Number Multiplier", y="Sum of Squares Error") +
     theme(plot.title=element_text(size=45, vjust=1.5)) +
     theme(axis.title.x=element_text(size=45, vjust=-2.8), axis.title.y=element_text(size=45, vjust=.1)) +
@@ -679,24 +683,6 @@ write("Making heatCor.jpeg", stderr())
 jpeg("heatCor.jpeg", width=2000, height=1400)
 heatmap.2(t(finalBPs), Colv=FALSE, Rowv=as.dendrogram(clust3), margins=c(5,20), dendrogram="row", trace="none", xlab="Bins", ylab="Samples", cex.main=2, cex.axis=1.5, cex.lab=1.5, cexCol=.001, col=colorRampPalette(c("white","steelblue1","steelblue4","orange","sienna3"))(15), breaks=seq(0,step,step/15))
 dev.off()
-
-#jpeg("heatRaw.jpeg", width=2000, height=1400)
-#heatmap3(t(rawBPs), distfun = function(x) dist(x), Colv=FALSE, Rowv=as.dendrogram(clust), margins=c(5,20), dendrogram="row", trace="none", xlab="Bins", ylab="Samples", cex.main=2, cex.axis=1.5, cex.lab=1.5, cexCol=.001, col=bluered(2))
-#dev.off()
-#
-#step=quantile(fixedBPs, c(.98))[[1]]
-#jpeg("heatNorm.jpeg", width=2000, height=1400)
-#heatmap3(t(fixedBPs), distfun = function(x) dist(x), Colv=FALSE, Rowv=as.dendrogram(clust), margins=c(5,20), dendrogram="row", trace="none", xlab="Bins", ylab="Samples", cex.main=2, cex.axis=1.5, cex.lab=1.5, cexCol=.001, col=bluered(15), breaks=seq(0,step,step/15))
-#dev.off()
-#
-#step=min(20, quantile(finalBPs, c(.98))[[1]])
-#jpeg("heatCN.jpeg", width=2000, height=1400)
-#heatmap3(t(finalBPs), distfun = function(x) dist(x), Colv=FALSE, Rowv=as.dendrogram(clust2), margins=c(5,20), dendrogram="row", trace="none", xlab="Bins", ylab="Samples", cex.main=2, cex.axis=1.5, cex.lab=1.5, cexCol=.001, col=colorRampPalette(c("white","green","green4","violet","purple"))(15), breaks=seq(0,step,step/15))
-#dev.off()
-#
-#jpeg("heatCor.jpeg", width=2000, height=1400)
-#heatmap3(t(finalBPs), distfun = function(x) dist(x), Colv=FALSE, Rowv=as.dendrogram(clust3), margins=c(5,20), dendrogram="row", trace="none", xlab="Bins", ylab="Samples", cex.main=2, cex.axis=1.5, cex.lab=1.5, cexCol=.001, col=colorRampPalette(c("white","steelblue1","steelblue4","orange","sienna3"))(15), breaks=seq(0,step,step/15))
-#dev.off()
 
 statusFile=file( paste(user_dir, "/", status, sep="") )
 writeLines(c("<?xml version='1.0'?>", "<status>", "<step>3</step>", paste("<processingfile>Finished</processingfile>", sep=""), paste("<percentdone>100</percentdone>", sep=""), "<tree>clust.xml</tree>", "</status>"), statusFile)
