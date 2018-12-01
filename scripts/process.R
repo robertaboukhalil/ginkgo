@@ -216,6 +216,8 @@ for(k in 1:w)
     CN = CNmult[1,k]
   } else if (f == 1) {
     CN = ploidy[which(lab[k]==ploidy[,1]),2]
+    # If user specified FACS file, still calculate CNerror
+    CNerror_facs = round( sort(colSums((round(fixed[,k] %o% c(CN)) - fixed[,k] %o% c(CN)) ^ 2, na.rm=FALSE, dims=1)), digits=2 )
   } else {
     estimate = ploidy[which(lab[k]==ploidy[,1]),2]
     CN = CNmult[which(abs(CNmult[,k] - estimate)<.4),k][1]
@@ -398,7 +400,13 @@ for(k in 1:w)
   lim = cbind(c(seq(0,5000,500), 1000000), c(50, 100, 100, 200, 250, 400, 500, 500, 600, 600, 750, 1000))
   step = lim[which(top<lim[,1])[1],]
   minSoS = data.frame(x=CNmult[1,k], y=CNerror[1,k])
-  bestSoS = data.frame(x=CN, y=outerColsums[which(CNgrid==CN),k])
+  # If a FACS file is provided, use CNerror_facs, since CN multiplier could be 
+  # outside the CNgrid range, which would cause "which(CNgrid==CN)" to error out
+  if(f == 1) {
+    bestSoS = data.frame(x=CN, y=CNerror_facs)    
+  } else {
+    bestSoS = data.frame(x=CN, y=outerColsums[which(CNgrid==CN),k])
+  }
 
   limit = c( min(minPloidy, CN), max(maxPloidy, CN))
   plot1 = ggplot() +
