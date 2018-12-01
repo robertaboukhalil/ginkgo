@@ -400,13 +400,13 @@ for(k in 1:w)
   minSoS = data.frame(x=CNmult[1,k], y=CNerror[1,k])
   bestSoS = data.frame(x=CN, y=outerColsums[which(CNgrid==CN),k])
 
+  limit = c( min(minPloidy, CN), max(maxPloidy, CN))
   plot1 = ggplot() +
-    geom_point(data=minSoS, aes(x=x, y=y*1.02, color="Minimum SoS Error"), shape=18, size=15) +
-    geom_point(data=bestSoS, aes(x=x, y=y*.98, color="Chosen Ploidy"), shape=18, size=15) +
-    scale_x_continuous(limits=c(1.5, 6), breaks=seq(1.5, 6, .5)) +
-    scale_y_continuous(limits=c(.5*min(outerColsums[,k]), top), breaks=seq(0, step[1], step[2])) +
     geom_line(data=sosDat, aes(x=x, y=y), size=3) +
     geom_point(data=sosDat, aes(x=x, y=y), shape=21, fill="black", size=5) +
+    geom_point(data=minSoS, aes(x=x, y=y, color="Minimum SoS Error"), shape=16, size=15, alpha=0.7) +
+    geom_point(data=bestSoS, aes(x=x, y=y, color="Chosen Ploidy"), shape=18, size=15, alpha=0.7) +
+    scale_x_continuous(limits=limit, breaks=seq(limit[1], limit[2], .5)) +
     labs(title="Sum of Squares Error Across Potential Copy Number States", x="Copy Number Multiplier", y="Sum of Squares Error") +
     theme(plot.title=element_text(size=45, vjust=1.5)) +
     theme(axis.title.x=element_text(size=45, vjust=-2.8), axis.title.y=element_text(size=45, vjust=.1)) +
