@@ -134,7 +134,7 @@ do
     fi
 
     # Bin reads
-    ${DIR_SCRIPTS}/binUnsorted ${DIR_GENOME}/${BINNING} ${NB_BINS} <(${Z}cat ${file}) ${file//.bed} ${file}_mapped
+    ${DIR_SCRIPTS}/binUnsorted ${DIR_GENOME}/${BINNING} ${NB_BINS} <(${Z}cat ${file}) `echo ${file} | awk -F ".bed" '{print $1}'` ${file}_mapped
 done < ${DIR_CELLS_LIST}
 
 # Concatenate binned reads to central file  
