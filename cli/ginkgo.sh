@@ -189,4 +189,4 @@ ${DIR_SCRIPTS}/CNVcaller ${DIR_INPUT}/SegCopy ${DIR_INPUT}/CNV1 ${DIR_INPUT}/CNV
 # -- Create tar file of output
 # ------------------------------------------------------------------------------
 
-tar -czf ${DIR_INPUT}/archive.tar.gz --exclude '*.bed' --exclude '*.bed.gz' --exclude '*.tar.gz' ${DIR_INPUT}/*
+tar -czf ${DIR_INPUT}/archive.tar.gz --exclude '*.bed' --exclude '*.bed.gz' --exclude '*.tar.gz' -C ${DIR_INPUT} *
