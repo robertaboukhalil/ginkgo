@@ -134,7 +134,7 @@ do
     fi
 
     # Bin reads
-    ${DIR_SCRIPTS}/binUnsorted ${DIR_GENOME}/${BINNING} ${NB_BINS} <(${Z}cat ${file}) ${file//.bed} ${file}_mapped
+    ${DIR_SCRIPTS}/binUnsorted ${DIR_GENOME}/${BINNING} ${NB_BINS} <(${Z}cat ${file}) `echo ${file} | awk -F ".bed" '{print $1}'` ${file}_mapped
 done < ${DIR_CELLS_LIST}
 
 # Concatenate binned reads to central file  
@@ -189,6 +189,4 @@ ${DIR_SCRIPTS}/CNVcaller ${DIR_INPUT}/SegCopy ${DIR_INPUT}/CNV1 ${DIR_INPUT}/CNV
 # -- Create tar file of output
 # ------------------------------------------------------------------------------
 
-tar -cvf ${DIR_INPUT}/archive.tar --exclude '*.bed' --exclude '*.bed.gz' ${DIR_INPUT}/*
-
-
+tar -czf ${DIR_INPUT}/archive.tar.gz --exclude '*.bed' --exclude '*.bed.gz' --exclude '*.tar.gz' -C ${DIR_INPUT} *

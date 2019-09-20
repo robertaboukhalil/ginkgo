@@ -14,6 +14,13 @@ maxPloidy   = 6
 minBinWidth = 5
 main_dir="/local1/work/ginkgo/scripts"
 
+if (!file.exists(main_dir)) {
+  # Get main_dir from full commandArgs
+  args        = commandArgs(FALSE)
+  script.name = sub("--file=", "", grep("--file=", args, value = TRUE))
+  main_dir    = normalizePath(dirname(script.name))
+}
+
 # User settings
 args        = commandArgs(TRUE)
 genome      = args[[1]]
