@@ -362,7 +362,9 @@ if(isset($_POST['analyze-subset']))
     if($config['rmpseudoautosomal'] == '1')
         $PAR = 'pseudoautosomal';
 
-    $cmd = "./scripts/analyze-subset.R $GINKGO_USER_ID $analysisID $genome {$config['binMeth']} $PAR >> $userDir/ginkgo-" . $analysisID . ".out 2>&1  &";
+    $genome = escapeshellarg($genome);
+    $binMethod = escapeshellarg($config['binMeth']);
+    $cmd = "./scripts/analyze-subset.R $GINKGO_USER_ID $analysisID $genome $binMethod $PAR >> $userDir/ginkgo-" . $analysisID . ".out 2>&1  &";
     session_regenerate_id(TRUE);    
     $handle = popen($cmd, 'r');
     pclose($handle);
@@ -388,7 +390,7 @@ if($GINKGO_PAGE == "results-subset")
 if(isset($_POST['ucsc']))
 {
     // Job settings
-    $cell  = $_POST['cell'];
+    $cell  = preg_replace('/[^0-9]/', '', $cell);
     $range = $_POST['range'];
     //
     $analysisID    = generateID(10);
