@@ -1,0 +1,173 @@
+#!/bin/bash
+
+# Computes Fixed and Variable length bowtie bins for Ginkgo on a single machine
+#
+# Same steps, helper programs and bowtie settings as buildGenome, without
+# grid engine. Simulated reads are streamed straight into bowtie instead of
+# being written to *_frags files (which take hundreds of GB for hg19).
+#
+# Usage: run from a directory containing one fasta file per chromosome
+#   /path/to/buildGenomeLocal [-l "READLEN ..."] [-b "BINSIZE ..."] [-t THREADS] ASSEMBLY_PREFIX
+#
+# e.g. buildGenomeLocal -l 150 -b 1000000 -t 32 hg19
+##############################################################################
+
+set -eo pipefail
+
+# List of read lengths to consider
+READLEN=(48 76 101 150)
+
+# List of bin sizes (uniquely mappable bases) to consider
+BINSIZE=(10000 25000 50000 100000 175000 250000 500000 1000000 2500000 5000000 10000000)
+
+# Number of bowtie threads
+THREADS=4
+
+# Path to rest of scripts
+SCRIPTS=$(cd "$(dirname "$0")" && pwd)
+
+usage="buildGenomeLocal [-l \"READLEN ...\"] [-b \"BINSIZE ...\"] [-t THREADS] ASSEMBLY_PREFIX"
+while getopts "l:b:t:h" opt; do
+  case $opt in
+    l) READLEN=($OPTARG) ;;
+    b) BINSIZE=($OPTARG) ;;
+    t) THREADS=$OPTARG ;;
+    *) echo "$usage"; exit 1 ;;
+  esac
+done
+shift $((OPTIND-1))
+
+if [ $# != 1 ]
+then
+  echo "$usage"
+  exit 1
+fi
+
+ASSEMBLY=$1
+TYPE=bowtie
+
+for prog in simReads findCentromeres bin bounds GC fixed match_genes_to_bins; do
+  if [ ! -x $SCRIPTS/$prog ]
+  then
+    echo "Missing $SCRIPTS/$prog: run make in $SCRIPTS first"
+    exit 1
+  fi
+done
+
+for prog in bowtie bowtie-build; do
+  if ! command -v $prog > /dev/null
+  then
+    echo "$prog (bowtie 1, not bowtie2) must be in your PATH"
+    exit 1
+  fi
+done
+
+echo "# Indexing $ASSEMBLY for ${READLEN[*]} bp reads using bins of size ${BINSIZE[*]}"
+
+if [ ! -f list ]
+then
+  echo " Step (1/7): Building Chrom List"
+  ls | grep ^chr | grep ".fa" |  awk -F ".fa" '{print $1}' | sort -V | uniq > list
+fi
+
+if [ ! -f ${ASSEMBLY}.fa ]
+then
+  echo -e "\n Step (2/7): Preparing Genome"
+  cat `ls | grep chr | sort -V | tr '\n' ' '` > ${ASSEMBLY}.fa
+fi
+
+if [ ! -f bowtieBUILT ]
+then
+  echo -e "\n Step (3/7): Building Index Files"
+  bowtie-build ${ASSEMBLY}.fa ${ASSEMBLY}.fa > indexBOWTIE.log
+  touch bowtieBUILT
+fi
+
+if [ ! -f lengths ]
+then
+  echo -e "\n Step (4/7): Generating Essential Chromosome Files"
+  echo -e "  [Computing chromomsome lengths]"
+  while read CHROM
+    do echo $CHROM $((`grep -v ">" ${CHROM}.fa | wc -c`-`wc -l < ${CHROM}.fa`+1))
+  done < list > lengths
+fi
+
+if [ ! -r centromeres ]
+then
+  echo "  [Computing centromere positions]"
+  for i in `cat list`; do
+    $SCRIPTS/findCentromeres ${i}.fa out${i}
+    if [ `wc -l < out${i}` -eq 0 ]; then
+      echo -e "${i}\t0\t0"
+    else
+      awk '{print $2-$1"\t"$1"\t"$2}' out${i} | sort -rg | head -1 | awk -v chr=$i '{print chr"\t"$2"\t"$3}'
+    fi
+  done > centromeres
+  rm -f out*
+fi
+
+for size in ${BINSIZE[*]}; do
+  if [ ! -f fixed_${size} ]
+  then
+    echo -e "\n Step (5/7): Generating fixed-length interval files for ${size} bp bins"
+    $SCRIPTS/fixed lengths fixed_${size} $size
+    $SCRIPTS/bounds fixed_${size} bounds_fixed_${size}
+    $SCRIPTS/GC fixed_${size} GC_fixed_${size} lengths
+
+    if [ -f genes ]
+    then
+      $SCRIPTS/match_genes_to_bins fixed_${size} genes genes_fixed_${size}
+    fi
+  fi
+done
+
+## Simulate a read at every position, keep the ones bowtie maps uniquely back to
+## their own chromosome, then cut each chromosome into bins (as in mapBOWTIE/binBOWTIE)
+for LENGTH in ${READLEN[*]}; do
+  while read IN; do
+    if [ ! -f ${IN}_${LENGTH}_${TYPE}_done ]
+    then
+      echo -e "\n Step (6/7): Mapping simulated $LENGTH bp reads from $IN"
+      $SCRIPTS/simReads ${IN}.fa /dev/stdout $LENGTH | \
+        bowtie --chunkmbs=400 ${ASSEMBLY}.fa -f -S -t -m1 --best --strata -p${THREADS} - 2> mapBOWTIE_${IN}_${LENGTH}.log | \
+        awk -v chr=${IN} '{if (($5 >= 25) && ($3 == chr)) print $3"\t"$4}' | \
+        sort -k2,2g > ${IN}_${LENGTH}_${TYPE}_done.tmp
+      mv ${IN}_${LENGTH}_${TYPE}_done.tmp ${IN}_${LENGTH}_${TYPE}_done
+    fi
+
+    for SIZE in ${BINSIZE[*]}; do
+      if [ ! -f results_${SIZE}_${LENGTH}_${TYPE}_${IN} ]
+      then
+        $SCRIPTS/bin results_${SIZE}_${LENGTH}_${TYPE}_${IN} centromeres $SIZE $LENGTH `grep -w $IN lengths | awk '{print $2}'` ${IN}_${LENGTH}_${TYPE}_done > binBOWTIE_${IN}_${SIZE}_${LENGTH}.log
+      fi
+    done
+  done < list
+done
+
+## Now finish up the binning
+for SIZE in ${BINSIZE[*]}; do
+  for LENGTH in ${READLEN[*]}; do
+    if [ ! -f bounds_variable_${SIZE}_${LENGTH}_${TYPE} ]
+    then
+      echo -e "\n Step (7/7): Creating variable length ${SIZE} bins with ${LENGTH} bp reads for $TYPE"
+
+      #Concatenate chromsome intervals
+      echo -e "CHR\tEND" > variable_${SIZE}_${LENGTH}_${TYPE}
+      cat `ls | grep results_${SIZE}_${LENGTH}_${TYPE} | sort -V` >> variable_${SIZE}_${LENGTH}_${TYPE}
+
+      #Generate interval boundaries
+      $SCRIPTS/bounds variable_${SIZE}_${LENGTH}_${TYPE} bounds_variable_${SIZE}_${LENGTH}_${TYPE}
+
+      #Calculate GC content in intervals
+      $SCRIPTS/GC variable_${SIZE}_${LENGTH}_${TYPE} GC_variable_${SIZE}_${LENGTH}_${TYPE} lengths
+
+      if [ -f genes ]
+      then
+        #Generate gene files
+        $SCRIPTS/match_genes_to_bins variable_${SIZE}_${LENGTH}_${TYPE} genes genes_variable_${SIZE}_${LENGTH}_${TYPE}
+      fi
+    fi
+  done
+done
+
+echo -e "\nAll done. You can now run clean.sh"

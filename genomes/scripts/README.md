@@ -34,6 +34,29 @@ chromosome), a summary of the genes in each bin (genes_*). The directory will al
 delete the unneeded files.
 
 
-Note, we have the bins for several reference genomes computed here:
-http://labshare.cshl.edu/shares/schatzlab/www-data/ginkgo/genomes/
+## Building bowtie bins on a single machine (no grid engine)
+
+`buildGenomeLocal` runs the same steps, helper programs and bowtie settings as `buildGenome`, but without qsub. It
+streams the simulated reads straight into bowtie instead of writing `*_frags` files. It only builds the bowtie bins.
+You need bowtie 1 (not bowtie2) in your path; `-l`, `-b` and `-t` select the read lengths, bin sizes and bowtie threads.
+
+For example, to rebuild `variable_1000000_150_bowtie`, `GC_variable_1000000_150_bowtie` and
+`bounds_variable_1000000_150_bowtie` for hg19 (the files in `genomes/hg19/original`):
+
+```
+cd genomes/scripts && make && cd -
+mkdir hg19 && cd hg19
+for c in {1..22} X Y; do
+  curl -sS https://hgdownload.soe.ucsc.edu/goldenPath/hg19/chromosomes/chr$c.fa.gz | gunzip > chr$c.fa
+done
+/path/to/genomes/scripts/buildGenomeLocal -l 150 -b 1000000 -t 32 hg19
+```
+
+Only put chr1-22, chrX and chrY in the directory (no chrM, `_random`, `chrUn` or `_hap` contigs): every `chr*.fa` file
+becomes part of the bowtie index and gets its own bins. Expect ~4 GB of RAM, ~3 billion reads to align per read length,
+and roughly 50 GB of disk for the intermediate `*_done` files. Several bin sizes for the same read length cost almost
+nothing extra, since the alignments are shared.
+
+Note, precomputed hg19 bins (150bp, bowtie) are included in this repository under genomes/hg19. The bins for other
+reference genomes that used to be hosted at labshare.cshl.edu are no longer available.
 

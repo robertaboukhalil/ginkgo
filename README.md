@@ -75,9 +75,17 @@ Type ```make``` in the ginkgo/ directory
 
 - Make sure the uploads directory has the correct write permissions
 
-**Download data files:**
+**Binning data:**
 
-- Download binning data for hg19 at https://labshare.cshl.edu/shares/schatzlab/www-data/ginkgo/genomes/hg19.tgz
-	- untar into ginkgo/genomes/hg19 (which needs to be created)
+- Binning data for hg19 is included in this repository under ginkgo/genomes/hg19, so there is nothing to download:
+	- ```genomes/hg19/original```: the default bins
+	- ```genomes/hg19/pseudoautosomal```: the same bins with the chrY pseudoautosomal regions masked (the "Mask Y-chr pseudoautosomal regions" option)
+	- Variable and fixed bins at 10kb, 25kb, 50kb, 100kb, 175kb, 250kb, 500kb, 1Mb, 2.5Mb, 5Mb and 10Mb
+	- Variable bins are for 150bp reads mapped with bowtie, e.g. ```variable_500000_150_bowtie```. They also work for shorter reads, with slightly less even coverage in repetitive regions.
 
-- Other genomes, including hg18, hg19, mm9, mm10, rheMac7, rheMac8, rn5 and dm3 can be found at http://labshare.cshl.edu/shares/schatzlab/www-data/ginkgo/genomes/
+- The original download server (labshare.cshl.edu) is no longer available, so the hg19 bins above were rebuilt with the scripts in ginkgo/genomes/scripts. The following are not currently available:
+	- hg19 bins for other read lengths (48, 76, 101bp) or for bwa
+	- Bad bins files (the "Mask bad bins" option)
+	- Other genomes (hg18, mm9, mm10, rheMac7, rheMac8, rn5, dm3)
+
+- To build bins for another genome or read length, see [genomes/scripts/README.md](genomes/scripts/README.md)
